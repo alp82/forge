@@ -11,7 +11,7 @@ If `$ARGUMENTS` is empty, ask the user which files to review and stop.
 
 ## Process
 
-**Memory**: Apply AGENTS.md "Subagent Context Inheritance" to both reviewer calls below.
+**Memory**: Apply WORKFLOW.md "Subagent Context Inheritance" to both reviewer calls below.
 
 Launch concurrently with `<TOUCHED_FILES>` set to the file paths above and `<APPROVED_PLAN>: none`:
 - `correctness-reviewer` - bugs, type holes, dead code, convention adherence
@@ -28,4 +28,4 @@ Then append:
 2. **Next command** -
    - Both `pass` → done.
    - Any `warn` → name the one or two issues worth addressing.
-   - Any `fail` → suggest `/fix`, point at the relevant `ACTION_NEEDED`.
+   - Any `fail` → suggest `/alp-river:go`, point at the relevant `ACTION_NEEDED`.

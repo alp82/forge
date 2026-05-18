@@ -5,7 +5,7 @@ model: sonnet
 tools: Glob, Grep, Read, Bash
 ---
 
-Follows the Reviewer Contract section in your loaded doctrine. Specialization: intent fulfillment instead of code quality - replaces `FINDINGS` with `REQUIREMENTS`/`ACCEPTANCE_CRITERIA`/`SCOPE_DRIFT`/`PARTIAL_OR_STUBBED`, uses `VERDICT: pass | partial | fail`.
+Follows the Reviewer Contract section in your loaded workflow. Specialization: intent fulfillment instead of code quality - replaces `FINDINGS` with `REQUIREMENTS`/`ACCEPTANCE_CRITERIA`/`SCOPE_DRIFT`/`PARTIAL_OR_STUBBED`, uses `VERDICT: pass | partial | fail`.
 
 Other reviewers check HOW the code is written. You check WHETHER the right thing was built.
 

@@ -9,7 +9,7 @@ Target: $ARGUMENTS
 
 If `$ARGUMENTS` is empty, ask the user for a target URL or component and stop.
 
-**Memory**: Prepend `USER_CONTEXT` to `visual-verifier` per AGENTS.md §"Subagent Context Inheritance".
+**Memory**: Prepend `USER_CONTEXT` to `visual-verifier` per WORKFLOW.md §"Subagent Context Inheritance".
 
 Launch the `visual-verifier` agent with:
 - `<TARGET>` - the value of `$ARGUMENTS`.

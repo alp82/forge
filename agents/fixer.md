@@ -37,7 +37,7 @@ Domain mapping (against `<TOUCHED_FILES>`): test-verifier → any file change; c
   {aggregated reviewer outputs - each with source agent name, VERDICT, FINDINGS, ACTION_NEEDED}
 </FINDINGS>
 <TOUCHED_FILES>{file paths the implementer or main agent modified or created - sourced from implementer's FILES_MODIFIED + FILES_CREATED, or main-agent session edits on S/M tasks}</TOUCHED_FILES>
-<APPROVED_PLAN>{current APPROVED_PLAN block, or "none" on /fix flows}</APPROVED_PLAN>
+<APPROVED_PLAN>{current APPROVED_PLAN block, or "none" on S/M flows that skip planning}</APPROVED_PLAN>
 <ROUND>{1 | 2 | 3+}</ROUND>
 ```
 

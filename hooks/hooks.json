@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-doctrine.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
             "timeout": 5
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-doctrine.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
             "timeout": 5
           }
         ]
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-doctrine.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
             "timeout": 5
           }
         ]

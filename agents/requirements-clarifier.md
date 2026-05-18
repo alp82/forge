@@ -36,7 +36,7 @@ Only report items where a reasonable engineer could build two different valid th
 
 Max 10 items per round, ordered by how much they'd change the plan.
 
-**Auto-promotion eligibility**: any `[unsure]` entry in `ACCEPTANCE_CRITERIA_PROPOSED` or `ASSUMPTIONS_TO_CONFIRM` is eligible for promotion into QUESTIONS by the main agent (using a Confirm/Replace shape: two options labeled `Confirm` with description = the candidate text, and `Replace` with description = "Provide an alternative"). The clarifier itself only lists them in their natural sections; the main agent applies the AGENTS.md 4-cap priority queue.
+**Auto-promotion eligibility**: any `[unsure]` entry in `ACCEPTANCE_CRITERIA_PROPOSED` or `ASSUMPTIONS_TO_CONFIRM` is eligible for promotion into QUESTIONS by the main agent (using a Confirm/Replace shape: two options labeled `Confirm` with description = the candidate text, and `Replace` with description = "Provide an alternative"). The clarifier itself only lists them in their natural sections; the main agent applies the WORKFLOW.md 4-cap priority queue.
 
 Questions surface real ambiguity - no confidence tag needed there. Criteria and assumptions carry `[likely]`/`[unsure]`.
 
@@ -110,7 +110,7 @@ WRITES_PROPOSED:
 </CLARIFY_OUTPUT>
 ```
 
-`WRITES_PROPOSED` is a forward-looking signal, not an immediate write request. You are read-only - the main agent merges this block into Step 10's aggregated discoveries (or surfaces it as info on /alp-river:plan). Surface a glossary term when the clarification settles a name the project doesn't yet have canonical. Skip the block when the round only resolved tactical detail with no canonical implications.
+`WRITES_PROPOSED` is a forward-looking signal, not an immediate write request. You are read-only - the main agent merges this block into Step 10's aggregated discoveries when the run continues through implementation, or surfaces it as info when the run stops at the after-plan picker. Surface a glossary term when the clarification settles a name the project doesn't yet have canonical. Skip the block when the round only resolved tactical detail with no canonical implications.
 
 Exit conditions for the main agent:
 - `CLARITY: clear` AND `NEW_ASPECTS_FOUND: no` → ship `<CLARIFY_OUTPUT>` to the planner; main agent exits the loop.

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# SessionStart:compact hook: re-anchor doctrine + canonical pipeline state
+# SessionStart:compact hook: re-anchor workflow + canonical pipeline state
 # from the transcript after compaction. PreCompact stdout only reaches the
 # debug log, so re-injection has to happen on the post-compact SessionStart
 # fire, which does inject stdout/additionalContext into the conversation.
-# Re-emits AGENTS.md alongside the structured workflow state
+# Re-emits WORKFLOW.md alongside the structured workflow state
 # (last APPROVED_PLAN, CONFIRMED_INTENT, CLARIFY_OUTPUT, CLASSIFICATION)
 # extracted from the transcript.
 
@@ -11,17 +11,17 @@ set -euo pipefail
 
 input=$(cat 2>/dev/null || echo '{}')
 
-# Load the plugin's doctrine — same content SessionStart injects.
-doctrine=""
-if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/AGENTS.md" ]; then
-  doctrine=$(cat "${CLAUDE_PLUGIN_ROOT}/AGENTS.md")
+# Load the plugin's workflow — same content SessionStart injects.
+workflow=""
+if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/WORKFLOW.md" ]; then
+  workflow=$(cat "${CLAUDE_PLUGIN_ROOT}/WORKFLOW.md")
 fi
 
 # Fallback anchor when jq missing or transcript unreachable — always emit
 # something useful.
 print_fallback() {
-  if [ -n "$doctrine" ]; then
-    printf '%s\n\n' "$doctrine"
+  if [ -n "$workflow" ]; then
+    printf '%s\n\n' "$workflow"
   fi
   cat <<'EOF'
 ## Post-compaction anchor
@@ -104,10 +104,10 @@ classification=$(extract_last_block "CLASSIFICATION" "$transcript_text")
 clarify=$(extract_last_block "CLARIFY_OUTPUT" "$transcript_text")
 plan=$(extract_last_block "APPROVED_PLAN" "$transcript_text")
 
-# Build the anchor message: doctrine first, then canonical state.
+# Build the anchor message: workflow first, then canonical state.
 out=""
-if [ -n "$doctrine" ]; then
-  out="$doctrine
+if [ -n "$workflow" ]; then
+  out="$workflow
 
 "
 fi

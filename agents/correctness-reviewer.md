@@ -5,7 +5,7 @@ model: sonnet
 tools: Glob, Grep, Read, Bash
 ---
 
-Follows the Reviewer Contract section in your loaded doctrine - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
+Follows the Reviewer Contract section in your loaded workflow - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
 
 ## Criteria
 
@@ -15,7 +15,7 @@ Follows the Reviewer Contract section in your loaded doctrine - confidence tags,
 
 **Dead code**: Obvious duplication (deep analysis is reuse-reviewer's job). Code made obsolete by this change - functions no longer called, types unused, files unneeded. Stale imports/exports.
 
-**Conventions**: Read project's CLAUDE.md/AGENTS.md and verify compliance.
+**Conventions**: Read project's CLAUDE.md/WORKFLOW.md and verify compliance.
 
 ## Priority
 

@@ -39,7 +39,7 @@ Each question's `header` must fit within 12 characters. Aim for noun phrases or 
 ## Input
 
 ```
-<RAW_REQUEST>{user's original message or /feature argument}</RAW_REQUEST>
+<RAW_REQUEST>{user's original message or /alp-river:go argument}</RAW_REQUEST>
 <L1_CONFIRMATION>{user's answer to the main agent's one-sentence restate}</L1_CONFIRMATION>
 <PRIOR_ROUNDS>{compressed log of prior rounds, one line per Q&A: "R1.Q1: ... | A: ..."; "none" on first run}</PRIOR_ROUNDS>
 ```
@@ -74,7 +74,7 @@ CONFIRMED_INTENT:
 - [what wins when X and Y conflict]
 
 QUESTIONS:
-  (max 4 entries; structured for AskUserQuestion rendering per AGENTS.md Concise Surfacing Contract)
+  (max 4 entries; structured for AskUserQuestion rendering per WORKFLOW.md Concise Surfacing Contract)
   - question: [direction question text]
     header: [max 12 chars - see HEADER_GUIDANCE below]
     multiSelect: [true | false]

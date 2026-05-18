@@ -66,7 +66,7 @@ blocked_checkout='(^|[^[:alnum:]_/-])git[[:space:]]+checkout[[:space:]]+--[[:spa
 
 if echo "$command" | grep -qE "$blocked_verbs|$blocked_tag|$blocked_branch|$blocked_checkout"; then
   log "BLOCKED: $command"
-  reason="Git write operations are user-only (see the alp-river plugin doctrine and your project memory feedback). Blocked command: ${command}. If the user explicitly wants this run, surface the exact command for them to execute themselves."
+  reason="Git write operations are user-only (see the alp-river plugin workflow and your project memory feedback). Blocked command: ${command}. If the user explicitly wants this run, surface the exact command for them to execute themselves."
   jq -nc --arg reason "$reason" '{decision:"block", reason:$reason}'
   exit 0
 fi

@@ -6,15 +6,29 @@
 
 Multi-stage agent refinement for Claude Code, scaled by automatic complexity classification. Small changes pass quickly. Bigger ones add stages: clarification, planning, adversarial challenge, implementation, broad review, specialist review, self-heal.
 
-The whole pipeline ships in one folder. Doctrine, 32 subagents, 8 slash commands, 8 quality hooks.
+The whole pipeline ships in one folder. Workflow, 32 subagents, 5 slash commands, 8 quality hooks.
 
 ## Latest updates
 
 The last three versions:
 
-- **0.2.6: every task confirms intent first, UI design choices get an interactive picker** - The "this is small, I'll just do it" follow-up path is gone. After any pipeline, the next request pauses for a one-sentence restate before any work; `yes` rolls, anything else becomes the new input for the interviewer. Separately, when the clarifier sees a UI task with multiple legitimate visual or interaction shapes, a new design-explorer agent confirms which knobs to expose, builds an interactive picker page (sandbox prototype or real page behind a dev gate), and waits for you to copy and paste back the spec. The planner builds to exactly that.
-- **0.2.5: validation per criterion, visual reviewer opt-in, two prototypes on high novelty** - Plans now declare HOW each acceptance criterion gets verified (automated test, manual check, or observable code); the acceptance reviewer enforces that the declared validation actually exists. Visual reviewer no longer auto-fires - you get a single Y/n offer when UI is touched (default yes on XL, default no on M/L). And when the prototype identifier judges a target as high-novelty (the *shape* of the solution is genuinely uncertain), the prototyper builds two differently-shaped tracer bullets side-by-side so the planner picks on evidence, not intuition.
-- **0.2.4: XXL classification pushes back on jobs that are too big** - The classifier now grades tasks S/M/L/XL/**XXL**. XXL means "this spans more than fits in one task" - the classifier suggests how to split it, and `/feature` and `/plan` pause before any other work to ask: pick a slice, treat as XL anyway (explicit acknowledgment required), or drop it. `/fix` hands off to `/feature` with the suggested split for reference.
+**0.3.0** - Simplification: the four entry commands fold into one, and the assistant figures out what kind of work you mean from how you describe it.
+
+- One command - `/alp-river:go` replaces the old `/feature`, `/plan`, `/investigate`, and `/fix`.
+- The assistant figures out from your text whether it's a bug or a feature.
+- On bigger tasks you get a Continue/Stop choice after the plan - design-only is one keystroke.
+- Plain chat works without the command. Same pipeline either way.
+
+**0.2.6**
+
+- Every follow-up confirms intent first - even one-liners.
+- UI design choices get a picker page you flip through, not a text debate.
+
+**0.2.5**
+
+- Acceptance criteria declare how they get verified - and the reviewer enforces it.
+- Visual review is opt-in - one keystroke when you want it, silent when you don't.
+- High-novelty work gets two prototypes side-by-side, not one.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -36,7 +50,9 @@ To pull updates later:
 
 ## How to use
 
-Describe what you want. The classifier grades the task and the right specialists fire - doctrine is already loaded, nothing to enable.
+Describe what you want - in plain text, or via `/alp-river:go` if you want a discoverable trigger. Both run the same pipeline; the workflow is already loaded, nothing to enable.
+
+Step 0 reads your request and picks the framing: bug-shaped requests ("why is X broken", a stack trace, a symptom) take the diagnose path (investigator runs alone in pre-flight); everything else takes the build path (full pre-flight fan-out). On affirmation, the pipeline runs.
 
 Each stage is run by a dedicated agent: classifier judges scope, scanners pre-flight the area, clarifier surfaces ambiguity, planner designs the approach, challenger pokes holes, implementer builds, reviewers cross-check, fixer heals findings.
 
@@ -46,6 +62,8 @@ You stay in the loop at a few well-defined moments:
 - **Clarifier questions** (M/L/XL when ambiguity remains) - the clarifier researches the codebase first, then asks only what's still open. It loops with you (cap 5 rounds) until clarity is reached, then the planner runs.
 - **Design picker** (when the clarifier flags UI design choice with multiple legitimate shapes) - the design-explorer agent confirms which parameters to expose, builds an interactive page (sandbox or real-page behind a dev gate), and waits for you to copy a labeled key-value spec back into chat. That spec becomes binding for the planner.
 - **Plan selection** (XL) - pick one of the proposed approaches.
+- **After-plan stop** (L/XL whenever a plan was produced) - Continue-build (default) to roll into implementation, or Stop to keep the run as a design pass.
+- **After-diagnose stop** (on bug-framing) - Continue-fix or Continue-plan to roll into the fix path at the right tier, or Stop to keep just the diagnosis. On Continue, you restate the outcome in your own words first - the investigator's report stays on screen but is never silently consumed as intent.
 
 Everything else runs to completion. Reviewer findings feed the fixer automatically.
 
@@ -55,7 +73,7 @@ Override the grade with natural language: *treat this as L*, *skip clarify*, *go
 
 A complexity classifier reads each task and grades it **S**, **M**, **L**, **XL**, or **XXL**. The grade decides which stages run. XXL is a pushback - the classifier judges the task too big for one run and proposes a decomposition before any other gate fires.
 
-A SessionStart hook reads `AGENTS.md` and injects it into every Claude session as foundational context. Doctrine is always loaded, no per-file imports, no skill matching. After `/compact`, it fires again to restore doctrine plus the canonical workflow state (intent, classification, approved plan).
+A SessionStart hook reads `WORKFLOW.md` and injects it into every Claude session as foundational context. The workflow is always loaded, no per-file imports, no skill matching. After `/compact`, it fires again to restore the workflow plus the canonical state (intent, classification, approved plan).
 
 In every diagram below, **dotted edges are conditional** (a gate fires the agent only when its trigger matches).
 
@@ -276,25 +294,20 @@ flowchart TB
 |-------|------|------|
 | capture-agent | opus | Collects novel project-context items (glossary terms, stack/intent drift) surfaced incidentally by upstream agents. Two phases - proposes, then writes after user approval. Never creates `docs/`. |
 
-### Separate flows
-
-Each is triggered by its own command and runs outside the main pipeline.
+### Bias-conditional and separate flows
 
 | Agent | Tier | Role |
 |-------|------|------|
-| investigator | opus | Root-cause debugging - forms hypotheses, attempts minimal repro, traces to the actual cause. Stops at diagnosis; outputs complexity + severity for routing to `/fix` or `/feature`. Used by `/investigate`. |
+| investigator | opus | Root-cause debugging - forms hypotheses, attempts minimal repro, traces to the actual cause. Stops at diagnosis; outputs complexity + severity for the after-diagnose stop's picker (Continue-fix on S/M, Continue-plan on L/XL/XXL, or Stop). Fires in the main pipeline at Step 2 whenever Step 0 detected bug-framing. |
 | setup-agent | opus | Interactive bootstrap of docs/INTENT.md, docs/STACK.md, docs/GLOSSARY.md via 5-invocation guided interview. Used by `/alp-river:setup`. |
 | adr-drafter | opus | Drafts a single ADR from a decision summary, mirroring the canonical template. Read-only - emits a draft or hard-rejects on duplicates of active ADRs. Used by `/alp-river:adr`. |
 
 ## Slash commands
 
 ```
+/alp-river:go           Run the pipeline. Bias detected from your text, tier classified, stops at natural seams.
 /alp-river:setup        Interactive bootstrap of docs/INTENT.md, docs/STACK.md, docs/GLOSSARY.md
 /alp-river:adr          Draft and write a single architectural decision record
-/alp-river:feature      Full pipeline (L/XL - clarify, plan, challenge, build, review)
-/alp-river:fix          Lighter pipeline for fixes and small changes (S/M)
-/alp-river:plan         Design-only - each stage driven by a specialist agent
-/alp-river:investigate  Root-cause debugging - stops at diagnosis, no patch
 /alp-river:review       Review current changes for correctness + engineering quality
 /alp-river:verify       Visual verification of UI changes via playwright-cli
 ```
@@ -304,12 +317,12 @@ Each is triggered by its own command and runs outside the main pipeline.
 ```
 alp-river/
 ├── .claude-plugin/plugin.json
-├── AGENTS.md              <- doctrine + reviewer contract
+├── WORKFLOW.md            <- pipeline + reviewer contract
 ├── hooks/
 │   ├── hooks.json         <- 7 events: SessionStart, PreToolUse, PostToolUse, ...
-│   └── *.sh               <- inject-doctrine, auto-format, block-git-writes, ...
+│   └── *.sh               <- inject-workflow, auto-format, block-git-writes, ...
 ├── agents/                <- 32 subagent definitions
-├── commands/              <- 8 slash commands
+├── commands/              <- 5 slash commands
 └── templates/             <- copy into your project's docs/ for project-context injection
 ```
 

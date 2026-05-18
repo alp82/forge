@@ -5,7 +5,7 @@ model: sonnet
 tools: Glob, Grep, Read, Bash, WebSearch, WebFetch
 ---
 
-Follows the Reviewer Contract section in your loaded doctrine - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
+Follows the Reviewer Contract section in your loaded workflow - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
 
 Trace data flow from user input to sensitive operations.
 
