@@ -77,6 +77,8 @@ Every finding carries a tag: `[likely]` (evidence-based - code you read, officia
 
 Every implementation task runs through a staged pipeline. Depth scales with complexity; confirming intent is always mandatory.
 
+**No exception for prompts that feel small, mechanical, or one-line** - that framing is the bypass trigger, and the classifier sizes trivial cases at S cheaply. Code-modifying requests enter the pipeline regardless of perceived size.
+
 Phases: Understand (0-1) → Prepare (2-3) → Design (3.5-5) → Build (6) → Verify (7-9) → Capture (10-11) → Follow-up (12).
 
 ### Axes

@@ -2,6 +2,10 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 0.3.2 - 2026-05-19
+
+- `/alp-river:reflect` looks back at the current session and surfaces friction worth tuning in the workflow.
+
 ## 0.3.1 - 2026-05-19
 
 - New chats in a project with no setup get a one-line nudge before you start typing.

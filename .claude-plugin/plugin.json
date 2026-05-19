@@ -1,7 +1,7 @@
 {
   "name": "alp-river",
   "description": "Multi-stage agent refinement for Claude Code, scaled by automatic complexity classification.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": {
     "name": "Alper Ortac"
   },

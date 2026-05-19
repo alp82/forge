@@ -6,11 +6,15 @@
 
 Multi-stage agent refinement for Claude Code, scaled by automatic complexity classification. Small changes pass quickly. Bigger ones add stages: clarification, planning, adversarial challenge, implementation, broad review, specialist review, self-heal.
 
-The whole pipeline ships in one folder. Workflow, 32 subagents, 5 slash commands, 8 quality hooks.
+The whole pipeline ships in one folder. Workflow, 32 subagents, 6 slash commands, 8 quality hooks.
 
 ## Latest updates
 
 The last three versions:
+
+**0.3.2**
+
+- `/alp-river:reflect` looks back at the current session and surfaces friction worth tuning in the workflow.
 
 **0.3.1**
 
@@ -23,11 +27,6 @@ The last three versions:
 - The assistant figures out from your text whether it's a bug or a feature.
 - On bigger tasks you get a Continue/Stop choice after the plan - design-only is one keystroke.
 - Plain chat works without the command. Same pipeline either way.
-
-**0.2.6**
-
-- Every follow-up confirms intent first - even one-liners.
-- UI design choices get a picker page you flip through, not a text debate.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -309,6 +308,7 @@ flowchart TB
 /alp-river:adr          Draft and write a single architectural decision record
 /alp-river:review       Review current changes for correctness + engineering quality
 /alp-river:verify       Visual verification of UI changes via playwright-cli
+/alp-river:reflect      Reflect on the current session to surface workflow friction worth tuning
 ```
 
 ## Structure
@@ -321,7 +321,7 @@ alp-river/
 │   ├── hooks.json         <- 7 events: SessionStart, PreToolUse, PostToolUse, ...
 │   └── *.sh               <- inject-workflow, auto-format, block-git-writes, ...
 ├── agents/                <- 32 subagent definitions
-├── commands/              <- 5 slash commands
+├── commands/              <- 6 slash commands
 └── templates/             <- copy into your project's docs/ for project-context injection
 ```
 
