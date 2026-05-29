@@ -12,6 +12,11 @@ The whole pipeline ships in one folder. Workflow, 32 subagents, 6 slash commands
 
 The last three versions:
 
+**0.3.5**
+
+- The workflow now loads reliably at the start of every session instead of arriving cut off.
+- After compacting a long conversation, your task's intent, plan, and decisions come back intact.
+
 **0.3.4**
 
 - Planning, implementation, and review now lean toward simpler local code with explicit dependencies and strong types.
@@ -21,10 +26,6 @@ The last three versions:
 
 - Eight pipeline agents now have an optional persona voice - prototyper as an optimist, plan-challenger as a skeptic, fixer as a cynic, security-reviewer as a defender, and others.
 - Override or swap any agent's persona under `alpRiver.psychologyOverrides` in `.claude/settings.local.json`. Available personas: pragmatist, craftsperson, skeptic, user-advocate, cynic, optimist, detective, defender, teacher.
-
-**0.3.2**
-
-- `/alp-river:reflect` looks back at the current session and surfaces friction worth tuning in the workflow.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -44,9 +45,11 @@ To pull updates later:
 /reload-plugins
 ```
 
+The pointer resolves to the plugin's installed path. If your setup restricts file reads, allow the agent to read the plugin's doctrine - on a standard install add `Read(~/.claude/plugins/cache/alperortac/alp-river/**)` to your `.claude/settings.json` allowlist.
+
 ## How to use
 
-Describe what you want - in plain text, or via `/alp-river:go` if you want a discoverable trigger. Both run the same pipeline; the workflow is already loaded, nothing to enable.
+Describe what you want - in plain text, or via `/alp-river:go` if you want a discoverable trigger. Both run the same pipeline; the essentials load automatically and the full doctrine is one read away, nothing to enable.
 
 Step 0 reads your request and picks the framing: bug-shaped requests ("why is X broken", a stack trace, a symptom) take the diagnose path (investigator runs alone in pre-flight); everything else takes the build path (full pre-flight fan-out). On affirmation, the pipeline runs.
 
@@ -69,7 +72,7 @@ Override the complexity tier with natural language: *treat this as L*, *skip cla
 
 A complexity classifier reads each task and assigns it a tier - **S**, **M**, **L**, **XL**, or **XXL**. The tier decides which steps run. XXL is a pushback - the classifier judges the task too big for one run and proposes a decomposition before any other gate fires.
 
-A SessionStart hook reads `WORKFLOW.md` and injects it into every Claude session as foundational context. The workflow is always loaded, no per-file imports, no skill matching. After `/compact`, it fires again to restore the workflow plus the canonical state (intent, classification, approved plan).
+A SessionStart hook injects a small essentials block plus a pointer to `WORKFLOW.md` into every Claude session; the agent reads the full doctrine from that file on demand. No per-file imports, no skill matching. After `/compact`, it fires again to re-anchor that pointer and restore the canonical state (intent, classification, approved plan).
 
 In every diagram below, **dotted edges are conditional** (a gate fires the agent only when its trigger matches).
 

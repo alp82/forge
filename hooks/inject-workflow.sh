@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# SessionStart hook: injects alp-river's WORKFLOW.md into the session as foundational context.
-# Also injects a setup nudge when the project lacks docs/INTENT.md and the user
-# hasn't opted out via alpRiver.skipSetup in .claude/settings.local.json.
+# SessionStart hook: injects a small workflow-essentials block plus a pointer to
+# alp-river's WORKFLOW.md (the full doctrine) into the session as foundational
+# context. The agent reads the full file on demand. Also injects a setup nudge
+# when the project lacks docs/INTENT.md and the user hasn't opted out via
+# alpRiver.skipSetup in .claude/settings.local.json.
 # The plugin lives wherever Claude Code mounts it; ${CLAUDE_PLUGIN_ROOT} resolves to that path.
 
 set -euo pipefail
@@ -12,11 +14,15 @@ if [[ ! -f "$workflow_file" ]]; then
   exit 0
 fi
 
+helper="${CLAUDE_PLUGIN_ROOT}/hooks/workflow-anchor.sh"
+[ -f "$helper" ] || exit 0
+source "$helper"
+
 input=$(cat 2>/dev/null || true)
 project_cwd=$(echo "$input" | jq -r '.cwd // empty' 2>/dev/null || true)
 [ -z "$project_cwd" ] && project_cwd="$PWD"
 
-context=$(cat "$workflow_file")
+context=$(workflow_anchor)
 
 # Setup nudge: project lacks docs/INTENT.md and user hasn't opted out.
 intent_file="$project_cwd/docs/INTENT.md"
@@ -39,9 +45,4 @@ EOF
   context+="$nudge"
 fi
 
-jq -n --arg ctx "$context" '{
-  hookSpecificOutput: {
-    hookEventName: "SessionStart",
-    additionalContext: $ctx
-  }
-}'
+emit_session_context "$context"

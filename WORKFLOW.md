@@ -514,9 +514,9 @@ Output wrapping: agents emit structured blocks named with XML-style tags that su
 
 ## Compaction
 
-After compaction, a `SessionStart` hook reads the transcript for the highest-version `<APPROVED_PLAN>`, `<CONFIRMED_INTENT>`, `<CLARIFY_OUTPUT>`, `<CLASSIFICATION>`, and re-injects them into the post-compact session.
+After compaction, a `SessionStart` hook re-injects a small essentials block plus a pointer to the full doctrine in `WORKFLOW.md` (the agent reads that file on demand), and on top of that re-extracts the highest-version `<APPROVED_PLAN>`, `<CONFIRMED_INTENT>`, `<CLARIFY_OUTPUT>`, and `<CLASSIFICATION>` from the transcript and re-injects them, size-bounded to stay under the session-start output limit.
 
-What still needs manual preservation in the conversation: current workflow step, gate results so far, unresolved self-heal findings, backward-edge count. Canonical state (intent / plan / classify / clarify) re-injects itself.
+What still needs manual preservation in the conversation: current workflow step, gate results so far, unresolved self-heal findings, backward-edge count. The essentials anchor and canonical state (intent / plan / classify / clarify) re-inject themselves; if the canonical state is large it may arrive truncated with an explicit marker, in which case the full version is in the pre-compaction transcript.
 
 Discard: raw exploration output, full file contents already acted on, superseded plans.
 

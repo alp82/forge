@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 0.3.5 - 2026-05-29
+
+- The workflow now loads reliably at the start of every session instead of arriving cut off.
+- After compacting a long conversation, your task's intent, plan, and decisions come back intact.
+
 ## 0.3.4 - 2026-05-20
 
 - Planning, implementation, and review now lean toward simpler local code with explicit dependencies and strong types.
