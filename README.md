@@ -12,6 +12,11 @@ The whole pipeline ships in one folder. Workflow, 32 subagents, 6 slash commands
 
 The last three versions:
 
+**0.3.6**
+
+- When the pipeline asks you to decide something, each option now shows a concrete example of what it produces - so you can answer without first asking for one.
+- Those prompts now lead with the decision and cut the filler, making the choice easier to grab at a glance.
+
 **0.3.5**
 
 - The workflow now loads reliably at the start of every session instead of arriving cut off.
@@ -21,11 +26,6 @@ The last three versions:
 
 - Planning, implementation, and review now lean toward simpler local code with explicit dependencies and strong types.
 - Reviews call out the AI-style code that creeps in - defensive branches no one needs, layers without a second use, hidden state.
-
-**0.3.3**
-
-- Eight pipeline agents now have an optional persona voice - prototyper as an optimist, plan-challenger as a skeptic, fixer as a cynic, security-reviewer as a defender, and others.
-- Override or swap any agent's persona under `alpRiver.psychologyOverrides` in `.claude/settings.local.json`. Available personas: pragmatist, craftsperson, skeptic, user-advocate, cynic, optimist, detective, defender, teacher.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

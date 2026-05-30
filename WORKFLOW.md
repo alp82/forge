@@ -449,7 +449,7 @@ Step 0 Level 2 (interviewer) and Step 3 (clarifier) run as loops, not single pas
 - `multiSelect` (true | false)
 - `options` (2-4 entries; each has `label`, `description`, optional `preview`)
 
-**Description vs. preview**: `description` carries the essence - what choosing this means and its consequence. It is load-bearing; the user can decide from it alone. `preview` is enrichment, best-effort; the host CLI may strip it when `toolConfig.askUserQuestion.previewFormat` is unset. Never put load-bearing content in `preview`.
+**Description vs. preview**: `description` carries the essence - what choosing this means - plus, for any non-trivial decision (one that sets a value, data shape, behavior, or UI result), one concrete example of what that choice produces (e.g. `wrapped -> {users:[...]}` vs `bare -> [...]`, or `30s -> 408 then retry`). The example is load-bearing, not decoration - it's what lets the user decide without asking for one, so lead with it and cut hedges or restated context to make room. Bare yes/no confirmations and fixed process/navigation gates (Continue/Stop, Approve/Revise/Reshape, Scope-down/Abandon) are exempt. `preview` is enrichment, best-effort; the host CLI may strip it when `toolConfig.askUserQuestion.previewFormat` is unset. Never put load-bearing content - including the example - in `preview`.
 
 **No agent-side "Other"**: the CLI surfaces an "Other" free-text escape automatically. Agents MUST NOT synthesize their own "Other" option.
 

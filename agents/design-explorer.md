@@ -72,8 +72,8 @@ PARAMS_TO_CONFIRM:
     multiSelect: [true | false]
     options:
       - label: [short]
-        description: [load-bearing essence - what choosing this value set means]
-        preview: [optional]
+        description: [what choosing this value set means + one concrete example of the result, e.g. "compact -> 8px gaps, denser rows"]
+        preview: [optional best-effort enrichment]
       - ...
 (empty only if the clarifier's params list is so settled that no follow-up is needed - rare; usually at least one needs picking)
 

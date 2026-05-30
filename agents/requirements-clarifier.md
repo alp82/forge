@@ -81,7 +81,7 @@ QUESTIONS:
     multiSelect: [true | false]
     options:
       - label: [short]
-        description: [load-bearing essence: what choosing this means]
+        description: [what choosing this means + one concrete example of the result for non-trivial decisions, e.g. "wrapped -> {users:[...]}" vs "bare -> [...]"]
         preview: [optional best-effort enrichment]
       - ...
     (2-4 options per question; CLI handles "Other" - do not synthesize one)

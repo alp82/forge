@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 0.3.6 - 2026-05-30
+
+- When the pipeline asks you to decide something, each option now shows a concrete example of what it produces - so you can answer without first asking for one.
+- Those prompts now lead with the decision and cut the filler, making the choice easier to grab at a glance.
+
 ## 0.3.5 - 2026-05-29
 
 - The workflow now loads reliably at the start of every session instead of arriving cut off.
