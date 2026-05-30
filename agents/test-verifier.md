@@ -5,7 +5,7 @@ model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 
-Follows the Reviewer Contract section in your loaded workflow - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
+Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
 
 ## Rules
 

@@ -9,7 +9,7 @@ workflow_anchor() {
   cat <<EOF
 ## alp-river workflow
 
-This is a pointer, not the spec. Before running any pipeline step (classify, plan, gate, review, implement) you MUST read the doctrine file below - the step graph, gate triggers, tier rules (S/M/L/XL/XXL), backward-edge budget, Code Doctrine, and Concise Surfacing Contract are NOT reproduced here. Read it; do not infer them.
+This is a pointer, not the spec. Before running any pipeline step (classify, plan, gate, review, implement) you MUST read the doctrine file below - the step graph, gate triggers, tier rules (S/M/L/XL/XXL), backward-edge budget, and Concise Surfacing Contract are NOT reproduced here. Read it; do not infer them. (The shared review and code-quality doctrine now ships per-agent via the Agent hook; the WORKFLOW.md pointer stays authoritative for you.)
 
 Stable meta-rules (the file is authoritative on everything else):
 - Pipeline entry: every code-modifying request enters the pipeline via /alp-river:go (or plain chat - same pipeline) first. "Small/mechanical/one-line" is not a bypass.

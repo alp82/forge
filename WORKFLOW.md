@@ -68,11 +68,7 @@ Templates ship in the plugin's `templates/` folder; copy them into your project'
 
 ## Confidence Tagging
 
-Every finding carries a tag: `[likely]` (evidence-based - code you read, official docs, observed behavior) or `[unsure]` (judgment, single-source, stale, or inferred). Both hedge - `[likely]` means "probably true, read carefully," not "certain."
-
-- **Pre-flight agents**: report both tiers; `[unsure]` guides where to verify before planning. Consumers verify load-bearing `[unsure]` items before acting on them.
-- **Post-impl reviewers**: `[likely]` unconditionally; `[unsure]` only at high impact (correctness, security, data risk).
-- **Web-sourced** (plan-challenger, security-reviewer, researcher): `[likely]` = official advisory/CVE/maintainer page; `[unsure]` = blog/undated thread. Include source URL.
+See `doctrine/confidence-tagging.md` - injected into citing agents by the PreToolUse(Agent) hook.
 
 ## Pipeline
 
@@ -522,24 +518,7 @@ Discard: raw exploration output, full file contents already acted on, superseded
 
 ## Code Doctrine
 
-Bias every plan, implementation, and review toward simple, local, pure-where-possible code with explicit dependencies and strong types.
-
-**Lean toward**
-- Simplicity over cleverness. The shortest readable solution wins.
-- Locality - code that changes together lives together; logic stays close to the data and call site it serves.
-- Pure functions and explicit data flow. Push side effects to the edges; keep the core a transformation from inputs to outputs.
-- Modularization with semantic cohesion - one module names one thing; what it owns is what its name promises.
-- Explicit dependencies and strong types - what a function needs arrives as a parameter or import, not as ambient state; types document intent and catch drift.
-
-**Push back on**
-- Layers, wrappers, abstractions, or seams added "for flexibility" without a concrete second use case.
-- Configuration knobs no caller sets and feature flags no path reads.
-- Hidden state - module-level mutables, singletons, ambient context the signature doesn't disclose.
-- Defensive code at trust boundaries the framework or caller already guarantees.
-- Generic-by-default - parameterizing or polymorphizing before a second concrete case exists.
-- Comments that narrate what the code obviously does instead of explaining why.
-
-These apply across languages. When the doctrine implies a structural property the language doesn't enforce natively, name a community-standard tool that enforces it (`mypy`/`ruff` for Python, `tsc` for TypeScript, `clippy` for Rust) only when one exists; if the stack has no such tool, don't name one - the finding's ACTION_NEEDED reads as a design pointer.
+See `doctrine/code-doctrine.md` - injected into planner, implementer, and plan-challenger by the PreToolUse(Agent) hook.
 
 ## Code Quality
 - Use the project's formatter.
@@ -568,89 +547,4 @@ README's "Latest updates" mirrors the CHANGELOG entry verbatim - same wording, s
 
 ## Reviewer Contract
 
-Shared rules for every specialized reviewer (correctness, quality, architecture, security, performance, accessibility, design-consistency, ux, consistency, structure, reuse). Each reviewer's own file carries only its Criteria list and any specialization - the rest lives here.
-
-### Confidence tagging (reviewer reporting threshold)
-
-Tag each finding `[likely]` or `[unsure]` per the "Confidence Tagging" rules above.
-
-**Reporting threshold:** report `[likely]` findings unconditionally. Report `[unsure]` only when impact is high - correctness, security, or data risk (correctness-reviewer priority tiers 1-2). Skip speculative low-impact findings.
-
-### Standard inputs
-
-Every reviewer receives inputs via a tagged-slot template defined in its own file. Every template defines at minimum:
-
-```
-<TOUCHED_FILES>{file paths the implementer modified or created - sourced from implementer's FILES_MODIFIED + FILES_CREATED, or from main-agent session edits on S/M tasks}</TOUCHED_FILES>
-```
-
-Reviewers Read those files directly to inspect current state. Reviewers that need more declare the additional slots in their template (acceptance-reviewer: `<CONFIRMED_INTENT>` + `<APPROVED_PLAN>`; structure/consistency/reuse-reviewer: `<APPROVED_PLAN>` for scope judgment; plan-adherence-reviewer: `<APPROVED_PLAN>`).
-
-**First step for every reviewer**: parse required slots. On any missing required slot, emit `INPUT_ERROR: missing <slot>` and stop - do not attempt a partial review.
-
-Main agent fills slots verbatim from predecessor output. No paraphrase.
-
-### Base output format
-
-```
-VERDICT: [pass | fail | warn]
-FINDINGS:
-- [likely|unsure] [file_path:line] - [issue and why it matters]
-(empty if pass, max 5 issues, [likely] findings first)
-ACTION_NEEDED: [specific fixes, or "none"]
-```
-
-A reviewer MAY:
-- Add specialized fields before FINDINGS (e.g. `DESIGN_REFERENCES`, `EXAMPLES_COMPARED`).
-- Specialize the finding description shape (e.g. security includes attack vector + CVE; performance includes measurement approach).
-
-A reviewer MUST NOT:
-- Drop VERDICT.
-- Lower the reporting threshold.
-- Pad findings to hit a target count. Two real issues beats eight noisy ones.
-- Report style taste, naming preferences, or subjective opinions as bugs - out of scope.
-- Flag code you don't understand. Ask or skip; don't speculate.
-- Frame readability or correctness sacrifices as performance/UX wins.
-
-### Discoveries
-
-Every reviewer (and implementer, fixer, investigator, design-explorer) appends a `DISCOVERIES` block as the last section of its output. This is the channel for novel project-context items the agent noticed in passing while doing its primary job - terms that should be canonical, drift from the declared stack or intent. Step 10 (Capture) aggregates these and offers them to the user.
-
-**Exception - non-emitters:** accessibility-reviewer, ux-reviewer, and design-consistency-reviewer do not emit DISCOVERIES - their scope is WCAG/visual/UX checks, not domain content. test-verifier, plan-adherence-reviewer, reuse-reviewer, and acceptance-reviewer also do not emit DISCOVERIES (mechanical/blueprint-fidelity/duplication-check/intent-fulfillment respectively, not domain-novelty surfaces).
-
-Three buckets, each terminated with `(none)` when empty:
-
-```
-DISCOVERIES:
-  glossary:
-    - [term] - [one-sentence definition] - [why novel]
-    (or "(none)")
-  stack_drift:
-    - [layer] - [deviation] - [evidence file:line]
-    (or "(none)")
-  intent_drift:
-    - [aspect] - [deviation] - [evidence file:line]
-    (or "(none)")
-```
-
-**Novelty bar:** the item must NOT already be covered by the loaded `PROJECT_CONTEXT`. Skip anything you can find in `GLOSSARY.md`, `STACK.md`, or `INTENT.md`. When in doubt, skip - capture-agent does the final dedup, but you don't need to dump candidates the agent will only have to filter out.
-
-The block is mandatory even when every bucket is empty. Emit all three bucket headings with `(none)` so the parser sees a structured block.
-
-### Example output (consistency-reviewer)
-
-```
-VERDICT: warn
-EXAMPLES_COMPARED: src/features/reports/controller.ts, src/features/users/controller.ts
-FINDINGS:
-- [likely] src/features/items/controller.ts:22 - returns `{ data, meta }` but every other controller returns the bare array. Align with reports/users.
-- [likely] src/features/items/service.ts:8 - `get_item` (snake_case) diverges from camelCase used elsewhere in the module.
-ACTION_NEEDED: Change return shape to bare array; rename `get_item` to `getItem`.
-DISCOVERIES:
-  glossary:
-    (none)
-  stack_drift:
-    (none)
-  intent_drift:
-    (none)
-```
+See `doctrine/reviewer-contract.md` (and `doctrine/discoveries.md` for the Discoveries channel) - injected into reviewers and the DISCOVERIES-emitting agents by the PreToolUse(Agent) hook.

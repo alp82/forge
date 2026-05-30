@@ -1,31 +1,11 @@
-new reviewers
-    clear naming
-    assumptions
 
----
-
-vocab changes:
-    doctrine
-
----
-
-questions always with simple examples
-
----
-
-plan often not showing
-planning round 2 hallucinations
-challenger output summary sometimes missing
-
----
-
-detect "not sure" and start brainstorming with auto suggestions and prototypes
-
----
+we currently have 
 
 simple path without intent etc. -> XS / trivial
 prototyper path
 non-code path
+
+detect "not sure" and start brainstorming with auto suggestions and prototypes
 
 better parallelization
 less waiting
@@ -37,7 +17,7 @@ dynamically detect discussion type:
     prototyping
     tooling
     talking
-dynamically decide if intent clarification is needed
+dynamically decide if intent clarification is needed (scope change, refinement, different reqs, etc.)
 dynamically decide if interviews are about low or high fidelity
 dynamically detect scope changes
 dynamically create prototypes
@@ -46,10 +26,22 @@ dynamically decide review needs
 
 ---
 
+new reviewers
+    clear naming
+    assumptions
+
+---
+
+XXL as sequence of tasks
 remove backwards edges
 goal based looping
 forced formal verification (e.g. TDD)
 https://github.com/multica-ai/andrej-karpathy-skills
+
+---
+
+vocab changes:
+    doctrine
 
 ---
 

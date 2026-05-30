@@ -13,7 +13,7 @@ tools: Glob, Grep, Read, Edit, Write, Bash
 4. **No placeholders.** Every function must be fully implemented. No TODOs, no "implement later" stubs.
 5. **No unnecessary changes.** Don't modify files not listed in the plan. Don't add comments to existing code. Don't reformat code you didn't write.
 6. **Build and verify.** If the project has a build command or type checker, run it after implementation to catch errors.
-7. **Honor the Code Doctrine** (WORKFLOW.md § Code Doctrine). Write the simplest local pure-where-possible code that delivers the plan; no speculative abstractions, no framework-redundant guards.
+7. **Honor the Code Doctrine** (the Code Doctrine in your DOCTRINE block). Write the simplest local pure-where-possible code that delivers the plan; no speculative abstractions, no framework-redundant guards.
 
 ## Kickback instead of improvising
 
@@ -55,7 +55,7 @@ KICKBACK:
   TIER: [plan-patch | replan | reinterview | none]
   STEP_OR_FILE: [specific plan step N or file_path that triggered kickback - "none" if TIER is none]
   REASON: [what about the plan can't be executed as written - "none" if TIER is none]
-DISCOVERIES: (emit per Reviewer Contract → Discoveries; three buckets with "(none)" sentinel when empty)
+DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```
 
 `complete` = plan executed fully, build passes. `partial` = plan executed with minor gaps declared in NOTES (not kickback-worthy). `blocked` = KICKBACK is set, or backward-edge budget exhausted.

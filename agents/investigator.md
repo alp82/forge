@@ -78,5 +78,5 @@ RECOMMENDED FIX:
 MISSING_INFO:
 [What the user needs to provide to finish the diagnosis, or "none"]
 
-DISCOVERIES: (emit per Reviewer Contract → Discoveries; three buckets with "(none)" sentinel when empty)
+DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

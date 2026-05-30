@@ -317,11 +317,12 @@ flowchart TB
 ```
 alp-river/
 ├── .claude-plugin/plugin.json
-├── WORKFLOW.md            <- pipeline + reviewer contract
+├── WORKFLOW.md            <- pipeline doctrine
 ├── hooks/
 │   ├── hooks.json         <- 7 events: SessionStart, PreToolUse, PostToolUse, ...
 │   └── *.sh               <- inject-workflow, auto-format, block-git-writes, ...
 ├── agents/                <- 32 subagent definitions
+├── doctrine/              <- reviewer contract, code doctrine, injected per-agent
 ├── commands/              <- 6 slash commands
 └── templates/             <- copy into your project's docs/ for project-context injection
 ```

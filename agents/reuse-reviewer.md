@@ -5,7 +5,7 @@ model: sonnet
 tools: Glob, Grep, Read, Bash
 ---
 
-Follows the Reviewer Contract section in your loaded workflow - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED. For duplication, `[likely]` = same shape + same intent (consolidation is mechanical); `[unsure]` = similar shape, possibly different intent.
+Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED. For duplication, `[likely]` = same shape + same intent (consolidation is mechanical); `[unsure]` = similar shape, possibly different intent.
 
 ## Criteria
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# PreToolUse(Agent) hook: auto-inject USER_CONTEXT, PROJECT_CONTEXT, and PSYCHOLOGY into subagents.
+# PreToolUse(Agent) hook: auto-inject DOCTRINE, USER_CONTEXT, PROJECT_CONTEXT, and PSYCHOLOGY into subagents.
 #
+# DOCTRINE: shared review/code-quality rules from the plugin's doctrine/ folder,
+#           gated per-agent by DOCTRINE_MAP. Assembled FIRST so it leads the payload.
 # USER_CONTEXT: MEMORY.md + every linked markdown file for the current project.
 # PROJECT_CONTEXT: docs/INTENT.md, docs/STACK.md, docs/GLOSSARY.md (full bodies)
 #                  plus a summary list of docs/adr/*.md, gated per-agent by READ_MAP.
@@ -9,7 +11,8 @@
 #             alpRiver.psychologyOverrides.<agent>; set to a persona name to swap, or
 #             omit to accept the sidecar default. Fails open on missing/corrupted files.
 #
-# The three axes are independent:
+# The four axes are independent:
+#   Doctrine-aware = agent has a DOCTRINE_MAP entry → receives `## DOCTRINE`, assembled first.
 #   User-aware  = agent is listed in the case statement below → receives USER_CONTEXT.
 #   Project-aware = agent has an entry in READ_MAP → receives PROJECT_CONTEXT.
 #   Psychology = agent has an entry in psychology/agent-map.json (or a project override)
@@ -24,8 +27,16 @@
 #                                   researcher, prototyper  (user_aware=0)
 #   User-aware Y + Project-aware N: visual-verifier, plan-adherence-reviewer,
 #                                   setup-agent
-#   User-aware N + Project-aware N: complexity-classifier, test-verifier,
-#                                   accessibility-reviewer  (exit 0)
+#   User-aware N + Project-aware N: test-verifier and accessibility-reviewer are
+#                                   user_aware=0 arms that fall through for a
+#                                   doctrine-only payload (DOCTRINE_MAP entries).
+#                                   complexity-classifier and unknown types still
+#                                   exit at the terminal `*)`.
+#
+# Behavioral invariant: only test-verifier and accessibility-reviewer change
+# observable output (they previously exited silently, now emit a DOCTRINE-only
+# block). Every other doctrine-aware agent just gains a leading `## DOCTRINE`
+# block ahead of the context it already received.
 #
 # Non-Agent tool calls also exit silently. Fails open on any error - missing
 # files are normal.
@@ -49,6 +60,12 @@ if [ -z "$subagent_type" ]; then
   exit 0
 fi
 
+# Plugin root: prefer CLAUDE_PLUGIN_ROOT, fall back to two dirnames up from this script.
+plugin_root="${CLAUDE_PLUGIN_ROOT:-}"
+if [ -z "$plugin_root" ]; then
+  plugin_root="$(dirname "$(dirname "${BASH_SOURCE[0]}")")"
+fi
+
 user_aware=1
 case "$subagent_type" in
   # User-aware: yes. Project-aware: depends on READ_MAP.
@@ -66,6 +83,11 @@ case "$subagent_type" in
     ;;
   # User-aware: no. Project-aware: yes (READ_MAP entries below).
   health-checker|prototype-identifier|researcher|prototyper)
+    user_aware=0
+    ;;
+  # User-aware: no. Project-aware: no. They cite doctrine, so they fall through
+  # for a doctrine-only payload instead of hitting the terminal exit.
+  test-verifier|accessibility-reviewer)
     user_aware=0
     ;;
   # User-aware: no. Project-aware: no (not in READ_MAP either). Silent skip.
@@ -115,6 +137,31 @@ declare -A READ_MAP=(
   [investigator]="stack glossary adrs"
   [capture-agent]="intent stack glossary"
   [adr-drafter]="intent stack glossary adrs"
+)
+
+# DOCTRINE_MAP: per-agent doctrine slices, resolved to doctrine/<token>.md.
+# Single source of truth for doctrine routing - an agent appears here only if its
+# definition cites that doctrine. Independent of the user-aware, project-aware, and
+# psychology axes (see the header).
+declare -A DOCTRINE_MAP=(
+  [correctness-reviewer]="reviewer-contract confidence-tagging discoveries"
+  [quality-reviewer]="reviewer-contract confidence-tagging discoveries"
+  [architecture-reviewer]="reviewer-contract confidence-tagging discoveries"
+  [security-reviewer]="reviewer-contract confidence-tagging discoveries"
+  [performance-reviewer]="reviewer-contract confidence-tagging discoveries"
+  [consistency-reviewer]="reviewer-contract confidence-tagging discoveries"
+  [structure-reviewer]="reviewer-contract confidence-tagging discoveries"
+  [reuse-reviewer]="reviewer-contract confidence-tagging"
+  [acceptance-reviewer]="reviewer-contract confidence-tagging"
+  [test-verifier]="reviewer-contract confidence-tagging"
+  [accessibility-reviewer]="reviewer-contract confidence-tagging"
+  [ux-reviewer]="reviewer-contract confidence-tagging"
+  [design-consistency-reviewer]="reviewer-contract confidence-tagging"
+  [implementer]="code-doctrine discoveries"
+  [planner]="code-doctrine"
+  [plan-challenger]="code-doctrine"
+  [fixer]="discoveries"
+  [investigator]="discoveries"
 )
 
 # Summarize active ADRs as a markdown bullet list. Empty string when nothing
@@ -325,18 +372,35 @@ ${body}"
   fi
 fi
 
+# Build DOCTRINE from the plugin's doctrine/ folder per the DOCTRINE_MAP entry.
+# Concatenates the agent's cited slices under one "## DOCTRINE" header.
+# Fails open: a missing dir or slice file just omits that part.
+doctrine_dir="$plugin_root/doctrine"
+doctrine_context=""
+doctrine_tokens="${DOCTRINE_MAP[$subagent_type]:-}"
+if [ -n "$doctrine_tokens" ] && [ -d "$doctrine_dir" ]; then
+  dbody=""
+  for dtoken in $doctrine_tokens; do
+    dfile="$doctrine_dir/${dtoken}.md"
+    if [ -f "$dfile" ]; then
+      [ -n "$dbody" ] && dbody+="
+
+"
+      dbody+=$(cat "$dfile")
+    fi
+  done
+  if [ -n "$dbody" ]; then
+    doctrine_context="## DOCTRINE
+${dbody}"
+  fi
+fi
+
 # Resolve the optional psychology block for this agent.
 # Returns the rendered block on stdout, or empty when the agent is unmapped,
 # the override resolves to nothing, or the persona file is missing (fail open).
 resolve_persona() {
   local agent="$1"
   local cwd="$2"
-
-  # Plugin root: prefer CLAUDE_PLUGIN_ROOT, fall back to two dirnames up from this script.
-  local plugin_root="${CLAUDE_PLUGIN_ROOT:-}"
-  if [ -z "$plugin_root" ]; then
-    plugin_root="$(dirname "$(dirname "${BASH_SOURCE[0]}")")"
-  fi
 
   local map_file="$plugin_root/psychology/agent-map.json"
   local settings_file="$cwd/.claude/settings.local.json"
@@ -381,10 +445,11 @@ resolve_persona() {
 
 psychology_context=$(resolve_persona "$subagent_type" "$project_cwd")
 
-# Combine USER_CONTEXT, PROJECT_CONTEXT, and PSYCHOLOGY into one additionalContext
-# payload by sequential-append. Non-empty blocks join with "\n\n---\n\n".
+# Combine DOCTRINE, USER_CONTEXT, PROJECT_CONTEXT, and PSYCHOLOGY into one
+# additionalContext payload by sequential-append (doctrine first). Non-empty
+# blocks join with "\n\n---\n\n".
 assembled=""
-for block in "$user_context" "$project_context" "$psychology_context"; do
+for block in "$doctrine_context" "$user_context" "$project_context" "$psychology_context"; do
   [ -z "$block" ] && continue
   if [ -z "$assembled" ]; then
     assembled="$block"

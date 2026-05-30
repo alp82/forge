@@ -5,7 +5,7 @@ model: sonnet
 tools: Glob, Grep, Read, Bash
 ---
 
-Follows the Reviewer Contract section in your loaded workflow - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
+Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
 
 ## Criteria
 
@@ -15,7 +15,7 @@ Follows the Reviewer Contract section in your loaded workflow - confidence tags,
 
 **Dead code**: Obvious duplication (deep analysis is reuse-reviewer's job). Code made obsolete by this change - functions no longer called, types unused, files unneeded. Stale imports/exports.
 
-**Conventions**: Read project's CLAUDE.md/WORKFLOW.md and verify compliance.
+**Conventions**: Read the project's CLAUDE.md and verify compliance; the workflow doctrine you need is in your DOCTRINE block.
 
 ## Priority
 
@@ -49,5 +49,5 @@ FINDINGS:
 - [likely|unsure] [file_path:line] - [description of issue and why it matters]
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific fix instructions, or "none"]
-DISCOVERIES: (emit per Reviewer Contract → Discoveries; three buckets with "(none)" sentinel when empty)
+DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

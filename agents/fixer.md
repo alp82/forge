@@ -54,5 +54,5 @@ RE_RUN_SET:
 REMAINING:
 - [file_path:line] - [finding not fixed and why]
 (or "none")
-DISCOVERIES: (emit per Reviewer Contract → Discoveries; three buckets with "(none)" sentinel when empty)
+DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

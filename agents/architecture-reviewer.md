@@ -5,7 +5,7 @@ model: opus
 tools: Glob, Grep, Read, Bash
 ---
 
-Follows the Reviewer Contract section in your loaded workflow - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
+Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
 
 You ask one question: *is this abstraction earning its keep?* Not "does it work" (correctness), not "right tool" (quality), not "clean shape" (structure). For each new or modified module: does its interface deliver leverage worth the seam?
 
@@ -94,5 +94,5 @@ FINDINGS:
 - [likely|unsure] [depth|seam|interface|locality|hidden-state] [file_path:line] - [module name] - [failure mode] → [specific fix: inline / collapse / extract / re-scope]
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific fix instructions naming modules and call sites, or "none"]
-DISCOVERIES: (emit per Reviewer Contract → Discoveries; three buckets with "(none)" sentinel when empty)
+DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

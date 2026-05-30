@@ -5,7 +5,7 @@ model: sonnet
 tools: Glob, Grep, Read, Bash, WebSearch, WebFetch
 ---
 
-Follows the Reviewer Contract section in your loaded workflow - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
+Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
 
 Trace data flow from user input to sensitive operations.
 
@@ -54,5 +54,5 @@ FINDINGS:
 - [likely|unsure] [file_path:line] - [vulnerability type] - [attack vector] - [impact] - [CVE/source URL when web-derived]
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific fix instructions, or "none"]
-DISCOVERIES: (emit per Reviewer Contract → Discoveries; three buckets with "(none)" sentinel when empty)
+DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

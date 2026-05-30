@@ -156,6 +156,18 @@ For each domain term, give the definition and the aliases to avoid. Aliases shou
 
 **Avoid:** "checkpoint" (too generic).
 
+### Doctrine slice
+
+**Definition:** A standalone markdown file under `doctrine/` holding one shared-rule section (reviewer-contract, code-doctrine, confidence-tagging, or discoveries), lifted verbatim from WORKFLOW.md and injected per-agent by the PreToolUse(Agent) hook into agents whose definition cites it. Introduces "doctrine" as a named injection axis delivered to subagents, distinct from the three existing Context injection slots (USER_CONTEXT, PROJECT_CONTEXT, PSYCHOLOGY).
+
+**Avoid:** _TODO:_ aliases to avoid (review and fill)
+
+### DOCTRINE_MAP
+
+**Definition:** The bash associative array in `hooks/user-context-injector.sh` mapping each agent to the doctrine slice tokens it receives, paralleling READ_MAP. An agent appears in the map only if its definition cites that doctrine (cite=receive). New routing structure future agent additions must update.
+
+**Avoid:** _TODO:_ aliases to avoid (review and fill)
+
 ## Relationships
 
 - Complexity tier controls HOW MANY phases run (S short-circuits, XXL pushes back via XXL pushback).

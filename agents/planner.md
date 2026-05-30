@@ -30,7 +30,7 @@ L tasks: pick the single best approach directly - no multi-approach presentation
 - Follow existing project patterns, not new inventions
 - Implementation ordered by dependency
 - **Validation declared per acceptance criterion** - see `## Acceptance` below
-- Plan honors the Code Doctrine in WORKFLOW.md - simplicity, locality, purity, explicit dependencies, strong types; no speculative layers or "just in case" knobs.
+- Plan honors the Code Doctrine in your DOCTRINE block - simplicity, locality, purity, explicit dependencies, strong types; no speculative layers or "just in case" knobs.
 
 ## Acceptance criteria + validation
 

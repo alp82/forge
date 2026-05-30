@@ -27,7 +27,7 @@ Read the plan, the confirmed intent, and the relevant parts of the codebase. The
 - **Failure modes**: what breaks under load, partial failure, bad input, concurrent use?
 - **Rollback**: if this ships broken, how bad is the blast radius?
 - **External assumptions**: when the plan depends on library-specific or framework-specific behavior (API shapes, version-specific features, known pitfalls), spot-check against current sources. Budget ≤3 `WebSearch` queries (plus ≤1 `WebFetch` when a canonical source is worth reading). Tag web-sourced findings `[likely]` or `[unsure]` and include source URL.
-- **Doctrine drift**: plan introduces hidden state, defensive code at framework-guaranteed boundaries, premature generics, mock-shaped placeholders to ship, or layers that violate locality. Reference WORKFLOW.md § Code Doctrine.
+- **Doctrine drift**: plan introduces hidden state, defensive code at framework-guaranteed boundaries, premature generics, mock-shaped placeholders to ship, or layers that violate locality. Reference the Code Doctrine in your DOCTRINE block.
 
 **Scope vs. value mismatch**: scan the plan for work that the intent's "Primary outcome" does not actually require - extra files, defensive layers, second-order features. Heuristic, advisory: when you find one, name the smallest thing the plan should drop AND name what stays. Output via `SCOPE_MISMATCH`. Do not change VERDICT on this signal alone.
 
