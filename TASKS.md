@@ -1,4 +1,12 @@
-issue with follow-ups on subagents:
+issue with infinite waiting
+
+ The implementer never executed - the internal error killed it before any work. Only the test files (engine.test.ts,
+  format.test.ts) and prototypes are on disk; no implementation files exist. Clean re-run needed. Let me quickly check the
+  TODO.md you opened in case it's relevant, then re-launch the implementer.
+
+---
+
+issue with follow-ups on subagents:naming
  
  SendMessage isn't available in this harness, so I'll spawn a fresh planner with v1 plus the precise correction package and have it emit v2. The corrections are surgical and I'll specify the corrected formulas exactly so v2 is unambiguous.
 
