@@ -9,7 +9,7 @@ stage:
     input: ['@diff']
     output: ['@findings']
   signals:
-    subscribes: ['#needs-tests']
+    subscribes: ['#ui-touched']
     publishes: ['#findings:consistency', '#clean', '#scope-shift']
 ---
 

@@ -1,10 +1,3 @@
-issue with infinite waiting
-
- The implementer never executed - the internal error killed it before any work. Only the test files (engine.test.ts,
-  format.test.ts) and prototypes are on disk; no implementation files exist. Clean re-run needed. Let me quickly check the
-  TODO.md you opened in case it's relevant, then re-launch the implementer.
-
----
 
 issue with follow-ups on subagents:naming
  

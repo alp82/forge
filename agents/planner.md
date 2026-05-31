@@ -6,7 +6,7 @@ tools: Glob, Grep, Read, WebSearch, WebFetch
 stage:
   routes: [build]
   data:
-    input: ['@confirmed-intent', '?clarified-intent', '?reuse-map', '?health-findings', '?research-findings', '?prototypes', '?design-spec']
+    input: ['@confirmed-intent', '?clarified-intent', '?reuse-map', '?health-findings', '?research-findings', '?prototypes', '?design-spec', '?diagnosis']
     output: ['@approved-plan']
   signals:
     subscribes: ['#clarified', '#intent-confirmed']
@@ -21,9 +21,10 @@ On a build with no clarifier output (no `#clarified`), the planner runs off tria
 2. Review health-checker `CLEANUP_TARGETS` and reuse-scanner `QUICK_WINS`. Pull the ones that fit the task into the plan as explicit steps. Surface the rest in "Out of Scope" as dedicated follow-up tasks.
 3. **If `<LOCKED_DESIGN_SPEC>` is not "none"**: treat it as binding for visual/interaction parameters. Parse the labeled key-value pairs, map each to the relevant component/style/token in the plan, and reference the spec verbatim in the file-touching steps that apply it. Do not re-litigate the design - the user already picked.
 4. **If `<DESIGN_CLEANUP>` is not "none"**: fold every listed cleanup item into the plan's implementation steps (typically as the final steps before testing). The picker artifacts must not ship.
-5. Trace similar features in the codebase - follow their patterns.
-6. If multiple viable architectural approaches exist (XL), present them before committing.
-7. Design a plan that fits naturally into the existing architecture.
+5. **If `<DIAGNOSIS>` is not "none"** (bug-build): design the fix around the RECOMMENDED FIX and ROOT CAUSE in the diagnosis - target the named root-cause line(s), not the symptom.
+6. Trace similar features in the codebase - follow their patterns.
+7. If multiple viable architectural approaches exist (XL), present them before committing.
+8. Design a plan that fits naturally into the existing architecture.
 
 ## Multiple Approaches (XL)
 
@@ -73,6 +74,7 @@ Main agent may invoke the planner with a kickback reason - the input contains a 
 </PREFLIGHT>
 <LOCKED_DESIGN_SPEC>{labeled key-value spec the user pasted back from the design-explorer's picker page, OR "none" when the design loop didn't run}</LOCKED_DESIGN_SPEC>
 <DESIGN_CLEANUP>{design-explorer's CLEANUP_NEEDED list - only when HOST_DECISION was "real-page" so the planner removes picker artifacts before shipping; "none" otherwise}</DESIGN_CLEANUP>
+<DIAGNOSIS>{investigator root-cause report OR "none"}</DIAGNOSIS>
 <PRIOR_PLAN>{previous APPROVED_PLAN block - only on replan/plan-patch, otherwise absent}</PRIOR_PLAN>
 <REPLAN_REASON>{challenger BLOCKERS or implementer kickback reason - only on replan/plan-patch}</REPLAN_REASON>
 ```

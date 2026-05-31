@@ -201,7 +201,12 @@ def _main():
     import sys
 
     req = json.loads(sys.stdin.read() or "{}")
-    unknown = set(req) - _REQUEST_KEYS if isinstance(req, dict) else set()
+    if not isinstance(req, dict):
+        sys.stderr.write(
+            f"route: request must be a JSON object, got {type(req).__name__}\n"
+        )
+        sys.exit(2)
+    unknown = set(req) - _REQUEST_KEYS
     if unknown:
         sys.stderr.write(
             "route: unknown request key(s): "

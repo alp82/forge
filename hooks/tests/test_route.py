@@ -771,14 +771,17 @@ _EXCLUSION_SET = {
     "test-plan",
 }
 
-# The 16 deep lenses (exclusion set minus the non-lens stages)
+# The 16 deep lenses (exclusion set minus the non-lens stages). All stay absent on a cheap
+# path: none of their triggering signals are live there. The UI lenses are now ui-touched-
+# gated and visual-verifier is run-visual-gated, so they need an even stronger signal than
+# the needs-tests lenses to appear.
 _DEEP_LENSES = {
     "acceptance-reviewer",
-    "accessibility-reviewer",
+    "accessibility-reviewer",  # ui-touched-gated
     "architecture-reviewer",
     "assumptions",
     "consistency-reviewer",
-    "design-consistency-reviewer",
+    "design-consistency-reviewer",  # ui-touched-gated
     "naming-clarity",
     "performance-reviewer",
     "plan-adherence-reviewer",
@@ -787,8 +790,8 @@ _DEEP_LENSES = {
     "structure-reviewer",
     "test-gap",
     "test-verifier",
-    "ux-reviewer",
-    "visual-verifier",
+    "ux-reviewer",  # ui-touched-gated
+    "visual-verifier",  # run-visual-gated (opt-in only)
 }
 
 
@@ -1155,6 +1158,130 @@ def test_main_allows_explicit_empty_trigger_convergence():
     assert (
         res["size"] == "empty"
     ), f"empty-trigger size must be 'empty', got {res['size']}"
+
+
+def test_main_rejects_non_dict_toplevel():
+    """A top-level JSON list (not an object) fails loudly before compute_route, not with
+    an AttributeError - the guard names the type and exits 2."""
+    proc = _run_cli("[1,2,3]")
+    assert (
+        proc.returncode == 2
+    ), f"non-dict top-level must exit 2, got {proc.returncode}"
+    assert (
+        "must be a JSON object" in proc.stderr
+    ), f"stderr must explain the request shape, got {proc.stderr!r}"
+    assert "list" in proc.stderr, f"stderr must name the type, got {proc.stderr!r}"
+    assert (
+        "route" not in proc.stdout
+    ), "guard must fire before compute_route - no route output"
+
+
+# ---------------------------------------------------------------------------
+# FIX 1: investigator -> planner ordering via the planner's optional `?diagnosis`
+# ---------------------------------------------------------------------------
+
+
+def test_real_catalog_planner_orders_after_investigator_on_bug():
+    """On a bug build, the investigator (sub `bug`, produces `diagnosis`) and the planner
+    (opt `?diagnosis`) are both in route, and the planner is ordered after the investigator.
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"build", "bug", "intent-confirmed"},
+        available={"request", "triage-read", "confirmed-intent"},
+    )
+    assert (
+        "investigator" in res["route"]
+    ), "investigator must be in route on a bug build"
+    assert "planner" in res["route"], "planner must be in route on a bug build"
+    assert res["route"].index("investigator") < res["route"].index(
+        "planner"
+    ), "planner must be ordered after the investigator (via optional ?diagnosis edge)"
+
+
+def test_real_catalog_planner_runs_without_diagnosis():
+    """No bug signal: the planner runs without the investigator - `?diagnosis` is optional,
+    so its absence never drops or blocks the planner."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"build", "intent-confirmed"},
+        available={"request", "triage-read", "confirmed-intent"},
+    )
+    assert "planner" in res["route"], "planner must run without a diagnosis"
+    assert (
+        "investigator" not in res["route"]
+    ), "investigator must be absent when no bug signal is live"
+
+
+# ---------------------------------------------------------------------------
+# FIX 2: UI lenses fire on `ui-touched`, not `needs-tests`; visual-verifier is opt-in only
+# ---------------------------------------------------------------------------
+
+
+def test_real_catalog_ui_lenses_off_non_ui_logic_build():
+    """A logic build with code written but no `ui-touched`: the UI lenses stay off; the
+    non-UI correctness lens still fires (positive control)."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"build", "needs-tests", "code-written"},
+        available={"confirmed-intent", "diff"},
+    )
+    route_set = set(res["route"])
+    for lens in (
+        "accessibility-reviewer",
+        "design-consistency-reviewer",
+        "ux-reviewer",
+        "visual-verifier",
+    ):
+        assert lens not in route_set, f"{lens} must NOT fire without ui-touched"
+    assert (
+        "correctness-reviewer" in route_set
+    ), "correctness-reviewer must still fire (positive control)"
+
+
+def test_real_catalog_ui_lenses_on_ui_touched():
+    """With `ui-touched` live, the three UI review lenses fire; visual-verifier still does
+    not (it is gated on `run-visual` alone now)."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"build", "needs-tests", "code-written", "ui-touched"},
+        available={"confirmed-intent", "diff"},
+    )
+    route_set = set(res["route"])
+    for lens in (
+        "accessibility-reviewer",
+        "design-consistency-reviewer",
+        "ux-reviewer",
+    ):
+        assert lens in route_set, f"{lens} must fire when ui-touched is live"
+    assert (
+        "visual-verifier" not in route_set
+    ), "visual-verifier must NOT fire on ui-touched - it is run-visual-gated"
+
+
+def test_real_catalog_visual_verifier_opt_in_only():
+    """visual-verifier fires only on `run-visual`; `ui-touched` alone does not pull it in."""
+    cat = _real_catalog()
+    opted_in = route.compute_route(
+        cat,
+        {"build", "run-visual", "code-written"},
+        available={"confirmed-intent", "diff"},
+    )
+    assert (
+        "visual-verifier" in opted_in["route"]
+    ), "visual-verifier must fire when run-visual is live"
+    no_opt = route.compute_route(
+        cat,
+        {"build", "needs-tests", "ui-touched", "code-written"},
+        available={"confirmed-intent", "diff"},
+    )
+    assert (
+        "visual-verifier" not in no_opt["route"]
+    ), "visual-verifier must NOT fire without run-visual"
 
 
 if __name__ == "__main__":

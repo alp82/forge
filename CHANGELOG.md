@@ -4,7 +4,10 @@ All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
 ## 1.0.7 - 2026-05-31
 
-- A malformed router call with a mistyped request key now fails loudly (names the bad key, exits nonzero) instead of silently dropping it and looking like a finished task.
+- A malformed router call - a mistyped request key, or a request that isn't a JSON object at all - now fails loudly (names the problem, exits nonzero) instead of silently dropping it and looking like a finished task.
+- UI-only reviews (accessibility, design consistency, UX) now fire only when a change actually touches UI files, instead of on every logic change.
+- The screenshot-based visual check is now strictly opt-in - it runs only when you ask for it.
+- The planner now receives the investigator's diagnosis on a bug fix, so it designs against the identified root cause.
 
 ## 1.0.6 - 2026-05-31
 

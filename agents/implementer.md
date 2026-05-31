@@ -10,7 +10,7 @@ stage:
     output: ['@diff']
   signals:
     subscribes: ['#plan-ready']
-    publishes: ['#code-written', '#scope-shift']
+    publishes: ['#code-written', '#ui-touched', '#scope-shift']
   lock:
     - while: '#needs-tests'
       until: '#tests-ready'

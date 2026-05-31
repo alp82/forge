@@ -49,7 +49,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "needs-tests"
+          "ui-touched"
         ]
       }
     },
@@ -238,7 +238,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "needs-tests"
+          "ui-touched"
         ]
       }
     },
@@ -314,6 +314,7 @@
       "signals": {
         "publishes": [
           "code-written",
+          "ui-touched",
           "scope-shift"
         ],
         "subscribes": [
@@ -373,6 +374,7 @@
       "signals": {
         "publishes": [
           "code-written",
+          "ui-touched",
           "scope-shift"
         ],
         "subscribes": [
@@ -553,7 +555,8 @@
             "health-findings",
             "research-findings",
             "prototypes",
-            "design-spec"
+            "design-spec",
+            "diagnosis"
           ],
           "required": [
             "confirmed-intent"
@@ -1056,7 +1059,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "needs-tests"
+          "ui-touched"
         ]
       }
     },
@@ -1083,7 +1086,6 @@
           "scope-shift"
         ],
         "subscribes": [
-          "needs-tests",
           "run-visual"
         ]
       }

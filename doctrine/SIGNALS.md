@@ -24,7 +24,7 @@ New topics are added here first, then used.
 | intent-confirmed | outcome locked | triage, interviewer | planner |
 | novel-domain | unfamiliar problem area | triage | research |
 | bug | a defect to diagnose before fixing - paired with `build`, never its own path | triage | investigator |
-| needs-tests | a build carrying real logic | triage | reuse-scanner, health-checker, prototype-identifier, plan-challenger, test-plan, the review lenses (acceptance, accessibility, architecture, assumptions, consistency, design-consistency, naming-clarity, performance, plan-adherence, quality, reuse-reviewer, structure, test-gap, test-verifier, ux, visual-verifier), capture-agent |
+| needs-tests | a build carrying real logic | triage | reuse-scanner, health-checker, prototype-identifier, plan-challenger, test-plan, the review lenses (acceptance, architecture, assumptions, consistency, naming-clarity, performance, plan-adherence, quality, reuse-reviewer, structure, test-gap, test-verifier), capture-agent |
 
 ## shape / structure
 
@@ -36,6 +36,7 @@ New topics are added here first, then used.
 | new-export, new-seam | new public surface | plan, implement | architecture |
 | boundary-change | module boundaries move | implement | structure |
 | naming-change, pattern-change | conventions shift | implement | consistency |
+| ui-touched | the produced diff touches UI files | implement, fixer | accessibility, design-consistency, ux |
 
 ## risk  (triggers safety lenses; publishers of these often pair with `guard: sticky` lenses)
 
@@ -105,7 +106,7 @@ straight off the plan.
 | size-crossed:&lt;tier&gt; | route grew past a tier line | router | cost-check |
 | approved, scope-down, abandon | user gate verdict | gate stages | orchestrator |
 | cleanup-first | health gate decision | health gate | orchestrator |
-| run-visual | user opted into a visual check | gate | visual-verify |
+| run-visual | user opted into a visual check | gate | visual-verifier |
 
 ## diagnose  (investigator runs inside the `build` path via `bug`, not a separate route)
 
