@@ -3,6 +3,14 @@ name: consistency-reviewer
 description: Reviews new code for consistency with existing codebase conventions by comparing against 2-3 existing examples of the same kind
 model: sonnet
 tools: Glob, Grep, Read, Bash
+stage:
+  routes: [build]
+  data:
+    input: ['@diff']
+    output: ['@findings']
+  signals:
+    subscribes: ['#code-written']
+    publishes: ['#findings:consistency', '#clean', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.

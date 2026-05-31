@@ -4,8 +4,8 @@
 # debug log, so re-injection has to happen on the post-compact SessionStart
 # fire, which does inject stdout/additionalContext into the conversation.
 # Re-emits the workflow-essentials anchor (a pointer to WORKFLOW.md, read on
-# demand) alongside the structured workflow state (last APPROVED_PLAN,
-# CONFIRMED_INTENT, CLARIFY_OUTPUT, CLASSIFICATION) extracted from the transcript.
+# demand) alongside the structured run state (last ROUTE, LIVE_SIGNALS,
+# AVAILABLE_ARTIFACTS, PREMISES) extracted from the transcript.
 
 set -euo pipefail
 
@@ -22,14 +22,12 @@ print_fallback() {
   cat <<'EOF'
 ## Post-compaction anchor
 
-Resume at the current workflow step. Preserve:
-- Confirmed intent
-- Classification (S/M/L/XL/XXL)
-- Approved plan (if any)
-- Current workflow step
-- Gate results so far
-- Unresolved self-heal findings
-- Backward edges used: N/2
+Resume the route loop. Preserve:
+- Current route (ordered stages)
+- Live signals + available artifacts
+- Route premises
+- The stage currently mid-run
+- Any gate awaiting the user
 EOF
 }
 
@@ -95,10 +93,10 @@ extract_last_block() {
   '
 }
 
-intent=$(extract_last_block "CONFIRMED_INTENT" "$transcript_text")
-classification=$(extract_last_block "CLASSIFICATION" "$transcript_text")
-clarify=$(extract_last_block "CLARIFY_OUTPUT" "$transcript_text")
-plan=$(extract_last_block "APPROVED_PLAN" "$transcript_text")
+route=$(extract_last_block "ROUTE" "$transcript_text")
+signals=$(extract_last_block "LIVE_SIGNALS" "$transcript_text")
+artifacts=$(extract_last_block "AVAILABLE_ARTIFACTS" "$transcript_text")
+premises=$(extract_last_block "PREMISES" "$transcript_text")
 
 # Build the anchor message: workflow pointer first, then canonical state.
 # Bounded to stay under the session-start per-output size limit. The anchor is
@@ -143,11 +141,11 @@ append_block() {
 out="$(workflow_anchor)"
 out+=$'\n\n'"## Post-compaction anchor"$'\n\n'"Resume at the current workflow step."
 
-append_block "### Canonical intent (from transcript)" "$intent"
-append_block "### Canonical classification (from transcript)" "$classification"
-append_block "### Canonical clarify output (from transcript)" "$clarify"
-append_block "### Canonical approved plan (highest version, from transcript)" "$plan"
-append_block "" "Preserve manually: current workflow step, gate results so far, unresolved self-heal findings, backward edges used."
+append_block "### Current route (from transcript)" "$route"
+append_block "### Live signals (from transcript)" "$signals"
+append_block "### Available artifacts (from transcript)" "$artifacts"
+append_block "### Route premises (from transcript)" "$premises"
+append_block "" "Preserve manually: the stage currently mid-run and any gate awaiting the user. The router recomputes the route from the blocks above."
 
 # Marker room was reserved against CEILING, so this always fits.
 if (( truncated )); then

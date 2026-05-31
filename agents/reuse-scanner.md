@@ -3,6 +3,14 @@ name: reuse-scanner
 description: Pre-implementation scan that finds reusable code AND identifies quick-win refactors to improve the codebase before new work begins
 model: sonnet
 tools: Glob, Grep, Read
+stage:
+  routes: [build, talk]
+  data:
+    input: ['@confirmed-intent']
+    output: ['@reuse-map']
+  signals:
+    subscribes: ['#build']
+    publishes: ['#existing', '#duplication', '#missing-infra', '#reuse-done', '#scope-shift']
 ---
 
 ## Part 1: Reuse Discovery

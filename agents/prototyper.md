@@ -3,6 +3,14 @@ name: prototyper
 description: Builds single-file tracer bullets in .prototypes/ that hit real APIs/services, validate behavior, and prove concepts work before planning begins
 model: sonnet
 tools: Glob, Grep, Read, Edit, Write, Bash
+stage:
+  routes: [build]
+  data:
+    input: ['@prototype-identification']
+    output: ['@prototypes']
+  signals:
+    subscribes: ['#novel:high', '#alternative-shapes']
+    publishes: ['#scope-shift']
 ---
 
 ## Rules

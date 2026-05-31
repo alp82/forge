@@ -3,6 +3,14 @@ name: prototype-identifier
 description: Identifies which parts of a task need prototyping before planning - flags external APIs, unfamiliar SDKs, third-party integrations, and patterns not already present in the codebase
 model: haiku
 tools: Glob, Grep, Read
+stage:
+  routes: [build]
+  data:
+    input: ['@confirmed-intent']
+    output: ['@prototype-identification']
+  signals:
+    subscribes: ['#intent-confirmed', '#multi-file']
+    publishes: ['#novel:high', '#alternative-shapes', '#scope-shift']
 ---
 
 ## Triggers

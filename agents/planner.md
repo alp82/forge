@@ -3,6 +3,14 @@ name: planner
 description: Designs a concrete implementation plan by analyzing the codebase, existing patterns, and reuse scan findings, then producing a step-by-step blueprint. Wraps output as APPROVED_PLAN with version.
 model: opus
 tools: Glob, Grep, Read, WebSearch, WebFetch
+stage:
+  routes: [build]
+  data:
+    input: ['@clarified-intent', '?reuse-map', '?health-findings', '?research-findings', '?prototypes', '?design-spec']
+    output: ['@approved-plan']
+  signals:
+    subscribes: ['#clarified']
+    publishes: ['#plan-ready', '#scope-shift']
 ---
 
 ## Process
@@ -54,7 +62,6 @@ Main agent may invoke the planner with a kickback reason - the input contains a 
 
 ```
 <CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
-<CLASSIFICATION>{complexity-classifier output}</CLASSIFICATION>
 <CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>
 <PREFLIGHT>
   <reuse>{reuse-scanner output}</reuse>

@@ -3,6 +3,14 @@ name: acceptance-reviewer
 description: Post-implementation check that the built code actually fulfills the user's confirmed intent and the approved plan. Flags missing requirements, partial implementations, and scope drift.
 model: sonnet
 tools: Glob, Grep, Read, Bash
+stage:
+  routes: [build]
+  data:
+    input: ['@diff']
+    output: ['@findings']
+  signals:
+    subscribes: ['#code-written']
+    publishes: ['#findings:acceptance', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block. Specialization: intent fulfillment instead of code quality - replaces `FINDINGS` with `REQUIREMENTS`/`ACCEPTANCE_CRITERIA`/`SCOPE_DRIFT`/`PARTIAL_OR_STUBBED`, uses `VERDICT: pass | partial | fail`.

@@ -3,6 +3,14 @@ name: quality-reviewer
 description: Post-implementation review for engineering judgment - hacky shortcuts when a clean path exists, bloat, wrong tool for the job, unelegant solutions
 model: opus
 tools: Glob, Grep, Read, Bash
+stage:
+  routes: [build]
+  data:
+    input: ['@diff']
+    output: ['@findings']
+  signals:
+    subscribes: ['#code-written']
+    publishes: ['#findings:quality', '#clean', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.

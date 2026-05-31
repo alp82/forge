@@ -22,7 +22,8 @@
 #   User-aware Y + Project-aware Y: most agents - interviewer, planner,
 #                                   plan-challenger, implementer, design-explorer,
 #                                   reviewers, fixer, investigator, capture-agent,
-#                                   adr-drafter (see case arms and READ_MAP)
+#                                   adr-drafter, discuss, spike-build (see case arms
+#                                   and READ_MAP)
 #   User-aware N + Project-aware Y: health-checker, prototype-identifier,
 #                                   researcher, prototyper  (user_aware=0)
 #   User-aware Y + Project-aware N: visual-verifier, plan-adherence-reviewer,
@@ -30,8 +31,8 @@
 #   User-aware N + Project-aware N: test-verifier and accessibility-reviewer are
 #                                   user_aware=0 arms that fall through for a
 #                                   doctrine-only payload (DOCTRINE_MAP entries).
-#                                   complexity-classifier and unknown types still
-#                                   exit at the terminal `*)`.
+#                                   unknown agent types still exit at the
+#                                   terminal `*)`.
 #
 # Behavioral invariant: only test-verifier and accessibility-reviewer change
 # observable output (they previously exited silently, now emit a DOCTRINE-only
@@ -69,7 +70,7 @@ fi
 user_aware=1
 case "$subagent_type" in
   # User-aware: yes. Project-aware: depends on READ_MAP.
-  interviewer|planner|plan-challenger|implementer|fixer|investigator|setup-agent|capture-agent|adr-drafter|design-explorer)
+  interviewer|planner|plan-challenger|implementer|fixer|investigator|setup-agent|capture-agent|adr-drafter|design-explorer|discuss|spike-build)
     ;;
   requirements-clarifier|reuse-scanner|visual-verifier)
     ;;
@@ -137,6 +138,8 @@ declare -A READ_MAP=(
   [investigator]="stack glossary adrs"
   [capture-agent]="intent stack glossary"
   [adr-drafter]="intent stack glossary adrs"
+  [discuss]="intent stack glossary adrs"
+  [spike-build]="stack glossary"
 )
 
 # DOCTRINE_MAP: per-agent doctrine slices, resolved to doctrine/<token>.md.

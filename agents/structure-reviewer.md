@@ -3,6 +3,14 @@ name: structure-reviewer
 description: Reviews code structure - file/function size, nesting depth, single-responsibility, module boundaries, decomposition
 model: sonnet
 tools: Glob, Grep, Read, Bash
+stage:
+  routes: [build]
+  data:
+    input: ['@diff']
+    output: ['@findings']
+  signals:
+    subscribes: ['#code-written']
+    publishes: ['#findings:structure', '#clean', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.

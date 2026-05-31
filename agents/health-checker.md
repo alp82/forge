@@ -3,6 +3,14 @@ name: health-checker
 description: Pre-flight code health assessment of the target area. Scores health and surfaces cleanup targets to handle before or during the primary change. Runs before M/L/XL implementation.
 model: haiku
 tools: Glob, Grep, Read, Bash
+stage:
+  routes: [build, talk]
+  data:
+    input: []
+    output: ['@health-findings']
+  signals:
+    subscribes: ['#build']
+    publishes: ['#health-checked', '#unhealthy', '#dead-code', '#scope-shift']
 ---
 
 Scan the files that will be touched and their immediate neighbors. Rate 1-10:

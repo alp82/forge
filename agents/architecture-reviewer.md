@@ -3,6 +3,14 @@ name: architecture-reviewer
 description: Reviews module shape - depth, leverage, locality, seams. Catches shallow wrappers, premature abstractions, and leaky interfaces using the deletion test.
 model: opus
 tools: Glob, Grep, Read, Bash
+stage:
+  routes: [build]
+  data:
+    input: ['@diff']
+    output: ['@findings']
+  signals:
+    subscribes: ['#code-written']
+    publishes: ['#findings:architecture', '#clean', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.

@@ -2,6 +2,25 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.0.2 - 2026-05-31
+
+- Reporting a bug now drops you straight into a fix instead of a separate diagnosis track.
+- Discussion mode lays out options with worked examples and asks the single question that matters, without touching your code.
+- Throwaway prototypes skip the full review pass, running only the checks that matter for sandbox code.
+
+## 1.0.1 - 2026-05-30
+
+- Documentation and the glossary now match the composed-route model end to end - the old step-and-tier diagrams, the retired complexity classifier, and stale "backward-edge budget" references are gone.
+
+## 1.0.0 - 2026-05-30
+
+This is a ground-up rewrite of how alp-river works. Every prior version sorted your task into one of five size tiers and ran a fixed list of steps for that tier - the size decided the work. That model is gone. A deterministic router now reads your request and composes a route from a catalog of independent stages, assembling only what the task needs and reshaping it mid-flight as each stage discovers more. Size is no longer a dial you're sorted into; it's a readout of whatever route the work earned. The fixed pipeline, the tier gates, the backward-edge budget - all of it collapsed into a single rule: keep composing until the route converges.
+
+- Routine changes move faster and interrupt you less; big or risky ones still earn clarification, planning, adversarial challenge, and review - because the work called for it, not because a tier label said so.
+- New lightweight modes: drop into discussion or throwaway prototyping without spinning up the whole build pipeline, and slide back into building when you're ready.
+- Tests come first - the workflow can't write implementation code until failing tests exist and have been checked against what you actually asked for.
+- You can see what is about to run and why, and you are interrupted only when your answer would change the outcome.
+
 ## 0.3.6 - 2026-05-30
 
 - When the pipeline asks you to decide something, each option now shows a concrete example of what it produces - so you can answer without first asking for one.

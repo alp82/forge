@@ -1,0 +1,8 @@
+.prototypes/
+.pytest_cache/
+__pycache__/
+.claude/
+.DS_Store
+
+# generated/catalog.json is intentionally tracked - the router reads it and the
+# PostToolUse generator may not fire on a fresh clone.

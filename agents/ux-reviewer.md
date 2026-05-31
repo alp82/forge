@@ -3,6 +3,14 @@ name: ux-reviewer
 description: Reviews UX quality of UI changes - loading states, error states, empty states, form validation, user flow coherence - only spawned when changes touch UI components
 model: sonnet
 tools: Glob, Grep, Read, Bash
+stage:
+  routes: [build]
+  data:
+    input: ['@diff']
+    output: ['@findings']
+  signals:
+    subscribes: ['#code-written']
+    publishes: ['#findings:ux', '#clean', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.

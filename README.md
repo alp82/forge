@@ -1,31 +1,35 @@
 # Alp River
 
-> *A river of agents, sized to the task.*
+> *A river of agents, composed to the task.*
 
 **Featured in:** [Alper Ortac's AI Stack](https://aistack.to/stacks/alper-ortac-unw0sl)
 
-Multi-step agent refinement for Claude Code, scaled by automatic complexity classification. Small changes pass quickly. Bigger ones add steps: clarification, planning, adversarial challenge, implementation, broad review, specialist review, self-heal.
+Multi-step agent refinement for Claude Code. A deterministic router reads your request and composes the exact stages it needs - and only those - reshaping the set as the work reveals itself. Trivial asks stay out of your way; risky ones earn clarification, planning, adversarial challenge, test-first implementation, review, and self-heal.
 
-The whole pipeline ships in one folder. Workflow, 32 subagents, 6 slash commands, 8 quality hooks.
+The whole thing ships in one folder: a router-driven workflow, 35 composable stages, 6 slash commands, and hooks that compile the stage catalog, gate tests, and inject context.
 
 ## Latest updates
 
-The last three versions:
+**1.0.2**
+
+- Reporting a bug now drops you straight into a fix instead of a separate diagnosis track.
+- Discussion mode lays out options with worked examples and asks the single question that matters, without touching your code.
+- Throwaway prototypes skip the full review pass, running only the checks that matter for sandbox code.
+
+**1.0.0**
+
+- The workflow no longer sorts your task into a fixed size tier and runs a preset list of steps. It composes exactly the stages your task needs and reshapes them as the work reveals itself.
+- New lightweight modes: drop into discussion or throwaway prototyping without the full build pipeline, and slide back into building when you're ready.
+- Tests come first - implementation code can't be written until failing tests exist and have been checked against what you actually asked for.
+- You can see what's about to run and why, and you're interrupted only when your answer would change the outcome.
 
 **0.3.6**
 
-- When the pipeline asks you to decide something, each option now shows a concrete example of what it produces - so you can answer without first asking for one.
-- Those prompts now lead with the decision and cut the filler, making the choice easier to grab at a glance.
+- When the workflow asks you to decide something, each option shows a concrete example of what it produces.
 
 **0.3.5**
 
-- The workflow now loads reliably at the start of every session instead of arriving cut off.
-- After compacting a long conversation, your task's intent, plan, and decisions come back intact.
-
-**0.3.4**
-
-- Planning, implementation, and review now lean toward simpler local code with explicit dependencies and strong types.
-- Reviews call out the AI-style code that creeps in - defensive branches no one needs, layers without a second use, hidden state.
+- After compacting a long conversation, your task's state comes back intact.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -49,266 +53,100 @@ The pointer resolves to the plugin's installed path. If your setup restricts fil
 
 ## How to use
 
-Describe what you want - in plain text, or via `/alp-river:go` if you want a discoverable trigger. Both run the same pipeline; the essentials load automatically and the full doctrine is one read away, nothing to enable.
+Describe what you want - in plain text, or via `/alp-river:go` if you want a discoverable trigger. Both run the same workflow; the essentials load automatically and the full doctrine is one read away, nothing to enable.
 
-Step 0 reads your request and picks the framing: bug-shaped requests ("why is X broken", a stack trace, a symptom) take the diagnose path (investigator runs alone in pre-flight); everything else takes the build path (full pre-flight fan-out). On affirmation, the pipeline runs.
+`triage` reads your request first and picks one of **three paths** - `build`, `spike` (throwaway prototype), or `talk` (discuss, no code) - plus the opening signals; a bug is a `build` with a `bug` signal, not its own path. The router composes a route from there and recomposes as stages publish what they find: discover no email infra and a research + prototype stage join; a plan that signs tokens pulls in a security review. Size (XS-XXL) is just a readout of how many stages the route ended up with.
 
-Each step is run by a dedicated agent: classifier judges scope, scanners pre-flight the area, clarifier surfaces ambiguity, planner designs the approach, challenger pokes holes, implementer builds, reviewers cross-check, fixer heals findings.
+You stay in the loop only at decisions that could change the outcome:
 
-You stay in the loop at a few well-defined moments:
+- **Intent** - when the request is clear, the workflow states its one-line read and proceeds (correct it in your next message if it's off). When it's genuinely ambiguous, the interviewer joins and loops with you until intent settles.
+- **Clarifier questions** - the clarifier researches the codebase first, then asks only what's still open.
+- **Design picker** - for UI work with multiple legitimate shapes, the design-explorer builds an interactive page and waits for you to paste a chosen spec back.
+- **Cost / plan / stop gates** - fire when the route crosses into expensive territory or a plan is ready, never as fixed ceremony.
 
-- **Intent confirmation** (always, every tier - including S follow-ups) - confirm or correct the one-sentence read. A bare affirmation (`yes`/`correct`/`proceed`) rolls; anything else - your own words, additions, corrections - is treated as a reshape and spawns the interviewer with that reply as the new input. The interviewer loops with you (cap 5 rounds) until intent settles and no new aspects emerge.
-- **Clarifier questions** (M/L/XL when ambiguity remains) - the clarifier researches the codebase first, then asks only what's still open. It loops with you (cap 5 rounds) until clarity is reached, then the planner runs.
-- **Design picker** (when the clarifier flags UI design choice with multiple legitimate shapes) - the design-explorer agent confirms which parameters to expose, builds an interactive page (sandbox or real-page behind a dev gate), and waits for you to copy a labeled key-value spec back into chat. That spec becomes binding for the planner.
-- **Plan selection** (XL) - pick one of the proposed approaches.
-- **After-plan stop** (L/XL whenever a plan was produced) - Continue-build (default) to roll into implementation, or Stop to keep the run as a design pass.
-- **After-diagnose stop** (on bug-framing) - Continue-fix or Continue-plan to roll into the fix path at the right tier, or Stop to keep just the diagnosis. On Continue, you restate the outcome in your own words first - the investigator's report stays on screen but is never silently consumed as intent.
-
-Everything else runs to completion. Reviewer findings feed the fixer automatically.
-
-Override the complexity tier with natural language: *treat this as L*, *skip clarify*, *go straight to plan*.
+Everything else runs to convergence: the route is done when no signal triggers an unrun stage and every review lens is clean. Reviewer findings feed the fixer automatically.
 
 ## How the river flows
 
-A complexity classifier reads each task and assigns it a tier - **S**, **M**, **L**, **XL**, or **XXL**. The tier decides which steps run. XXL is a pushback - the classifier judges the task too big for one run and proposes a decomposition before any other gate fires.
-
-A SessionStart hook injects a small essentials block plus a pointer to `WORKFLOW.md` into every Claude session; the agent reads the full doctrine from that file on demand. No per-file imports, no skill matching. After `/compact`, it fires again to re-anchor that pointer and restore the canonical state (intent, classification, approved plan).
-
-In every diagram below, **dotted edges are conditional** (a gate fires the agent only when its trigger matches).
-
-## S - small
-
-Main agent implements directly. Quality hooks fire on edits.
-
 ```mermaid
-flowchart TB
-    intent --> classify[complexity-classifier]
-    classify --> impl[main agent implements]
-    impl --> hooks[quality hooks]
+flowchart LR
+    req([request]) --> triage
+    triage -->|path + signals| router{router composes}
+    router -->|next stage| stage[run a stage]
+    stage -->|publishes signals + artifacts| router
+    router -->|nothing left to trigger,\nall lenses clean| done([converged])
 ```
 
-## M - medium
+The router is deterministic code (`hooks/route.py`): membership is a stage's `subscribes` topics matched against the live signals (any one triggers it), filtered to the live path by each stage's `routes`; order is a topological sort of the `input`/`output` artifact dependencies. The catalog it reads (`generated/catalog.json`) is compiled from each agent's `stage:` frontmatter by a save-time hook. The judgment lives in the stages - `triage` frames, `prototype-identifier` flags novelty, each stage classifies its own findings - so the router never has to reason, just route.
 
-Pre-flight scans run in parallel. Implementation, then broad review fan-out, then conditional specialists, then self-heal.
+A SessionStart hook injects a small essentials block plus a pointer to `WORKFLOW.md`; the agent reads the full doctrine on demand. After `/compact`, it re-anchors that pointer and restores the canonical run state (route, live signals, available artifacts, premises) so the router resumes deterministically.
 
-```mermaid
-flowchart TB
-    intent -.-> intv[interviewer]
-    intent --> classify[complexity-classifier]
-    intv --> classify
-    classify --> reuse[reuse-scanner] & health[health-checker] & proto[prototype-identifier] & rsrch[researcher]
-    proto -.-> ptype[prototyper]
-    reuse & health & proto & rsrch --> impl[main agent implements]
-    ptype -.-> impl
-    impl --> bp
-    subgraph bp[broad pass]
-        direction LR
-        test[test-verifier]
-        correct[correctness-reviewer]
-        qual[quality-reviewer]
-        accept[acceptance-reviewer]
-    end
-    bp -.-> sp
-    subgraph sp[specialists - gated]
-        direction LR
-        sr[structure-reviewer]
-        ar[architecture-reviewer]
-        cr[consistency-reviewer]
-        rr[reuse-reviewer]
-        sec[security-reviewer]
-        perf[performance-reviewer]
-        a11y[accessibility-reviewer]
-        dc[design-consistency-reviewer]
-        ux[ux-reviewer]
-    end
-    bp --> heal[fixer]
-    sp --> heal
-    heal --> cap[capture-agent]
-```
-
-## L - large
-
-Adds clarification, planning, and adversarial challenge. Implementer subagent takes the build. Plan-adherence-reviewer joins the broad pass.
-
-```mermaid
-flowchart TB
-    intent -.-> intv[interviewer]
-    intent --> classify[complexity-classifier]
-    intv --> classify
-    classify --> reuse[reuse-scanner] & health[health-checker] & proto[prototype-identifier] & rsrch[researcher]
-    proto -.-> ptype[prototyper]
-    reuse & health & proto & rsrch --> clari[requirements-clarifier]
-    ptype -.-> clari
-    clari --> plan[planner]
-    clari -.-> design[design-explorer]
-    design -.-> plan
-    plan --> chal[plan-challenger]
-    chal --> impl[implementer]
-    impl --> bp
-    subgraph bp[broad pass]
-        direction LR
-        test[test-verifier]
-        correct[correctness-reviewer]
-        qual[quality-reviewer]
-        accept[acceptance-reviewer]
-        adher[plan-adherence-reviewer]
-    end
-    bp -.-> sp
-    subgraph sp[specialists - gated]
-        direction LR
-        sr[structure-reviewer]
-        ar[architecture-reviewer]
-        cr[consistency-reviewer]
-        rr[reuse-reviewer]
-        sec[security-reviewer]
-        perf[performance-reviewer]
-        a11y[accessibility-reviewer]
-        dc[design-consistency-reviewer]
-        ux[ux-reviewer]
-    end
-    bp --> heal[fixer]
-    sp --> heal
-    heal --> cap[capture-agent]
-```
-
-## XL - extra large
-
-Planner presents 2-3 approaches. Challenger reviews each. User picks. Visual verifier joins the specialist pass for UI changes.
-
-```mermaid
-flowchart TB
-    intent -.-> intv[interviewer]
-    intent --> classify[complexity-classifier]
-    intv --> classify
-    classify --> reuse[reuse-scanner] & health[health-checker] & proto[prototype-identifier] & rsrch[researcher]
-    proto -.-> ptype[prototyper]
-    reuse & health & proto & rsrch --> clari[requirements-clarifier]
-    ptype -.-> clari
-    clari --> plan["planner: 2-3 approaches"]
-    clari -.-> design[design-explorer]
-    design -.-> plan
-    plan --> chal["plan-challenger reviews each"]
-    chal --> pick[user picks approach]
-    pick --> impl[implementer]
-    impl --> bp
-    subgraph bp[broad pass]
-        direction LR
-        test[test-verifier]
-        correct[correctness-reviewer]
-        qual[quality-reviewer]
-        accept[acceptance-reviewer]
-        adher[plan-adherence-reviewer]
-    end
-    bp -.-> sp
-    subgraph sp[specialists - gated]
-        direction LR
-        sr[structure-reviewer]
-        ar[architecture-reviewer]
-        cr[consistency-reviewer]
-        rr[reuse-reviewer]
-        sec[security-reviewer]
-        perf[performance-reviewer]
-        a11y[accessibility-reviewer]
-        dc[design-consistency-reviewer]
-        ux[ux-reviewer]
-        visual[visual-verifier]
-    end
-    bp --> heal[fixer]
-    sp --> heal
-    heal --> cap[capture-agent]
-```
+Two rules never bend: **precedence** (a stage can't run before the artifacts it needs exist) and **asymmetric rigor** (skipping a stage needs a positive signal; adding one needs only doubt - safety stages stay in by default).
 
 ## Agents
 
-32 subagents organized by phase of work. Italic = conditional / gated. Tier shows the model that runs by default.
+37 composable stages plus a setup command, grouped by role. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`).
 
-### Understand (Steps 0-1)
+### Seed and intent
+| Agent | Model | Role |
+|-------|-------|------|
+| triage | haiku | Always-on seed. Reads the request, publishes the path and opening signals (ambiguous, novel-domain, bug, risk sniffs, advisory est-size). |
+| interviewer | opus | Probes scope, users, and success criteria when the request is ambiguous; loops until intent settles. |
+| requirements-clarifier | opus | Surfaces ambiguity, edge cases, and proposed acceptance criteria before planning. |
 
-| Agent | Tier | Role |
-|-------|------|------|
-| *interviewer* | opus | Level 2 intent - probes scope, users, success criteria when the request has multiple readings or the Level 1 answer shifts scope. |
-| complexity-classifier | opus | Classifies each task S / M / L / XL / XXL and gates which downstream steps run. On XXL, returns a suggested decomposition the main agent surfaces as a pushback (split / treat-as-XL / abandon). |
-
-### Prepare (Steps 2-3)
-
-| Agent | Tier | Role |
-|-------|------|------|
-| reuse-scanner | sonnet | Finds reusable code and quick-win refactors before implementation. |
+### Pre-flight
+| Agent | Model | Role |
+|-------|-------|------|
+| reuse-scanner | sonnet | Finds reusable code and quick-win refactors; flags missing infra and duplication. |
 | health-checker | haiku | Scores code-health of the touched area, surfaces cleanup targets. |
-| prototype-identifier | haiku | Flags external APIs / SDK novelty that need a tracer bullet. Tags each target with NOVELTY (low/med/high); on high, also suggests two alternative shapes for the prototyper to build side-by-side. |
+| prototype-identifier | haiku | Flags external-API / SDK novelty; on high novelty, suggests two shapes to try. |
 | researcher | haiku | Pulls library / framework / domain knowledge from the web. |
-| *prototyper* | sonnet | Builds tracer-bullet prototypes in `.prototypes/` when prototype-identifier flags external surface. On high-novelty targets, builds two differently-shaped tracers side-by-side and reports an evidence-based comparison. |
-| requirements-clarifier | opus | Surfaces ambiguity, edge cases, and proposed acceptance criteria as a numbered question list before the planner runs. |
+| prototyper | sonnet | Builds tracer-bullet prototypes in `.prototypes/` for high-novelty surface. |
 
-### Design (Steps 3.5-5)
+### Design and plan
+| Agent | Model | Role |
+|-------|-------|------|
+| design-explorer | opus | For UI tasks with multiple legitimate shapes: builds an interactive picker, binds the pasted-back spec. |
+| planner | opus | Designs the blueprint; on multi-approach, presents 2-3 with a recommendation. |
+| plan-challenger | opus | Adversarial review - holes, failure modes, simpler alternatives. |
 
-| Agent | Tier | Role |
-|-------|------|------|
-| *design-explorer* | opus | Step 3.5 - fires when the clarifier flags a UI task with multiple legitimate visual or interaction shapes. Confirms which parameters to expose as controls, decides whether to host the picker in a sandbox prototype or in the real page behind a dev gate, writes the interactive page with a copy-spec button, and hands the labeled key-value spec the user paste-backs to the planner as binding input. |
-| planner | opus | Designs the implementation blueprint. On XL, presents 2-3 approaches with a recommendation. Attaches a validation type (test/manual/observable) to every acceptance criterion. Reads `<LOCKED_DESIGN_SPEC>` when the design loop ran and builds to that spec. |
-| plan-challenger | opus | Adversarial review - pokes holes, names failure modes, proposes simpler alternatives. |
+### Tests (TDD-first)
+| Agent | Model | Role |
+|-------|-------|------|
+| test-plan | sonnet | Derives concrete test cases from the plan's acceptance criteria. |
+| test-author | sonnet | Writes the failing (red) tests before implementation. |
+| test-review | opus | Validates the red tests against intent so code can't be written to the wrong tests. |
+| test-gap | sonnet | Always-on coverage lens; pulls test-author back for untested behavior. |
+| test-verifier | sonnet | Runs the suite and gates green. |
 
-### Build (Step 6)
+`implement` lists validated tests as an `input`, so the precedence graph forbids code before tests exist - TDD is structural, not a guideline.
 
-| Agent | Tier | Role |
-|-------|------|------|
-| implementer | opus | Executes the approved plan on L/XL. Can kick back to planner via tiered escalation. |
+### Build, review, heal, capture
+| Agent | Model | Role |
+|-------|-------|------|
+| implementer | opus | Executes the approved plan. Can kick back to the planner; the oscillation guard stops it from looping. |
+| correctness / quality / acceptance / plan-adherence | sonnet/opus | Broad review lenses on every diff (`@diff -> @findings`). |
+| structure / architecture / consistency / reuse / security / performance / accessibility / design-consistency / ux / visual-verifier | sonnet/opus | Specialist lenses, triggered by domain signals (security is `sticky`). |
+| fixer | opus | Applies targeted fixes and reruns the lenses it touched until they're clean. |
+| capture-agent | opus | Proposes glossary / stack / intent updates surfaced during the run, writes after approval. |
 
-### Verify (Steps 7-9)
-
-**Broad pass** - runs in parallel on every M/L/XL.
-
-| Agent | Tier | Role |
-|-------|------|------|
-| test-verifier | sonnet | Runs the project's test suite, fails fast. |
-| correctness-reviewer | sonnet (M) / opus (L/XL) | Bugs, type holes, dead code, project convention adherence. |
-| quality-reviewer | opus | Engineering judgment - hacky shortcuts, bloat, wrong tool for the job, unelegant solutions. Reads imports and deps first. |
-| acceptance-reviewer | opus | Verifies every requirement and acceptance criterion maps to actual code AND that the plan's declared validation per criterion is in place (test exists, observable is at the named location, manual is flagged for the user); flags scope drift. |
-| *plan-adherence-reviewer* | sonnet | L/XL only. Checks the implementer followed the plan's file list, signatures, and ordering. |
-
-**Specialist pass** - fires only when its trigger matches: a broad-pass finding in its domain, or touched files inside its scope.
-
-| Agent | Tier | Trigger |
-|-------|------|---------|
-| structure-reviewer | sonnet | Broad pass flagged structure / boundaries; or files / functions over size thresholds. |
-| architecture-reviewer | opus | Touched files introduce new exports / wrappers / seams; or broad pass flagged shallow abstraction. Uses depth + the deletion test. |
-| consistency-reviewer | sonnet | Touched files affect naming / error handling / return-shape patterns. |
-| reuse-reviewer | sonnet | Broad pass flagged duplication; or new code resembles existing utilities. |
-| security-reviewer | opus | Touched files include auth / permissions / session / input handling. |
-| performance-reviewer | sonnet | Touched files include database / query / hot-path code. |
-| accessibility-reviewer | sonnet | Touched files include UI components. |
-| design-consistency-reviewer | sonnet | Touched files include UI components. |
-| ux-reviewer | sonnet | Touched files include UI components. |
-| visual-verifier | sonnet | UI touched; inline Y/n offer at the specialist pass (default yes on XL, default no on M/L). Uses playwright-cli to screenshot and verify. |
-
-**Self-heal** - applies fixes once the broad and specialist passes have produced findings.
-
-| Agent | Tier | Role |
-|-------|------|------|
-| fixer | sonnet (M) / opus (L/XL) | Applies targeted fixes for aggregated findings. Emits a re-run set. |
-
-### Capture (Steps 10-11)
-
-| Agent | Tier | Role |
-|-------|------|------|
-| capture-agent | opus | Collects novel project-context items (glossary terms, stack/intent drift) surfaced incidentally by upstream agents. Two phases - proposes, then writes after user approval. Never creates `docs/`. |
-
-### Bias-conditional and separate flows
-
-| Agent | Tier | Role |
-|-------|------|------|
-| investigator | opus | Root-cause debugging - forms hypotheses, attempts minimal repro, traces to the actual cause. Stops at diagnosis; outputs complexity + severity for the after-diagnose stop's picker (Continue-fix on S/M, Continue-plan on L/XL/XXL, or Stop). Fires in the main pipeline at Step 2 whenever Step 0 detected bug-framing. |
-| setup-agent | opus | Interactive bootstrap of docs/INTENT.md, docs/STACK.md, docs/GLOSSARY.md via 5-invocation guided interview. Used by `/alp-river:setup`. |
-| adr-drafter | opus | Drafts a single ADR from a decision summary, mirroring the canonical template. Read-only - emits a draft or hard-rejects on duplicates of active ADRs. Used by `/alp-river:adr`. |
+### Other paths and entry points
+| Agent | Model | Role |
+|-------|-------|------|
+| discuss | opus | The `talk` path - lays out options with worked examples, surfaces tradeoffs, asks one sharp question; never writes code. |
+| spike-build | sonnet | The `spike` path - builds throwaway runnable code in `.prototypes/` with relaxed ceremony. |
+| investigator | opus | Root-cause debugging inside the `build` path (pulled in by a `bug` signal) - hypothesizes, repros, traces; stops at diagnosis. |
+| adr-drafter | opus | Drafts a single ADR from a decision summary. Used by `/alp-river:adr`. |
+| setup-agent | opus | Command-only (not a route stage). Bootstraps `docs/` via a guided interview. Used by `/alp-river:setup`. |
 
 ## Slash commands
 
 ```
-/alp-river:go           Run the pipeline. Bias detected from your text, complexity classified, stops at natural seams.
+/alp-river:go           Run the workflow. Triage routes; the router composes the stages it needs.
 /alp-river:setup        Interactive bootstrap of docs/INTENT.md, docs/STACK.md, docs/GLOSSARY.md
 /alp-river:adr          Draft and write a single architectural decision record
 /alp-river:review       Review current changes for correctness + engineering quality
-/alp-river:verify       Visual verification of UI changes via playwright-cli
+/alp-river:verify       Visual verification of UI changes
 /alp-river:reflect      Reflect on the current session to surface workflow friction worth tuning
 ```
 
@@ -317,12 +155,17 @@ flowchart TB
 ```
 alp-river/
 ├── .claude-plugin/plugin.json
-├── WORKFLOW.md            <- pipeline doctrine
+├── WORKFLOW.md            <- router-loop doctrine
+├── doctrine/
+│   ├── CATALOG.md         <- stage frontmatter schema
+│   └── SIGNALS.md         <- the controlled signal vocabulary
+├── generated/catalog.json <- compiled stage catalog (tracked; the router reads it)
 ├── hooks/
-│   ├── hooks.json         <- 7 events: SessionStart, PreToolUse, PostToolUse, ...
-│   └── *.sh               <- inject-workflow, auto-format, block-git-writes, ...
-├── agents/                <- 32 subagent definitions
-├── doctrine/              <- reviewer contract, code doctrine, injected per-agent
+│   ├── route.py           <- deterministic router
+│   ├── render_route.py    <- route legibility
+│   ├── gen-catalog.py     <- compiles agent frontmatter into the catalog
+│   └── *.sh               <- inject-workflow, auto-format, context injection, ...
+├── agents/                <- 35 stage definitions + setup-agent
 ├── commands/              <- 6 slash commands
 └── templates/             <- copy into your project's docs/ for project-context injection
 ```

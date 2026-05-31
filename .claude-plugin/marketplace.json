@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Personal Claude Code plugins by Alper Ortac.",
-    "version": "0.3.6"
+    "version": "1.0.2"
   },
   "plugins": [
     {
       "name": "alp-river",
       "source": "./",
-      "description": "Multi-step agent refinement for Claude Code, scaled by automatic complexity classification.",
+      "description": "Multi-step agent refinement for Claude Code: a deterministic router composes the exact stages each task needs.",
       "homepage": "https://github.com/alp82/alp-river",
       "repository": "https://github.com/alp82/alp-river",
       "license": "MIT",
@@ -23,7 +23,7 @@
         "agents",
         "subagents",
         "pipeline",
-        "complexity-classification",
+        "dynamic-routing",
         "code-review"
       ]
     }

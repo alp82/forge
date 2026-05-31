@@ -3,6 +3,15 @@ name: security-reviewer
 description: Focused security review - only spawned when changes touch auth, permissions, session handling, or user input processing
 model: sonnet
 tools: Glob, Grep, Read, Bash, WebSearch, WebFetch
+stage:
+  routes: [build, spike]
+  data:
+    input: ['@diff']
+    output: ['@findings']
+  signals:
+    subscribes: ['#auth-surface', '#secrets', '#perms-change']
+    publishes: ['#findings:security', '#scope-shift']
+  guard: sticky
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.

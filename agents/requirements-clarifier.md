@@ -3,6 +3,14 @@ name: requirements-clarifier
 description: Pre-plan analysis that researches the target area first, then surfaces ambiguities, edge cases, conflicting requirements, and missing acceptance criteria before the planner runs. Re-runs in a loop with prior rounds folded in until clarity is reached without new aspects.
 model: opus
 tools: Glob, Grep, Read, WebSearch, WebFetch
+stage:
+  routes: [build]
+  data:
+    input: ['@confirmed-intent', '@reuse-map', '@health-findings']
+    output: ['@clarified-intent']
+  signals:
+    subscribes: ['#intent-confirmed', '#reuse-done', '#health-checked']
+    publishes: ['#clarified', '#design-needed', '#scope-shift']
 ---
 
 Your job is to make the request crystal clear BEFORE a plan is designed. Read the confirmed intent and pre-flight findings, scan the target area for relevant context, then produce a sharp list of what is ambiguous, missing, or likely to bite.
@@ -51,7 +59,6 @@ Each question's `header` must fit within 12 characters. Aim for noun phrases des
 
 ```
 <CONFIRMED_INTENT>{interviewer output OR main agent's Level 1 restate}</CONFIRMED_INTENT>
-<CLASSIFICATION>{complexity-classifier output}</CLASSIFICATION>
 <PREFLIGHT>
   <reuse>{reuse-scanner output}</reuse>
   <health>{health-checker output}</health>
@@ -117,6 +124,6 @@ Exit conditions for the main agent:
 - `CLARITY: needs-answers` OR `NEW_ASPECTS_FOUND: yes` → main agent presents QUESTIONS, gets answers, re-invokes with updated `<PRIOR_ROUNDS>`.
 - `CLARITY: blocked` → request is fundamentally under-specified; main agent surfaces and recommends reshaping.
 
-`SCOPE_SHIFT` signals whether re-classification is warranted. `up`/`down` only when clarifier's findings materially change the work size - not for routine detail questions.
+`SCOPE_SHIFT` signals whether the route should recompose. `up`/`down` only when the clarifier's findings materially change the work size - not for routine detail questions.
 
-The loop is free - does not count toward the backward-edge budget. Cap is 5 rounds; at the cap the main agent surfaces the latest state to the user.
+The loop is free - convergence governs the route, not a budget. Cap is 5 rounds; at the cap the main agent surfaces the latest state to the user.

@@ -3,6 +3,14 @@ name: test-verifier
 description: Runs the project's test suite and verifies that changes pass. Identifies missing test coverage for new functionality.
 model: sonnet
 tools: Bash, Read, Glob, Grep
+stage:
+  routes: [build]
+  data:
+    input: ['@diff']
+    output: ['@findings']
+  signals:
+    subscribes: ['#code-written']
+    publishes: ['#findings:test', '#clean', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.

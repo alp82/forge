@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+"""Compile stage contracts from agents/*.md frontmatter into generated/catalog.json.
+
+Runs as a PostToolUse(Edit|Write) hook (regenerates only when an agents/*.md file
+changed) and is also runnable manually. The catalog is the machine-readable index the
+deterministic router consumes.
+
+Authoring uses sigils, stripped at compile time (see doctrine/CATALOG.md):
+
+  @artifact   required data input/output       ?artifact   optional data input
+  #signal     pub/sub topic
+
+Sigil-bearing scalars are YAML-quoted ('@x', '?x', '#x') because @/?/# are reserved at the
+start of a YAML scalar. Storage is bare names; required-vs-optional is a structural split,
+never a sigil. Every stage MUST declare a `routes` list (a subset of build/spike/talk) -
+the generator errors loudly if one is missing or names an unknown path.
+"""
+import json
+import sys
+from pathlib import Path
+
+try:
+    import yaml
+except ImportError:
+    sys.stderr.write("gen-catalog: PyYAML required (pip install pyyaml)\n")
+    sys.exit(0)  # never block the tool call; surface and move on
+
+ROOT = Path(__file__).resolve().parent.parent
+AGENTS_DIR = ROOT / "agents"
+OUT = ROOT / "generated" / "catalog.json"
+PATHS = ("build", "spike", "talk")
+
+
+def changed_path_from_hook_payload():
+    """If invoked as a PostToolUse hook, return the edited file path; else None."""
+    if sys.stdin.isatty():
+        return None
+    raw = sys.stdin.read().strip()
+    if not raw:
+        return None
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    return (payload.get("tool_input") or {}).get("file_path")
+
+
+def parse_frontmatter(text):
+    if not text.startswith("---"):
+        return None
+    lines = text.splitlines()
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if end is None:
+        return None
+    try:
+        return yaml.safe_load("\n".join(lines[1:end])) or {}
+    except yaml.YAMLError:
+        return None
+
+
+def _list(d, key):
+    v = (d or {}).get(key) or []
+    return v if isinstance(v, list) else [v]
+
+
+def _strip_signal(item):
+    s = str(item).strip()
+    return s[1:] if s.startswith("#") else s
+
+
+def _strip_artifact(item):
+    """Drop a leading @/? sigil from a data artifact, leaving the bare type name."""
+    s = str(item).strip()
+    return s[1:] if s and s[0] in "@?" else s
+
+
+def _split_inputs(items):
+    """Sigil-aware input split: leading `?` = optional, `@` or bare = required.
+
+    Returns (required, optional) as bare-name lists. Optional inputs order a stage after
+    their producer only when that producer is in the route, and never drop it when absent.
+    """
+    required, optional = [], []
+    for item in items:
+        s = str(item).strip()
+        if s.startswith("?"):
+            optional.append(s[1:])
+        elif s.startswith("@"):
+            required.append(s[1:])
+        else:
+            required.append(s)
+    return required, optional
+
+
+def normalize_stage(name, stage):
+    data, signals = stage.get("data") or {}, stage.get("signals") or {}
+    req_in, opt_in = _split_inputs(_list(data, "input"))
+    entry = {
+        "name": name,
+        "routes": _list(stage, "routes"),
+        "data": {
+            "input": {"required": req_in, "optional": opt_in},
+            "output": [_strip_artifact(a) for a in _list(data, "output")],
+        },
+        "signals": {
+            "subscribes": [_strip_signal(s) for s in _list(signals, "subscribes")],
+            "publishes": [_strip_signal(s) for s in _list(signals, "publishes")],
+        },
+    }
+    if stage.get("guard"):
+        entry["guard"] = stage["guard"]
+    return entry
+
+
+def build_catalog():
+    stages, errors = {}, []
+    for md in sorted(AGENTS_DIR.glob("*.md")):
+        fm = parse_frontmatter(md.read_text(encoding="utf-8"))
+        if not fm or "stage" not in fm or "name" not in fm:
+            continue
+        name = fm["name"]
+        routes = _list(fm["stage"], "routes")
+        if not routes:
+            errors.append(f"{name}: missing `routes`")
+            continue
+        unknown = [r for r in routes if r not in PATHS]
+        if unknown:
+            errors.append(f"{name}: unknown route(s) {unknown} (allowed: {list(PATHS)})")
+            continue
+        stages[name] = normalize_stage(name, fm["stage"])
+    if errors:
+        raise SystemExit("gen-catalog: ERROR - " + "; ".join(errors))
+    return {"stages": stages}
+
+
+def main():
+    changed = changed_path_from_hook_payload()
+    if changed is not None and "/agents/" not in changed.replace("\\", "/"):
+        return  # hook fired on a non-agent edit; nothing to do
+    catalog = build_catalog()
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    sys.stderr.write(f"gen-catalog: {len(catalog['stages'])} stages -> {OUT.relative_to(ROOT)}\n")
+
+
+if __name__ == "__main__":
+    main()

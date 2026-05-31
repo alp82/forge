@@ -72,430 +72,134 @@ See `doctrine/confidence-tagging.md` - injected into citing agents by the PreToo
 
 ## Pipeline
 
-Every implementation task runs through a staged pipeline. Depth scales with complexity; confirming intent is always mandatory.
+Every code-modifying request runs through a **composed route**. The deterministic router (`hooks/route.py`) assembles the exact stages a task needs from the catalog (`generated/catalog.json`, compiled from `agents/*.md` frontmatter - see `doctrine/CATALOG.md` and `doctrine/SIGNALS.md`) and grows or shrinks it as the task reveals itself. There is no per-tier step list; size (XS-XXL) is a *readout* of the assembled route, not a driver.
 
-**No exception for prompts that feel small, mechanical, or one-line** - that framing is the bypass trigger, and the classifier sizes trivial cases at S cheaply. Code-modifying requests enter the pipeline regardless of perceived size.
+**No exception for prompts that feel small** - a trivial ask just produces a tiny route (often one stage). Code-modifying requests enter the loop regardless of perceived size.
 
-Phases: Understand (0-1) → Prepare (2-3) → Design (3.5-5) → Build (6) → Verify (7-9) → Capture (10-11) → Follow-up (12).
+### The loop
 
-### Axes
+The main agent is a thin orchestrator. It holds four pieces of run state and turns the crank:
 
-The pipeline tracks two internal axes (both set during the run, neither set by entry):
+- `live` - signal topics currently emitted (seeded with `request-received`).
+- `available` - artifacts that exist (seeded with `request`).
+- `ran` - stages already executed.
+- `premises` - the assumptions the current route was built on; each stage is handed these and reports breaks.
 
-| Axis | Values | What it controls |
-|------|--------|------------------|
-| `EFFECTIVE_TIER` | `S` / `M` / `L` / `XL` / `XXL` | Sizes the internal gates (which steps fire, fan-out depth, model overrides). Set by Step 1 classifier (or, on `TYPE_BIAS=diagnose`, by the investigator's COMPLEXITY for the diagnose stop). |
-| `TYPE_BIAS` | `build` / `diagnose` | Detected at Step 0 Level 1 from the user's request. Picks the Step 0 framing variant and the Step 2 agent set. |
+Each turn:
 
-Stops fire at natural seams in the pipeline, not via a pre-set point:
-- `after-diagnose` fires after Step 2 when `TYPE_BIAS: diagnose`. Picker chooses Continue (rolls into build or plan-only based on tier) or Stop.
-- `after-plan` fires after Step 5 on L/XL whenever a plan was produced. Picker chooses Continue-build (default) or Stop.
+1. **Route.** Call the router with the state; it returns the ordered route + size + `triggered_by` (which signal pulled each stage in). JSON in, JSON out:
+   ```
+   echo '{"live":[...],"available":[...],"already_run":[...]}' | python3 hooks/route.py
+   ```
+2. **Render.** At a gate or on a route change, show the full route (legibility A) or the delta (legibility B) via `hooks/render_route.py`. Interrupt only when the answer could change the outcome.
+3. **Run** the first not-yet-run stage. Spawn its agent (the `model` lives in the agent's frontmatter); hand it the artifacts its `input` names, plus the `premises`.
+4. **Update.** Add the stage's `output` to `available`, its published signals to `live` (each carries a one-line message = the why), and record it in `ran`. A published `scope-shift` logs a broken premise.
+5. **Recompose.** Re-call the router. A new signal may grow the route; a `scope-shift` may reshape it. Sticky stages never auto-drop.
 
-### Type Bias
+Repeat until **convergence**: the router returns an empty route (no live signal triggers an unrun stage) and every review lens that ran came back `clean`.
 
-`TYPE_BIAS` is determined at Step 0 Level 1 by the main agent reading the user's request:
+### Seed and path
 
-- **`build`** (default): the request reads as feature/refactor/doc work. Use the outcome-restate variant of Step 0 Level 1.
-- **`diagnose`**: the request reads as a bug report (signals: "why", "broken", "failing", "error", "fix", "doesn't work", a stack trace, a symptom description). Use the bug-framing variant of Step 0 Level 1 (observed vs expected vs environment) and wait for user confirmation OR missing info before proceeding.
+The route is rooted by the always-on `triage` stage. It reads the request and publishes exactly one **path** - `build`, `spike`, or `talk` - plus early signals (`ambiguous`, `novel-domain`, a bug-framing `bug`, risk sniffs) and one advisory `est-size:<tier>`. The router composes from there. The path is sticky but re-evaluated every turn: `talk` flips to `build` on "do it"; a `spike` graduates to `build` on the kept code.
 
-If detection is ambiguous, default to `build`. The user reshapes at Level 1 if the framing is wrong - one round of Step 0, no cost beyond that.
+- **`build`** - the full composed route. A bug is a build: `triage` pairs `build` with a `bug` signal, the `investigator` diagnoses inside the route, and the build spine fixes the cause. There is no separate `diagnose` path.
+- **`talk`** - the spine is parked; the `discuss` stage converses - options with worked examples, honest tradeoffs, one sharp question, never code. Recon stages (research, investigator, reuse-scan, design-explorer) stay summonable on demand, but nothing produces a `diff` and nothing is reviewed or captured.
+- **`spike`** - sandboxed throwaway (`.prototypes/`). `spike-build` runs relaxed; the build-only ceremony band (challenge, capture, plan-adherence, the quality/architecture/consistency lenses) is filtered off the path by each stage's `routes`. Correctness and security still apply. Graduating flips to `build`.
 
-`TYPE_BIAS` shapes two things downstream:
-- **Step 0 framing**: as above.
-- **Step 2 agent set**: `build` fans out across the four pre-flight agents (reuse-scanner, health-checker, prototype-identifier, researcher). `diagnose` launches the investigator alone - same step semantically (gather information before designing).
+`est-size` is advisory only: it feeds the cost gate's upfront estimate and never picks stages. The real size stays the final route count.
 
-On Continue from the after-diagnose stop, `TYPE_BIAS` is replaced with `build` (the user is now in fix-or-implement mode). The user restates intent in their own words and the pipeline runs Step 1 onward on that restatement.
+### Worked routes
 
-### Step 0: Intent
+Three `echo STATE | python3 hooks/route.py` traces, one per path:
 
-Before classification, confirm direction - a misread request misclassifies every gate downstream. **Level 1 runs on every task at every tier, including S follow-ups in main-agent mode.** No "this is small, I'll just do it" path.
+- **build** - `{"live":["build","code-written","auth-surface"],"available":["confirmed-intent","diff"]}` composes `reuse-scanner` + `health-checker`, the full review fan-out (correctness, quality, architecture, structure, consistency, performance, reuse, acceptance, plan-adherence, test-gap, test-verifier, ux, accessibility, design-consistency, visual), `security-reviewer` pulled in by `auth-surface`, and `capture-agent`. Size XXL.
+- **spike** - `{"live":["spike","code-written"],"available":["confirmed-intent","diff"]}` composes just `spike-build` then `correctness-reviewer`; the 15 build-only lenses are dropped `off-path` by the `routes` filter. Size S.
+- **talk** - `{"live":["talk","ambiguous"],"available":["request","triage-read"]}` composes `interviewer` (pulled by `ambiguous`) then `discuss`, ordered after it because `discuss` optionally consumes the interviewer's `confirmed-intent`. No diff, nothing reviewed.
 
-- **Level 1 (always, every tier)**: Main agent restates the **outcome** the user wants - what needs to be true when this is done, in user-observable terms. Keep it concise; clarity wins over brevity, so use a couple of sentences, a small ASCII diagram, or a brief example if that lands the point better than prose. **No file paths, schema fields, function names, API routes, or component names** - those are implementation details that belong in the plan, not the intent. If you can't restate without naming specifics, you've over-interpreted; pull back to the goal. **Main agent stays text-only - no codebase reads, no web lookups.** Wait for the user's reply.
-  - **Affirmation -> proceed**: short positive reply (`y`, `yes`, `correct`, `proceed`, `looks right`, `go`, similar). Move to Step 1.
-  - **Anything else -> reshape**: free-text additions, corrections, the user restating in their own words, or any reply that's not a bare affirmation. Treat the reply as the new `<RAW_REQUEST>` and escalate to Level 2 with it.
-- **Level 2 (on reshape OR when the request has multiple readings OR when restating would require recon)**: enter the **interview loop**. Launch `interviewer` (opus) to research the target area (filesystem + web when relevant), then probe scope, users, success criteria, and priority trade-offs. Each round, present QUESTIONS to the user, capture answers, append to `<PRIOR_ROUNDS>`, re-launch. Exit when `VERDICT: confirmed` AND `NEW_ASPECTS_FOUND: no`. Cap at 5 rounds - at the cap, present the latest direction and ask the user to confirm or reshape. Rendering follows the Concise Surfacing Contract.
+### Intent
 
-Emit `<CONFIRMED_INTENT>` - every downstream agent reads it.
+`triage` settles framing. When the request is clear, **state the one-line interpretation and proceed** - no confirmation gate; the user corrects in their next message if it is wrong. When `triage` publishes `ambiguous` (any genuine doubt - low bar), the `interviewer` stage joins and loops until intent is confirmed. Intent is always *stated*, never silently assumed (see Principles), but a clear ask is not stopped.
 
-### Step 1: Classify
+### Gates
 
-Launch `complexity-classifier` (opus) with `<CONFIRMED_INTENT>`. Output `<CLASSIFICATION>` with COMPLEXITY (S|M|L|XL|XXL) + REASON, plus `SUGGESTED_SPLIT` on XXL. The classifier's COMPLEXITY sets `<EFFECTIVE_TIER>` and gates which downstream steps fire:
+A gate is a stage whose output is a **user decision**, rendered via `AskUserQuestion` (Concise Surfacing Contract). It fires only when its triggering signal is live AND the answer could change what happens next - a 95%-Continue checkpoint is narrated, not asked. The user's choice publishes a signal (`approved` / `scope-down` / `abandon` / ...) that feeds the next recompose. A size-threshold crossing (`size-crossed:L`) is itself a signal a cost gate can subscribe to.
 
-- **S**: lighter path. Skip Gate 1 (no L/XL cost prompt). Run a single `reuse-scanner` at Step 2. Skip Step 3 unless ambiguity is glaring. Skip Step 3.5. Main agent implements at Step 6. Skip Steps 7-10 entirely - the Stop hook runs the project's test suite automatically; jump to Step 11 with a brief summary.
-- **M**: run the full Step 2 fan-out. Step 3 clarify runs only when pre-flight leaves ambiguity. Step 3.5 design loop fires only when the clarifier flags it. Main agent implements at Step 6. Step 7 includes test-verifier + correctness + quality + acceptance (no plan-adherence-reviewer on M).
-- **L/XL**: full pipeline. **Fire the canonical Gate 1 block below** before Step 2.
-- **XXL**: **Fire the XXL pushback block first**, then Gate 1 (skipped if user chose `Treat as XL`).
+### Asymmetric rigor
 
-Capture as `<CLASSIFICATION>` and `<EFFECTIVE_TIER>`. The remainder of the pipeline reads `<EFFECTIVE_TIER>` for every per-tier gate.
-
-On `TYPE_BIAS: diagnose` (detected at Step 0 Level 1), Step 1 is skipped on entry. The investigator's COMPLEXITY sets `EFFECTIVE_TIER` for the diagnose phase only. On Continue from the diagnose stop, the user restates intent (Step 0 Level 1 style), and the Step 1 classifier runs on that restatement to size downstream gates.
-
-#### Setup nudge (M/L/XL/XXL, first-fire)
-
-The SessionStart hook (`hooks/inject-workflow.sh`) already nudges at the session boundary when `docs/INTENT.md` is missing and `alpRiver.skipSetup` is not set - that runs before any classification, on every session start, resume, and clear. This Step 1 pass is the in-pipeline reminder for runs where setup wasn't done despite the session-start hint.
-
-On first M/L/XL/XXL classification in this run, before XXL pushback or Gate 1's prompt:
-
-1. Check whether `docs/INTENT.md` exists.
-2. Read `.claude/settings.local.json` if present and look up `alpRiver.skipSetup`. Treat a missing file or missing key as `false`.
-3. If `docs/INTENT.md` exists OR `alpRiver.skipSetup: true`, skip the nudge.
-4. Otherwise, emit one advisory line immediately above Gate 1's prompt:
-
-   > Project context missing: no `docs/INTENT.md`. Consider `/alp-river:setup` first so planning and review run with your intent, stack, and glossary loaded. Dismiss permanently with `"alpRiver": {"skipSetup": true}` in `.claude/settings.local.json`.
-
-Advisory only - does not block, does not add an interaction step, does not re-fire on re-classify, does not count against the backward-edge budget. S tasks skip this gate; the session-start hint already covered the same ground, and re-prompting on a one-line fix would be noise.
-
-#### XXL pushback (XXL only, fires before Gate 1)
-
-When the classifier (first pass or re-classify upgrade) returns COMPLEXITY: XXL, fire this block **before** Gate 1.
-
-Initialize on first fire (if not already initialized by Gate 1): `<SCOPE_DOWN_COUNT> = 0`. Threaded through subsequent gate fires and shared with Gate 1's counter.
-
-Surface the SUGGESTED_SPLIT inline above the picker:
-
-```
-This classifies as XXL: <REASON>.
-
-Spans more than fits cleanly into one task. Suggested decomposition:
-<SUGGESTED_SPLIT, one bullet per line, verbatim from classifier output>
-```
-
-**If `<SCOPE_DOWN_COUNT> < 2`**, invoke `AskUserQuestion`:
-
-- `question`: ``Worth it? (split cycles used: <SCOPE_DOWN_COUNT>/2)``
-- `header`: `XXL split`
-- `multiSelect`: `false`
-- `options`:
-  - `Split` - "Pick one slice from the suggested decomposition (or describe a different reduction) and run with it. Re-enters Step 0 with the chosen slice."
-  - `Treat as XL` - "Keep the work as one task. Continue at XL gates for all downstream steps. Counts as cost confirmation - Gate 1 does not fire."
-  - `Abandon` - "Stop the command."
-
-Interpret the user's selection:
-- `Split` -> ask the user (free-text follow-up):
-  > Which slice do you want to tackle now? Pick one from the suggested decomposition by number, or describe a different scope reduction in your own words.
-
-  Take the reply, increment `<SCOPE_DOWN_COUNT>`, feed the reply as the new `<RAW_REQUEST>` into Step 0 Level 1 restatement, and run the normal intent loop. After re-classify, this block (or Gate 1) fires again per the resulting tier.
-- `Treat as XL` -> continue as XL for all downstream gates and record `EFFECTIVE_TIER: XL` for plan/challenge/implement/review steps. This path counts as if Gate 1 fired and the user picked `Continue` - **Gate 1 does not re-fire this run**.
-- `Abandon` -> stop the pipeline; emit no `<!-- pipeline-complete -->`.
-
-**If `<SCOPE_DOWN_COUNT> >= 2` (cap reached)**, invoke `AskUserQuestion` with the locked options:
-
-- `question`: ``Split cycles used. Classified XXL: <REASON>. Worth it?``
-- `header`: `XXL split`
-- `multiSelect`: `false`
-- `options`:
-  - `Treat as XL` - "Keep the work as one task. Continue at XL gates."
-  - `Abandon` - "Stop the command."
-
-(No `Split` option at the cap.)
-
-XXL pushback cycles are **free** - they do not count toward the backward-edge budget.
-
-#### Gate 1: Pre-plan cost check (L/XL)
-
-Skip Gate 1 if XXL pushback fired this run and the user chose `Treat as XL` (cost confirmation already given via the pushback).
-
-After the classifier (or re-classifier) lands at L or XL **for the first time in this run**, pause before continuing to pre-flight (or, on re-classify, to Step 4).
-
-Initialize on first fire: `<SCOPE_DOWN_COUNT> = 0`. Threaded through subsequent gate fires in this run.
-
-**If `<SCOPE_DOWN_COUNT> < 2`**, invoke `AskUserQuestion`:
-
-- `question`: ``This classifies as <tier>: <REASON>. Worth it? (scope-down cycles used: <SCOPE_DOWN_COUNT>/2)``
-- `header`: `Cost check`
-- `multiSelect`: `false`
-- `options`:
-  - `Continue` - "Proceed to pre-flight at `<tier>` gates."
-  - `Scope down` - "Narrow the scope. You'll be asked what to drop; the reduced request feeds back through Step 0 and re-classifies."
-  - `Abandon` - "Stop the command."
-
-Interpret the user's selection:
-- `Continue` -> proceed.
-- `Scope down` -> ask the user (free-text follow-up):
-  > Ok, restating with narrower scope. What part of the work do you want to drop or postpone?
-
-  Take the reply, increment `<SCOPE_DOWN_COUNT>`, feed the reply as the new `<RAW_REQUEST>` into Step 0 Level 1 restatement, and run the normal intent loop. After re-classify, this gate fires again with the updated counter.
-- `Abandon` -> stop the pipeline; emit no `<!-- pipeline-complete -->`.
-
-**If `<SCOPE_DOWN_COUNT> >= 2` (cap reached)**, invoke `AskUserQuestion` with the locked options:
-
-- `question`: ``Scope-down limit reached. Classified <tier>: <REASON>. Worth it?``
-- `header`: `Cost check`
-- `multiSelect`: `false`
-- `options`:
-  - `Continue` - "Proceed to pre-flight at `<tier>` gates."
-  - `Abandon` - "Stop the command."
-
-(No `Scope down` option at the cap.)
-
-Gate 1 cycles are **free** - they do not count toward the backward-edge budget.
-
-### Step 2: Pre-flight
-
-Bias-conditional. Same step semantically: gather information before designing.
-
-- **`TYPE_BIAS: build` or `plan-only`** (M/L/XL): parallel fan-out on the confirmed scope:
-  - `reuse-scanner` - reusable code + quick-win refactors
-  - `health-checker` - code health + cleanup targets
-  - `prototype-identifier` - external APIs / SDK novelty
-  - `researcher` - library/framework/domain knowledge (skip if interviewer flagged no external deps)
-
-  On `EFFECTIVE_TIER: S`, run `reuse-scanner` alone. The other three skip.
-
-- **`TYPE_BIAS: diagnose`**: launch `investigator` (full spec in `agents/investigator.md`). On `VERDICT: cannot-diagnose` with non-empty `MISSING_INFO`, run the wait-on-user free loop (request missing detail, re-invoke investigator).
-
-Step 2's depth varies by tier (S = 1 agent, M+ = 4 agents) and its agent set varies by bias (diagnose = investigator alone).
-
-**Health gate** (build / plan-only only): cleanup-first → wait user; proceed-with-cleanup → carry targets forward; proceed → continue.
-**Prototype gate** (build / plan-only only): launch `prototyper` (sonnet) if flagged, writing to `.prototypes/`. prototype-identifier tags each target with NOVELTY (low/med/high); on `high`, it also emits `ALTERNATIVE_SHAPES` and the prototyper builds **two** differently-shaped tracers for that target (Design It Twice at the prototype layer) and reports a `COMPARISON` so the planner picks on evidence rather than intuition.
-
-### Step 3: Clarify (L/XL; M when ambiguity remains after pre-flight)
-Enter the **clarify loop**. Launch `requirements-clarifier` (opus) with intent + pre-flight outputs. Each round, apply the Concise Surfacing Contract 4-cap priority queue across QUESTIONS + [unsure] criteria + [unsure] assumptions; invoke `AskUserQuestion` with the resulting items. Thread DEFERRED_QUESTIONS forward. Append answers to `<PRIOR_ROUNDS>`, re-launch. Exit when `CLARITY: clear` AND `NEW_ASPECTS_FOUND: no`. Cap at 5 rounds - at the cap, present the latest state and ask the user to confirm or reshape. Emit `<CLARIFY_OUTPUT>`.
-
-The clarifier also emits `WRITES_PROPOSED` (glossary terms) on exit when the round settled canonical names. The clarifier itself never writes - on `STOP_POINT: none` runs the main agent merges these into Step 10's aggregated discoveries; on `STOP_POINT: after-plan` they surface as info only.
-
-**Re-classify (backward edge)**: before exiting Step 3, if clarify answers (or earlier interviewer output) materially shifted scope, rerun `complexity-classifier` on intent + clarify. Scope up → add gates for the new tier going forward. Scope down → keep current gates (no retroactive downgrade). **Counts toward backward-edge budget.**
-
-### Step 3.5: Design Loop (when clarifier flagged DESIGN_LOOP_NEEDED: yes)
-
-Fires only when `<CLARIFY_OUTPUT>` carried `DESIGN_LOOP_NEEDED: yes`. Skipped otherwise.
-
-1. **Confirm parameters**: Launch `design-explorer` (opus) with intent, classification, clarify output, pre-flight findings, and `<USER_PARAM_PICKS>: none`. Output is `PHASE: confirm-params` with `PARAMS_TO_CONFIRM`. Apply the Concise Surfacing Contract 4-cap priority queue and invoke `AskUserQuestion` with the items. Capture user selections as `<USER_PARAM_PICKS>`.
-2. **Build the picker page**: Re-launch `design-explorer` with the same inputs plus `<USER_PARAM_PICKS>`. Output is `PHASE: built` with `HOST_DECISION` (sandbox vs real-page), `PAGE_FILE`, `PAGE_URL`, `CONTROLS_EXPOSED`, `COPY_SPEC_FORMAT`, `USER_INSTRUCTIONS`, and `CLEANUP_NEEDED`. Surface `USER_INSTRUCTIONS` and the page reference inline.
-3. **Wait for paste-back**: The user opens the page, flips through controls, clicks Copy on the chosen combination, pastes the labeled key-value spec back into chat. The next user message is the spec - capture it verbatim as `<LOCKED_DESIGN_SPEC>`.
-4. **Re-explore on request**: If the pasted reply asks for more options on a parameter, treat it as a refined `<USER_PARAM_PICKS>` and re-invoke the build phase. Otherwise hand `<LOCKED_DESIGN_SPEC>` (and `CLEANUP_NEEDED` when `HOST_DECISION: real-page`) to Step 4.
-
-The design loop is **free** - it does not count toward the backward-edge budget. The planner reads `<LOCKED_DESIGN_SPEC>` as input and (when real-page) folds `CLEANUP_NEEDED` into the plan's implementation steps so the picker artifacts never ship.
-
-### Step 4: Plan (L/XL)
-Launch `planner` (opus) with intent, classification, clarify, pre-flight findings, plus `<LOCKED_DESIGN_SPEC>` and `<DESIGN_CLEANUP>` from Step 3.5 (or "none" when the design loop didn't run). XL presents 2-3 APPROACHES with ASCII diagrams + RECOMMENDATION. Approved output emits `<APPROVED_PLAN version="N">`. When the design spec is bound, the planner builds to it verbatim; when cleanup is needed (real-page host), the planner folds those steps into the implementation.
-
-The plan's `## Acceptance` section attaches a `VALIDATION` type (`test`, `manual`, or `observable`) to each acceptance criterion pulled from `<CLARIFY_OUTPUT>`. The declared validation is part of the contract - acceptance-reviewer checks both the implementation AND that the named validation actually happened (test exists, observable is present at the named location, or manual is flagged for the user).
-
-### Step 5: Challenge (L/XL)
-Launch `plan-challenger` (opus). XL challenges **all** approaches (not just the recommendation). Verdict:
-- `approve` → present to user
-- `revise` → planner rerun with BLOCKERS (**backward edge**)
-- `reject` → reinterview (**backward edge**)
-
-Surface BLOCKERS + SCOPE_MISMATCH inline; render CHALLENGE_QUESTIONS via AskUserQuestion (Concise Surfacing Contract).
-
-Optional `SCOPE_MISMATCH` slot - one-liner "drop X to land Y" when the plan reaches farther than the intent's primary outcome needs. Heuristic, advisory; does not change VERDICT. Shown alongside plan to the user for an informed call.
-
-### Step 6: Implement
-- **S/M**: main agent implements directly (M draws on pre-flight + clarify).
-- **L/XL**: delegate to `implementer` (opus) with `<APPROVED_PLAN>` + reuse + intent.
-
-Implementer VERDICT:
-- `complete` | `partial` → Step 7.
-- `blocked` → **kickback tier** (counts toward backward-edge budget):
-  - `plan-patch` - narrow-scope planner rerun on one step
-  - `replan` - full planner rerun with new constraint
-  - `reinterview` - scope wrong, back to Step 0
-
-### Step 7: Broad pass (M/L/XL, fail-fast)
-Parallel:
-- `test-verifier` - fails fast; if red, skip Step 8 and jump to self-heal
-- `correctness-reviewer` - correctness, type holes, dead code (opus on L/XL, sonnet on M)
-- `quality-reviewer` - engineering judgment: hacky shortcuts, bloat, wrong tool, unelegant (opus across)
-- `acceptance-reviewer` - intent fulfillment + acceptance criteria
-- `plan-adherence-reviewer` - file list, function signatures, step order (L/XL only)
-
-### Step 8: Specialist pass (conditional)
-Gate each specialist on broad-pass finding OR touched files matching its domain:
-
-| Specialist | Trigger |
-|------------|---------|
-| `structure-reviewer` | broad pass flagged structure / boundaries |
-| `architecture-reviewer` (opus) | touched files introduce new exports / wrappers / seams; broad pass flagged shallow abstraction |
-| `reuse-reviewer` | broad pass flagged duplication |
-| `consistency-reviewer` | touched files affect patterns / naming |
-| `security-reviewer` (opus) | touched files include auth / permissions |
-| `performance-reviewer` | touched files include db / queries |
-| `accessibility-reviewer` | touched files include UI |
-| `design-consistency-reviewer` | touched files include UI |
-| `ux-reviewer` | touched files include UI |
-| `visual-verifier` | UI touched - inline offer (default-Y on XL, default-N on M/L); dev server at URL from project CLAUDE.md |
-
-Nothing flagged and no domain match → skip Step 8.
-
-### Step 9: Self-heal
-Launch `fixer` (opus on L/XL, sonnet on M) with aggregated findings. Fixer addresses every reported finding; anything that can't be fixed in scope goes into REMAINING.
-
-**Post-fix RE-RUN set** = gates that flagged anything the fixer addressed + gates whose domain the fixer's edits touched.
-
-- Round 1: fix + rerun
-- Round 2: present to user → directed fix + rerun
-- Round 3+: stop, surface
-
-Summary in Step 11 cites post-fix gate results only.
-
-### Step 10: Capture (M/L/XL)
-
-Before summarizing, harvest novel project-context items surfaced by upstream agents during this run. Aggregate every non-empty `DISCOVERIES` block from design-explorer, implementer, fixer, investigator, and the reviewers (correctness, quality, architecture, structure, consistency, security, performance) into `<AGGREGATED_DISCOVERIES>`. Also fold in any non-empty `WRITES_PROPOSED` block from `<CLARIFY_OUTPUT>` (glossary terms the clarifier surfaced on exit) - same dedup + approval flow applies.
-
-Launch `capture-agent` (opus) with `<PHASE>: 1` and `<AGGREGATED_DISCOVERIES>`. The agent dedups against the loaded PROJECT_CONTEXT (intent, stack, glossary) and emits one of:
-
-- `PHASE_RESULT: complete-empty` - nothing novel; skip to Step 11.
-- `PHASE_RESULT: complete-no-docs-dir` - target `docs/` does not exist; recommend `/alp-river:setup` to the user, skip to Step 11.
-- `PHASE_RESULT: proposal-ready` - a `PROPOSAL` block listing dedup-survived candidates per bucket.
-
-On `proposal-ready`, present the proposal to the user and capture per-item approvals:
-- `glossary`: `accept | edit: <text> | reject`.
-- `stack_drift` and `intent_drift`: `accept-as-drift | edit: <text> | reject`.
-
-Re-launch `capture-agent` with `<PHASE>: 2` and `<APPROVALS>`; it appends approved glossary terms and drift sections. Capture-agent never creates `docs/`.
-
-Skip Step 10 entirely on S tasks - no upstream emitters run.
-
-### Step 11: Summarize
-- What was built (2-3 sentences)
-- Files created / modified
-- Post-fix gate results
-- Captures recorded (glossary/drift counts, or "none")
-- Backward edges used: N/2
-- REMAINING items for user triage
-
-Emit `<!-- pipeline-complete -->` at the end.
-
-### Stop Points
-
-The pipeline has two natural stops. Both fire automatically when reached; the user picks Continue or Stop.
-
-- **`after-plan`** fires after Step 5 (Challenge) on L/XL whenever a plan was produced. Invoke `AskUserQuestion`:
-  - `question`: ``Plan approved. Continue building, or stop here?``
-  - `header`: `After plan`
-  - `multiSelect`: `false`
-  - `options`:
-    - `Continue-build (Recommended)` - "Run the implementation, review, and self-heal steps now."
-    - `Stop` - "Stop the run. The plan is on screen for you to act on later."
-
-  On `Continue-build` → proceed to Step 6. On `Stop` → emit `<!-- pipeline-complete -->`. Bare Enter accepts Continue-build.
-
-- **`after-diagnose`** fires after Step 2 on `TYPE_BIAS: diagnose`. The picker options depend on the investigator's `COMPLEXITY` to avoid mis-routing - a small fix shouldn't pretend a plan helped, and a large fix shouldn't bypass planning.
-  - **`COMPLEXITY: S` or `M`**:
-    - `Continue-fix` - "Continue here at S/M gates. You'll restate the outcome in your own words, then the main agent implements directly."
-    - `Stop` - "Stop after the diagnosis report."
-  - **`COMPLEXITY: L`, `XL`, or `XXL`**:
-    - `Continue-plan` - "Continue here. You'll restate the outcome in your own words, then run pre-flight + clarify + plan + challenge. The after-plan picker fires next."
-    - `Stop` - "Stop after the diagnosis report."
-
-  On Continue (either variant), set `TYPE_BIAS: build` and prompt the user verbatim:
-
-  > Restate the outcome you want in your own words (avoid file paths or function names - those go in the plan).
-
-  Capture the reply as `<CONFIRMED_INTENT>`. Run Step 1 classifier on it. Fire XXL pushback / Gate 1 per tier. Skip Step 2 (investigator already ran - findings carry forward as `<PREFLIGHT>` material for the planner). Proceed to Step 3 (clarify if needed) → 3.5 → 4 → 5. The after-plan picker fires on L/XL after Step 5 as usual. Continue through Step 11 otherwise.
-
-  On `Stop` → emit `<!-- pipeline-complete -->`.
-
-The user's restate at Continue is verbatim - no mechanical synthesis from investigator output, no auto-filled RECOMMENDED FIX. The investigator's report stays surfaced as a report, never silently consumed as intent.
-
-### Step 12: Follow-up Requests
-Every subsequent request is a new task. Re-enter Step 0 and run **Level 1 restate-and-wait** before any work - the gate is mandatory for follow-ups too, including S. Level 2 stays optional: skip it when the user's affirmation reads as a clean continuation; spawn the interviewer on any reshape reply per the Step 0 affirmation rule.
-
-The main agent runs the pipeline directly from this file. `TYPE_BIAS` is auto-detected at Step 0 Level 1 from the user's text (see `### Type Bias` above). The single slash entry `/alp-river:go` exists for users who want a discoverable trigger; free-text chat follows the same pipeline without any command dispatch.
+Skipping a stage needs a positive signal; adding one needs only doubt. Safety and clarify stages carry `guard: sticky` or fire on any risk sniff - in by default, dropped only on strong signal. A needless question costs mild annoyance; a wrong assumption costs the task.
 
 ## Model Tiering
 
-| Tier | Agents |
-|------|--------|
-| **opus** | classifier, interviewer, clarifier, planner, plan-challenger, implementer, design-explorer, acceptance-reviewer, security-reviewer, investigator, quality-reviewer, architecture-reviewer, capture-agent, adr-drafter; fixer + correctness-reviewer on L/XL |
-| **sonnet** | reuse-scanner, structure-reviewer, consistency-reviewer, reuse-reviewer, test-verifier, visual-verifier, a11y-reviewer, design-consistency-reviewer, ux-reviewer, plan-adherence-reviewer, prototyper; fixer + correctness-reviewer on M |
-| **haiku** | health-checker, prototype-identifier, researcher |
-
-Commands override the model at spawn time (`Agent` tool's `model` parameter) when the tier depends on complexity.
+Each stage declares its own `model` in agent frontmatter - `opus` for planning and
+judgment, `sonnet` for analysis and implementation, `haiku` for classification and
+lookups. The router spawns each stage at its declared model; there is no per-tier override
+table. Swap a specific agent's voice under `alpRiver.psychologyOverrides`, or change its
+`model` in frontmatter.
 
 ## Clarification Loops
 
-Step 0 Level 2 (interviewer) and Step 3 (clarifier) run as loops, not single passes. Depth scales with the unknowns still lurking - keep going until the user is satisfied and no new aspects emerge.
+The `interviewer` and `requirements-clarifier` stages run as loops, not single passes -
+depth scales with the unknowns still lurking. Each loops *internally* (the route sees one
+stage) until its exit criteria hold:
+1. VERDICT is `confirmed` (interviewer) or `clear` (clarifier).
+2. `NEW_ASPECTS_FOUND: no`.
+3. The user has no further additions.
 
-**Exit criteria** - exit when ALL hold:
-1. Agent's VERDICT is `confirmed` (interviewer) or `clear` (clarifier).
-2. Agent's `NEW_ASPECTS_FOUND: no`.
-3. User has no further additions.
-
-**Cap**: 5 rounds per step. At the cap, present the latest state and ask the user to confirm explicitly or reshape the request. Do not loop silently.
-
-**Round inputs**: re-invocations carry `<PRIOR_ROUNDS>` - a compressed log of prior questions and the user's answers (one line per Q&A, no reasoning). The agent uses it to detect whether the latest answer raised new aspects vs. reaffirmed prior ones, and to avoid re-asking what's already settled.
-
-**Research first**: before formulating questions in any round, the agent exhausts filesystem (Glob/Grep/Read), prior pre-flight findings, and web sources when the request mentions external surface. It reports what it checked in `LOOKUPS_PERFORMED`. If the codebase or research already answers a candidate question, drop it.
-
-**Loops are free**: clarification loops refine intent within a step. They do NOT count toward the backward-edge budget.
+**Cap**: 5 rounds per stage; at the cap, present the latest state and ask the user to
+confirm or reshape - never loop silently. Re-invocations carry `<PRIOR_ROUNDS>` (a
+compressed Q&A log) so the agent tells new aspects from reaffirmations and never re-asks
+what is settled. Before asking, the agent exhausts filesystem and web sources and reports
+`LOOKUPS_PERFORMED`; if research already answers a question, it drops it. Internal loops
+are free - convergence, not a budget, governs the route.
 
 ## Concise Surfacing Contract
 
-**Purpose**: Inline prose stays only for decisions. Multi-option choices render through `AskUserQuestion` so reasoning lives in `description`/`preview` instead of inline prose. Recon notes and round-over-round restatements still exist in the subagent output - the user opens them on demand by scrolling the transcript.
+**Purpose**: inline prose stays only for decisions. Multi-option choices render through
+`AskUserQuestion` so the reasoning lives in `description`/`preview`, not inline. Recon
+notes and round-over-round restatements stay in subagent output - the user opens them by
+scrolling.
 
-**In scope**: Step 0 Level 2 (interviewer), Step 1 cost gates (Gate 1 + XXL pushback), Step 3 (clarifier), Step 3.5 (design-explorer's `PARAMS_TO_CONFIRM` phase), Step 5 (plan-challenger), after-plan stop (Continue-build / Stop), after-diagnose stop (Continue-fix or Continue-plan, by COMPLEXITY / Stop), specialist-pass visual-verifier offer (when UI touched), capture-agent per-item approvals.
+**MUST-render rule**: when a gate stage is triggered (its signal is live) AND the answer
+could change the outcome, the orchestrator MUST invoke `AskUserQuestion` rather than render
+options as prose. When no picker-eligible item is open and the stage's exit criteria hold,
+proceed without prompting. A single-question single-select auto-submits - expected.
+`triage`'s one-line intent restatement is plain text, not a picker; confirm/correct needs
+no ceremony.
 
-**Out of scope** (each excluded for a reason):
-- **Step 0 Level 1**: stays plain text. Single-sentence restate; affirm-or-reshape where reshape is free-text. A picker would add ceremony for what's essentially confirm/correct.
-- **Step 4**: emits `<APPROVED_PLAN>` as a text readback only - no picker. The user decides once at Step 5.
-- **Pre-flight agents**: unchanged. Not user-facing.
-- **Post-impl reviewers**: unchanged.
+**Picker-eligible sources**: `interviewer` and `requirements-clarifier` (`QUESTIONS`, open
+`DEFERRED_QUESTIONS`, promoted `[unsure]` criteria or assumptions); `design-explorer`
+(`PARAMS_TO_CONFIRM`); `plan-challenger` (`CHALLENGE_QUESTIONS`); and any gate stage whose
+output is a user decision (the cost check on `size-crossed:<tier>`, continue/stop after a
+diagnosis or a plan, the visual-verify offer, capture's per-item approvals).
 
-**MUST-render rule**: when the workflow reaches any In-scope decision point, the main agent MUST invoke `AskUserQuestion` instead of rendering options as prose. When all picker-eligible items are empty AND the agent's exit criteria hold, the main agent proceeds without prompting. Single-question single-select auto-submits per `AskUserQuestion` CLI behavior - that is expected.
+**Question schema**: `question` (text), `header` (max 12 chars), `multiSelect`, `options`
+(2-4; each `label`, `description`, optional `preview`).
 
-**Picker-eligible items by source**:
-- `interviewer`: non-empty `QUESTIONS`, still-open `DEFERRED_QUESTIONS`.
-- `requirements-clarifier`: non-empty `QUESTIONS`, still-open `DEFERRED_QUESTIONS`, promoted `[unsure]` criteria or assumptions.
-- `design-explorer`: non-empty `PARAMS_TO_CONFIRM` or `DEFERRED_PARAMS`.
-- `plan-challenger`: non-empty `CHALLENGE_QUESTIONS`.
-- **Main-agent direct prompts** (no subagent emitter): Gate 1, XXL pushback, after-plan stop, after-diagnose stop, visual-verifier offer, capture-agent per-item approvals. Canonical blocks live here in WORKFLOW.md (Step 1 for Gate 1 + XXL pushback + Setup nudge; Stop Points for after-plan + after-diagnose). The main agent renders the picker directly per those specs.
+**Description vs. preview**: `description` carries the essence plus, for any non-trivial
+decision (one that sets a value, data shape, behavior, or UI result), one concrete example
+of what the choice produces (e.g. `wrapped -> {users:[...]}` vs `bare -> [...]`). The
+example is load-bearing - lead with it, cut hedges to make room. Bare yes/no and fixed
+process gates (Continue/Stop, Approve/Revise/Reshape) are exempt. `preview` is best-effort
+enrichment; never put load-bearing content there. The CLI supplies the "Other" escape -
+agents MUST NOT synthesize their own.
 
-**Question schema** (carried by interviewer/clarifier `QUESTIONS` items and challenger `CHALLENGE_QUESTIONS` items):
-- `question` (text)
-- `header` (max 12 chars)
-- `multiSelect` (true | false)
-- `options` (2-4 entries; each has `label`, `description`, optional `preview`)
+**4-question cap + DEFERRED priority queue**: `AskUserQuestion` takes 1-4 questions. With
+more than 4 eligible items, fill the slots in order - open `QUESTIONS`, then `[unsure]`
+criteria, then `[unsure]` assumptions - and roll the rest into `DEFERRED_QUESTIONS`,
+preserving order. Deterministic and re-runnable. `DEFERRED_QUESTIONS` rides inside
+`<CLARIFY_OUTPUT>` so it survives compaction; the orchestrator threads still-open items into
+the next round's `<PRIOR_ROUNDS>`.
 
-**Description vs. preview**: `description` carries the essence - what choosing this means - plus, for any non-trivial decision (one that sets a value, data shape, behavior, or UI result), one concrete example of what that choice produces (e.g. `wrapped -> {users:[...]}` vs `bare -> [...]`, or `30s -> 408 then retry`). The example is load-bearing, not decoration - it's what lets the user decide without asking for one, so lead with it and cut hedges or restated context to make room. Bare yes/no confirmations and fixed process/navigation gates (Continue/Stop, Approve/Revise/Reshape, Scope-down/Abandon) are exempt. `preview` is enrichment, best-effort; the host CLI may strip it when `toolConfig.askUserQuestion.previewFormat` is unset. Never put load-bearing content - including the example - in `preview`.
+**Challenger reshape**: `plan-challenger`'s `CHALLENGE_QUESTIONS` carry Approve (proceed) /
+Revise (rerun planner with `BLOCKERS`) / Reshape (back to intent). `SCOPE_MISMATCH` surfaces
+inline alongside `BLOCKERS` and in the Reshape option's `preview`.
 
-**No agent-side "Other"**: the CLI surfaces an "Other" free-text escape automatically. Agents MUST NOT synthesize their own "Other" option.
+## Convergence
 
-**4-question cap + DEFERRED priority queue**: `AskUserQuestion` accepts 1-4 questions per call. When upstream output produces more than 4 picker-eligible items, the main agent fills the 4 slots in this priority order and rolls the rest into `DEFERRED_QUESTIONS`:
-1. Genuine open `QUESTIONS` in the order the agent emitted them (clarifier orders by plan-change impact; interviewer orders by direction impact).
-2. `[unsure]` items from `ACCEPTANCE_CRITERIA_PROPOSED`, in their original list order (each becomes a Confirm/Replace shape).
-3. `[unsure]` items from `ASSUMPTIONS_TO_CONFIRM`, in their original list order (each becomes Confirm/Replace).
-
-Walk this priority queue top-to-bottom; remainder goes to `DEFERRED_QUESTIONS` preserving the same order. Deterministic and re-runnable. On rounds where `QUESTIONS` already fills all 4 slots, `[unsure]` items defer entirely - acceptable trade-off; the loop will surface them on a later round.
-
-**DEFERRED_QUESTIONS round-trip**:
-- **Clarifier**: `DEFERRED_QUESTIONS` lives **inside** `<CLARIFY_OUTPUT>` so the SessionStart re-injector preserves it across compaction.
-- **Interviewer**: `DEFERRED_QUESTIONS` is a top-level sibling of `QUESTIONS` (interviewer output has no wrapper today; adding one is out of scope). Compaction during the intent loop will lose interviewer `DEFERRED_QUESTIONS`. Accepted trade-off - Step 0 L2 rounds are short; the agent re-asks anyway.
-- The main agent threads still-open `DEFERRED_QUESTIONS` items into the next round's `<PRIOR_ROUNDS>` so the subagent can resurface them.
-
-**HEADER_GUIDANCE**: each covered subagent file carries its own `HEADER_GUIDANCE` worked examples (max 12 chars per header). The agent must produce a header that fits the cap; truncated headers signal a too-broad question.
-
-**SCOPE_MISMATCH surfacing**: the plan-challenger's `SCOPE_MISMATCH` field is preserved. Surfaced inline as a single-line advisory alongside `BLOCKERS` at Step 5. Also folded into the Reshape option's `preview` in `CHALLENGE_QUESTIONS` so the user sees the "drop X to land Y" framing in context.
-
-**Reshape == challenger `reject` for backward-edge accounting**: Step 4 has no picker. Reshape exists only at Step 5 in `CHALLENGE_QUESTIONS`. Selecting Reshape IS the `reject` path - reinterview to Step 0, counts as one backward edge per the Backward-Edge Budget section below. No new source of backward edges.
-
-**Mapping Approve/Revise/Reshape to existing branches**:
-- **Approve** -> proceed to Step 6.
-- **Revise** -> rerun planner with `<REPLAN_REASON>` = `BLOCKERS`; one backward edge.
-- **Reshape** -> reinterview from Step 0; one backward edge (equivalent to challenger `reject`).
-
-## Backward-Edge Budget
-
-Cap: **2 cumulative backward edges per task.** Backward edges revisit a prior step; they're distinct from in-step loops.
-
-Counts toward the budget:
-- `plan-challenger` verdict `revise` → planner rerun
-- `plan-challenger` verdict `reject` → reinterview
-- implementer kickback (`plan-patch` | `replan` | `reinterview`)
-- re-classify after clarify when scope moves
-
-Does **not** count (separate budget of 2):
-- fixer self-heal rounds
-- reviewer reruns during self-heal
-
-Does **not** count (free, no cap beyond per-step limits):
-- intent loop (Step 0 Level 2 re-runs)
-- clarify loop (Step 3 re-runs)
-- investigator MISSING_INFO loop (Step 2 on bias=diagnose, re-launch with refreshed framing)
-
-At the cap, stop and surface state to the user - don't loop silently.
+There is no edge budget. A route runs until it converges: the router returns no triggered
+unrun stage and every lens that ran is `clean`. The only loop guard is oscillation - a
+`scope-shift` that re-fires without resolving is surfaced to the user, not retried
+silently. See `## Pipeline` > The loop.
 
 ## Input Template Contract
 
@@ -510,11 +214,11 @@ Output wrapping: agents emit structured blocks named with XML-style tags that su
 
 ## Compaction
 
-After compaction, a `SessionStart` hook re-injects a small essentials block plus a pointer to the full doctrine in `WORKFLOW.md` (the agent reads that file on demand), and on top of that re-extracts the highest-version `<APPROVED_PLAN>`, `<CONFIRMED_INTENT>`, `<CLARIFY_OUTPUT>`, and `<CLASSIFICATION>` from the transcript and re-injects them, size-bounded to stay under the session-start output limit.
-
-What still needs manual preservation in the conversation: current workflow step, gate results so far, unresolved self-heal findings, backward-edge count. The essentials anchor and canonical state (intent / plan / classify / clarify) re-inject themselves; if the canonical state is large it may arrive truncated with an explicit marker, in which case the full version is in the pre-compaction transcript.
-
-Discard: raw exploration output, full file contents already acted on, superseded plans.
+After compaction, `hooks/reinject-canonical-state.sh` re-anchors the workflow pointer plus
+the canonical run state: the current `<ROUTE>`, `<LIVE_SIGNALS>`, `<AVAILABLE_ARTIFACTS>`,
+and `<PREMISES>`. The router recomputes the route from those, so resumption is
+deterministic. Preserve manually only what is not in those blocks: the stage currently
+mid-run and any gate awaiting the user.
 
 ## Code Doctrine
 

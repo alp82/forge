@@ -1,0 +1,1029 @@
+{
+  "stages": {
+    "acceptance-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "acceptance-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:acceptance",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "accessibility-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "accessibility-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:a11y",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "adr-drafter": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "decision-summary"
+          ]
+        },
+        "output": [
+          "adr-draft"
+        ]
+      },
+      "name": "adr-drafter",
+      "routes": [
+        "build",
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:adr",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "design-decision"
+        ]
+      }
+    },
+    "architecture-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "architecture-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:architecture",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "capture-agent": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "discoveries-captured"
+        ]
+      },
+      "name": "capture-agent",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "consistency-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "consistency-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:consistency",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "correctness-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "correctness-reviewer",
+      "routes": [
+        "build",
+        "spike"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:correctness",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "design-consistency-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "design-consistency-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:consistency",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "design-explorer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "clarified-intent"
+          ]
+        },
+        "output": [
+          "design-spec"
+        ]
+      },
+      "name": "design-explorer",
+      "routes": [
+        "build",
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "design-locked",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "design-needed"
+        ]
+      }
+    },
+    "discuss": {
+      "data": {
+        "input": {
+          "optional": [
+            "confirmed-intent"
+          ],
+          "required": [
+            "triage-read"
+          ]
+        },
+        "output": []
+      },
+      "name": "discuss",
+      "routes": [
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "scope-shift"
+        ],
+        "subscribes": [
+          "talk"
+        ]
+      }
+    },
+    "fixer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "findings"
+          ]
+        },
+        "output": [
+          "diff"
+        ]
+      },
+      "name": "fixer",
+      "routes": [
+        "build",
+        "spike"
+      ],
+      "signals": {
+        "publishes": [
+          "code-written",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "findings"
+        ]
+      }
+    },
+    "health-checker": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": []
+        },
+        "output": [
+          "health-findings"
+        ]
+      },
+      "name": "health-checker",
+      "routes": [
+        "build",
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "health-checked",
+          "unhealthy",
+          "dead-code",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "build"
+        ]
+      }
+    },
+    "implementer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "approved-plan",
+            "validated-tests"
+          ]
+        },
+        "output": [
+          "diff"
+        ]
+      },
+      "name": "implementer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "code-written",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "plan-ready"
+        ]
+      }
+    },
+    "interviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "request"
+          ]
+        },
+        "output": [
+          "confirmed-intent"
+        ]
+      },
+      "name": "interviewer",
+      "routes": [
+        "build",
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "intent-confirmed",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "ambiguous",
+          "reshape"
+        ]
+      }
+    },
+    "investigator": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "request"
+          ]
+        },
+        "output": [
+          "diagnosis"
+        ]
+      },
+      "name": "investigator",
+      "routes": [
+        "build",
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "root-cause-found",
+          "cannot-diagnose",
+          "missing-info",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "bug"
+        ]
+      }
+    },
+    "performance-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "performance-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:perf",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "plan-adherence-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "plan-adherence-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:adherence",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "plan-challenger": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "approved-plan"
+          ]
+        },
+        "output": [
+          "plan-challenge"
+        ]
+      },
+      "name": "plan-challenger",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "plan-challenged",
+          "findings:challenge",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "plan-ready"
+        ]
+      }
+    },
+    "planner": {
+      "data": {
+        "input": {
+          "optional": [
+            "reuse-map",
+            "health-findings",
+            "research-findings",
+            "prototypes",
+            "design-spec"
+          ],
+          "required": [
+            "clarified-intent"
+          ]
+        },
+        "output": [
+          "approved-plan"
+        ]
+      },
+      "name": "planner",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "plan-ready",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "clarified"
+        ]
+      }
+    },
+    "prototype-identifier": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "confirmed-intent"
+          ]
+        },
+        "output": [
+          "prototype-identification"
+        ]
+      },
+      "name": "prototype-identifier",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "novel:high",
+          "alternative-shapes",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "intent-confirmed",
+          "multi-file"
+        ]
+      }
+    },
+    "prototyper": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "prototype-identification"
+          ]
+        },
+        "output": [
+          "prototypes"
+        ]
+      },
+      "name": "prototyper",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "scope-shift"
+        ],
+        "subscribes": [
+          "novel:high",
+          "alternative-shapes"
+        ]
+      }
+    },
+    "quality-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "quality-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:quality",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "requirements-clarifier": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "confirmed-intent",
+            "reuse-map",
+            "health-findings"
+          ]
+        },
+        "output": [
+          "clarified-intent"
+        ]
+      },
+      "name": "requirements-clarifier",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "clarified",
+          "design-needed",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "intent-confirmed",
+          "reuse-done",
+          "health-checked"
+        ]
+      }
+    },
+    "researcher": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "confirmed-intent"
+          ]
+        },
+        "output": [
+          "research-findings"
+        ]
+      },
+      "name": "researcher",
+      "routes": [
+        "build",
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:research",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "novel-domain",
+          "missing-infra"
+        ]
+      }
+    },
+    "reuse-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "reuse-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:reuse",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "reuse-scanner": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "confirmed-intent"
+          ]
+        },
+        "output": [
+          "reuse-map"
+        ]
+      },
+      "name": "reuse-scanner",
+      "routes": [
+        "build",
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "existing",
+          "duplication",
+          "missing-infra",
+          "reuse-done",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "build"
+        ]
+      }
+    },
+    "security-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "guard": "sticky",
+      "name": "security-reviewer",
+      "routes": [
+        "build",
+        "spike"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:security",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "auth-surface",
+          "secrets",
+          "perms-change"
+        ]
+      }
+    },
+    "spike-build": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "confirmed-intent"
+          ]
+        },
+        "output": [
+          "diff"
+        ]
+      },
+      "name": "spike-build",
+      "routes": [
+        "spike"
+      ],
+      "signals": {
+        "publishes": [
+          "code-written",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "spike"
+        ]
+      }
+    },
+    "structure-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "structure-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:structure",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "test-author": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "test-cases"
+          ]
+        },
+        "output": [
+          "tests"
+        ]
+      },
+      "name": "test-author",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "tests-red",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "test-cases-ready",
+          "tests-misaligned",
+          "tests-missing"
+        ]
+      }
+    },
+    "test-gap": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "test-gap",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:test-gap",
+          "tests-missing",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "test-plan": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "approved-plan"
+          ]
+        },
+        "output": [
+          "test-cases"
+        ]
+      },
+      "name": "test-plan",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "test-cases-ready",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "plan-ready"
+        ]
+      }
+    },
+    "test-review": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "tests",
+            "confirmed-intent",
+            "approved-plan"
+          ]
+        },
+        "output": [
+          "validated-tests"
+        ]
+      },
+      "name": "test-review",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "tests-misaligned",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "tests-red"
+        ]
+      }
+    },
+    "test-verifier": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "test-verifier",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:test",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "triage": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "request"
+          ]
+        },
+        "output": [
+          "triage-read"
+        ]
+      },
+      "name": "triage",
+      "routes": [
+        "build",
+        "spike",
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "build",
+          "spike",
+          "talk",
+          "bug",
+          "ambiguous",
+          "novel-domain",
+          "multi-file",
+          "auth-surface",
+          "secrets",
+          "perms-change",
+          "est-size",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "request-received"
+        ]
+      }
+    },
+    "ux-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "ux-reviewer",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:ux",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
+    "visual-verifier": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "name": "visual-verifier",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:ux",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written",
+          "run-visual"
+        ]
+      }
+    }
+  }
+}

@@ -3,6 +3,14 @@ name: researcher
 description: Quick external research on libraries, APIs, frameworks, algorithms, or domain knowledge relevant to the task. Surfaces current best practices, version info, and known pitfalls via targeted web search.
 model: haiku
 tools: WebSearch, WebFetch, Glob, Grep, Read
+stage:
+  routes: [build, talk]
+  data:
+    input: ['@confirmed-intent']
+    output: ['@research-findings']
+  signals:
+    subscribes: ['#novel-domain', '#missing-infra']
+    publishes: ['#findings:research', '#scope-shift']
 ---
 
 You look things up on the web so the planner and implementer don't rely on training-data recall for load-bearing external knowledge.

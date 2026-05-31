@@ -2,181 +2,120 @@
 
 Canonical terms for this project. Agents read this to avoid renaming the same concept three different ways across files.
 
-## Terms
+## Core model
 
-For each domain term, give the definition and the aliases to avoid. Aliases should be the names that have crept in elsewhere or that are tempting but wrong here.
+### Stage
+**Definition:** A composable unit of the workflow, declared by a `stage:` block in an agent's frontmatter (`data.input/output` artifacts, `signals.subscribes/publishes` topics, optional `guard`). The router composes a route from stages.
+**Avoid:** "step", "phase" (the old fixed-pipeline units, retired).
 
-### Complexity tier
+### Route
+**Definition:** The ordered set of stages the deterministic router assembles for one task, recomposed as signals arrive. Order comes from artifact dependencies; membership from live signals.
+**Avoid:** "pipeline" for the per-task instance (the pipeline is the whole system; a route is one task's path).
 
-**Definition:** The classifier's verdict on a request's size, one of S / M / L / XL / XXL. Controls how many phases of the pipeline run - S short-circuits to the main agent, XXL pushes back and asks for decomposition. Appears in code and agent files as the slot code `EFFECTIVE_TIER`; the human-readable name "complexity tier" is canonical for prose and docs.
+### Catalog
+**Definition:** `generated/catalog.json`, compiled by `hooks/gen-catalog.py` from every agent's `stage:` frontmatter. The router's input. See `doctrine/CATALOG.md`.
+**Avoid:** "registry", "manifest".
 
-**Avoid:** "complexity" alone, "size", "grade", bare "tier" (collides with model tier - haiku/sonnet/opus).
+### Signal
+**Definition:** A pub/sub topic. A stage `subscribes` to signals (any one triggers it, OR) and `publishes` signals (facts it emits, each with a free-form message). Bare in storage, rendered with `#`. See `doctrine/SIGNALS.md`.
+**Avoid:** "event", "flag" (a signal is the topic; "triggers" is what a live one does to a stage).
 
-### Execution mode
+### Artifact
+**Definition:** A data input/output of a stage (`data.input` / `data.output`). Artifacts form the precedence DAG that orders the route. Rendered with `@`.
+**Avoid:** "output", "result" (too generic).
 
-**Definition:** The work-type axis with values `build` and `diagnose`. Selects which phases and reviewers apply - diagnose skips Design and runs investigator-first. Appears in code and agent files as the slot code `TYPE_BIAS`; the human-readable name "execution mode" is canonical for prose and docs.
+### Size readout
+**Definition:** XS / S / M / L / XL / XXL, derived from the *count* of stages in the composed route. A readout, never a driver - it does not pick stages.
+**Avoid:** "complexity tier", "grade" (the old driver framing, retired). Bare "tier" collides with model tier.
 
-**Avoid:** "type", "mode" alone (model tier also uses "mode"), "bias" alone (overloaded with LLM bias).
+### Path
+**Definition:** `build`, `spike`, or `talk` - published by `triage`, exactly one per turn, re-evaluated each turn. Shapes the route: talk parks the spine (the `discuss` stage converses), spike relaxes rigor, build runs the full composition. A bug is `build` plus a `bug` signal, not a separate path.
+**Avoid:** "route type", "execution mode", "TYPE_BIAS" (retired); "diagnose" as a path (folded into build).
 
-### Iteration
+### Routes
+**Definition:** The mandatory per-stage frontmatter list of paths (`build`/`spike`/`talk`) a stage may run on. The router drops a triggered stage whose `routes` exclude the live path; multi-path is normal (`correctness-reviewer: [build, spike]`).
+**Avoid:** "route" singular (that is the composed per-task instance).
 
-**Definition:** A re-entry from a later pipeline step back to an earlier one (e.g. implementer back to planner). Capped at 2 cumulative per request via the Backward-Edge Budget. Internal term in source: "backward edge".
+### Convergence
+**Definition:** A route is done when the router triggers no unrun stage and every review lens that ran is `clean`. Replaces the old backward-edge budget - there is no edge count.
+**Avoid:** "completion", "budget".
 
-**Avoid:** "loop" (in-step loops are free and distinct from iterations), "retry".
+### Oscillation guard
+**Definition:** The only loop guard under convergence: a `scope-shift` that re-fires without resolving is surfaced to the user instead of retried silently.
+**Avoid:** "retry limit", "budget".
 
-### Pushback
+### Scope-shift
+**Definition:** A signal every stage may publish when its work breaks a premise the route was built on. The orchestrator aggregates these and recomposes.
+**Avoid:** "rescope", "pivot".
 
-**Definition:** The specific iteration from implementer to planner when implementation reveals the plan is wrong. A pushback consumes one unit of the Backward-Edge Budget. Internal term in source: "kickback".
+### Sticky guard
+**Definition:** `guard: sticky` on a safety stage (e.g. security-review): once triggered it is never auto-dropped, even if its signal goes quiet.
+**Avoid:** "pinned", "locked".
 
-**Avoid:** "rejection", "bounce-back".
+### Lens
+**Definition:** A review stage of the parameterized review family - same `@diff -> @findings` shape, differing only in which signal triggers it (broad lenses subscribe `code-written`; specialists subscribe a domain or `smell:<area>` signal).
+**Avoid:** "broad pass", "specialist pass" (old step names), "review round".
+
+### Gate
+**Definition:** A stage whose published output is a user decision, rendered via `AskUserQuestion`. Fires only when triggered AND the answer could change the outcome.
+**Avoid:** "checkpoint", "Gate 1", "XXL pushback" (retired named gates).
+
+### Triage
+**Definition:** The always-on seed stage. Reads the request, publishes the path and opening signals (`ambiguous`, `bug`, risk sniffs, an advisory `est-size`); the router composes from there.
+**Avoid:** "classifier" (retired), "router" (triage seeds, the router composes).
 
 ### Self-heal
-
-**Definition:** Step 9's fixer-driven repair cycle that reruns failing reviewers after fixes are applied. Has its own separate budget of 2 self-heal rounds, distinct from the Backward-Edge Budget that caps iterations.
-
+**Definition:** The `fixer`-driven repair cycle that reruns the lenses whose findings it addressed, until they come back `clean`. A signal cycle (`code-written` re-published), bounded by the oscillation guard.
 **Avoid:** "auto-fix", "retry loop".
 
-### Pipeline output markers
-
-**Definition:** Speaking-name slot identifiers that flow between pipeline steps. Most are subagent-emitted: `CONFIRMED_INTENT`, `CLASSIFICATION`, `CLARIFY_OUTPUT`, `APPROVED_PLAN`, `DISCOVERIES`. A few are not - `AGGREGATED_DISCOVERIES` is built by the main agent concatenating per-agent `DISCOVERIES` blocks at Step 10; `LOCKED_DESIGN_SPEC` is the verbatim paste-back from the design picker, captured by the main agent.
-
-**Avoid:** "output", "result", "response" (all too generic); "tag" (suggests metadata, not payload).
-
-### Phase
-
-**Definition:** One of the seven coarse pipeline groupings: Understand, Prepare, Design, Build, Verify, Capture, Follow-up. Phases are labels; the executable unit is the Step.
-
-**Avoid:** "stage" (drifts in - README.md uses "stage"; "phase" is canonical).
-
-### Step
-
-**Definition:** A numbered unit within a phase (Step 0 through Step 12). The Step is the unit the orchestrator actually executes; the Phase is just the grouping label above it.
-
-**Avoid:** "stage", and avoid using "phase" for the unit (phase is the grouping, step is the unit).
-
-### Broad pass
-
-**Definition:** Step 7's parallel fan-out of reviewer subagents that always runs at M and above.
-
-**Avoid:** "review round", "first review".
-
-### Specialist pass
-
-**Definition:** Step 8's conditional reviewer set that fires only when triggered by Broad-pass output.
-
-**Avoid:** "deep review", "second review".
-
-### Pre-flight
-
-**Definition:** Step 2's fan-out of reconnaissance subagents that gathers context before clarification.
-
-**Avoid:** "prep", "research phase".
-
-### Gate 1
-
-**Definition:** The L/XL pause before pre-flight where the user confirms cost before the pipeline spends fan-out tokens.
-
-**Avoid:** "confirmation", "checkpoint".
-
-### XXL pushback
-
-**Definition:** Step 1's response when the classifier returns XXL - a 3-option picker (Split / Treat as XL / Abandon) that surfaces the suggested decomposition before any other gate fires. Split cycles are bounded (capped at 2 scope-downs). Distinct from the term "Pushback" above - XXL pushback is a request-level decision, Pushback is a step-to-step iteration.
-
-**Avoid:** "rejection", "refusal".
-
-### Setup nudge
-
-**Definition:** Reminder pointing the user at `/alp-river:setup` when `docs/INTENT.md` is missing. Fires from two places: the SessionStart hook (every session boundary, before any classification) and Step 1 in-pipeline (first-fire on M/L/XL/XXL when the session-boundary nudge wasn't acted on).
-
-**Avoid:** "warning", "notice".
-
-### Design loop
-
-**Definition:** Step 3.5's UI parameter picker that iterates with the user to produce a `LOCKED_DESIGN_SPEC` before planning starts.
-
-**Avoid:** "design phase" (loop is more specific - it iterates with the user).
-
-### Capture-agent two-phase
-
-**Definition:** Step 10's pattern where phase 1 proposes glossary/stack/intent updates and phase 2 writes them after user approval.
-
-**Avoid:** "capture step".
-
-### Context injection slots
-
-**Definition:** Auto-injected payloads that the PreToolUse(Agent) hook (`hooks/user-context-injector.sh`) prepends to subagent prompts. Three blocks: `USER_CONTEXT` (slice of `MEMORY.md` plus linked files), `PROJECT_CONTEXT` (slice of `docs/` - intent, stack, glossary, ADRs), and `PSYCHOLOGY` (persona block resolved per-agent via `psychology/agent-map.json`). The per-agent doc-token routing dictionary inside the hook (`READ_MAP`) is config, not a payload.
-
-**Avoid:** "context" alone (overloaded with LLM context window).
-
-### ADR
-
-**Definition:** Architectural decision record produced by the adr-drafter subagent and stored under `docs/adr/`.
-
-**Avoid:** "decision doc", "design doc".
-
-### Psychology
-
-**Definition:** Opt-in persona block injected via `psychology/agent-map.json` that shapes a subagent's voice and disposition.
-
-**Avoid:** "personality", "prompt prefix".
-
-### Confidence tagging
-
-**Definition:** The `[likely]` / `[unsure]` markers subagents append to claims they can't ground in evidence.
-
-**Avoid:** "uncertainty markers", "hedging".
+## Surfacing
 
 ### Concise Surfacing Contract
-
-**Definition:** The rule that multi-option user choices go through Claude Code's AskUserQuestion tool, not free-text prompts.
-
+**Definition:** The rule that multi-option user choices go through `AskUserQuestion`, not free-text prompts. See WORKFLOW.md.
 **Avoid:** "user prompt", "question contract".
 
 ### 4-question cap
-
-**Definition:** Hard rule that the main agent can ask at most four questions per turn; overflow goes to `DEFERRED_QUESTIONS`.
-
-**Avoid:** "question limit" (the cap is specifically four).
+**Definition:** At most four questions per `AskUserQuestion` turn; overflow goes to `DEFERRED_QUESTIONS`.
+**Avoid:** "question limit".
 
 ### DEFERRED_QUESTIONS
-
-**Definition:** The queue of questions clarifier/interviewer agents would have asked beyond the 4-question cap, surfaced later in the pipeline.
-
+**Definition:** The queue of picker-eligible items beyond the 4-question cap, threaded forward into later rounds.
 **Avoid:** "backlog", "pending".
 
-### After-plan stop
+### Confidence tagging
+**Definition:** The `[likely]` / `[unsure]` markers subagents append to claims they can't ground in evidence.
+**Avoid:** "uncertainty markers", "hedging".
 
-**Definition:** Pipeline pause at L/XL once a plan has been approved, giving the user a chance to review before implementation begins.
+## Context injection
 
-**Avoid:** "checkpoint" (too generic).
-
-### After-diagnose stop
-
-**Definition:** Pipeline pause in bug-framing once the investigator returns its diagnosis, giving the user a continue-or-stop choice before implementation begins.
-
-**Avoid:** "checkpoint" (too generic).
+### Context injection slots
+**Definition:** Auto-injected payloads the PreToolUse(Agent) hook (`hooks/user-context-injector.sh`) prepends to subagent prompts: `USER_CONTEXT` (slice of `MEMORY.md` plus linked files), `PROJECT_CONTEXT` (slice of `docs/` - intent, stack, glossary, ADRs), and `PSYCHOLOGY` (persona per `psychology/agent-map.json`).
+**Avoid:** "context" alone (overloaded with LLM context window).
 
 ### Doctrine slice
-
-**Definition:** A standalone markdown file under `doctrine/` holding one shared-rule section (reviewer-contract, code-doctrine, confidence-tagging, or discoveries), lifted verbatim from WORKFLOW.md and injected per-agent by the PreToolUse(Agent) hook into agents whose definition cites it. Introduces "doctrine" as a named injection axis delivered to subagents, distinct from the three existing Context injection slots (USER_CONTEXT, PROJECT_CONTEXT, PSYCHOLOGY).
-
-**Avoid:** _TODO:_ aliases to avoid (review and fill)
+**Definition:** A standalone markdown file under `doctrine/` holding one shared-rule section (reviewer-contract, code-doctrine, catalog, signals, ...), injected per-agent by the PreToolUse(Agent) hook into agents whose definition cites it.
+**Avoid:** "include", "partial".
 
 ### DOCTRINE_MAP
+**Definition:** The bash associative array in `hooks/user-context-injector.sh` mapping each agent to the doctrine slice tokens it receives. An agent appears only if its definition cites that doctrine (cite=receive).
+**Avoid:** "config map".
 
-**Definition:** The bash associative array in `hooks/user-context-injector.sh` mapping each agent to the doctrine slice tokens it receives, paralleling READ_MAP. An agent appears in the map only if its definition cites that doctrine (cite=receive). New routing structure future agent additions must update.
+### Psychology
+**Definition:** Opt-in persona block injected via `psychology/agent-map.json` that shapes a subagent's voice.
+**Avoid:** "personality", "prompt prefix".
 
-**Avoid:** _TODO:_ aliases to avoid (review and fill)
+### ADR
+**Definition:** Architectural decision record produced by the `adr-drafter` stage and stored under `docs/adr/`.
+**Avoid:** "decision doc", "design doc".
 
 ## Relationships
 
-- Complexity tier controls HOW MANY phases run (S short-circuits, XXL pushes back via XXL pushback).
-- Execution mode controls WHICH phases run (diagnose skips Design).
-- Phase contains many Step; Step is the executable unit, Phase is the grouping label.
-- Broad pass always runs at M+; Specialist pass runs only when Broad-pass output triggers it.
-- DISCOVERIES (per-agent) flow into AGGREGATED_DISCOVERIES (Step 10 input) and then into capture-agent's two-phase write.
+- The catalog (stage frontmatter) feeds the router; the router composes a route from live signals; the route runs to convergence.
+- Artifacts decide ORDER (precedence); signals decide MEMBERSHIP. The size readout is a side effect of the route's stage count.
+- Path (from triage) shapes the route; a gate is a stage, a lens is a stage - everything composes by the same rules.
 
 ## Flagged ambiguities
 
-- "session" - the SessionStart hook event means a Claude Code session start, but `/alp-river:reflect`'s "current session" means the current chat history. Mark which usage applies in each file.
-- "tier" - has at least four meanings: complexity tier (S/M/L/XL/XXL), model tier (haiku/sonnet/opus), kickback tier (plan-patch/replan/reinterview escalation in `agents/implementer.md`), and finding priority tier (1-5 in reviewer outputs). `WORKFLOW.md § Model Tiering` covers the first two. Prefer the qualified form ("complexity tier", "model tier", etc.) in new prose; reserve bare "tier" for cases where context makes the meaning obvious.
+- "session" - the SessionStart hook event means a Claude Code session start, but `/alp-river:reflect`'s "current session" means the current chat history.
+- "tier" - now means model tier (haiku/sonnet/opus) or the size readout (XS-XXL); the old "complexity tier" driver is retired. Prefer the qualified form.
+- "stage" is canonical for the workflow unit; "step" and "phase" are retired.

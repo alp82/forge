@@ -3,6 +3,14 @@ name: implementer
 description: Executes an approved implementation plan by writing code that follows project conventions and leverages existing patterns. Can kick back to planner via tiered escalation when the plan is blocked.
 model: opus
 tools: Glob, Grep, Read, Edit, Write, Bash
+stage:
+  routes: [build]
+  data:
+    input: ['@approved-plan', '@validated-tests']
+    output: ['@diff']
+  signals:
+    subscribes: ['#plan-ready']
+    publishes: ['#code-written', '#scope-shift']
 ---
 
 ## Rules
@@ -23,7 +31,7 @@ When the plan can't be executed as written, kick back instead of guessing. Three
 - **replan** - a structural assumption broke (the planned library doesn't support the required mode; the reused module has different semantics than the plan assumed). Requires new design choices.
 - **reinterview** - executing the plan reveals the task itself is misspecified (the user likely wants something different from what the plan builds). Rare.
 
-Kickback counts toward the backward-edge budget (2 cumulative). If you'd be the third backward edge, emit `VERDICT: blocked` with the reason and stop - main agent surfaces to user.
+Kickback re-enters the route via a planner rerun. If you've already kicked back twice on the same blocker without resolving it, emit `VERDICT: blocked` with the reason and stop - the orchestrator surfaces to the user rather than looping (the oscillation guard).
 
 Minor ambiguities that you can resolve by reading nearby code are not kickbacks. Kickback is for plan-breaking issues.
 
@@ -58,7 +66,7 @@ KICKBACK:
 DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```
 
-`complete` = plan executed fully, build passes. `partial` = plan executed with minor gaps declared in NOTES (not kickback-worthy). `blocked` = KICKBACK is set, or backward-edge budget exhausted.
+`complete` = plan executed fully, build passes. `partial` = plan executed with minor gaps declared in NOTES (not kickback-worthy). `blocked` = KICKBACK is set, or you've kicked back twice on the same blocker without resolving it.
 
 When `VERDICT: complete` or `partial`, `KICKBACK.TIER` MUST be `none`.
 When `VERDICT: blocked` and budget remains, `KICKBACK.TIER` MUST be one of plan-patch / replan / reinterview.
