@@ -9,7 +9,7 @@ stage:
     input: ['@diff']
     output: ['@findings']
   signals:
-    subscribes: ['#code-written']
+    subscribes: ['#needs-tests']
     publishes: ['#findings:consistency', '#clean', '#scope-shift']
 ---
 

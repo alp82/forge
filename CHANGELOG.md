@@ -2,6 +2,12 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.0.5 - 2026-05-31
+
+- Documentation, version, and configuration changes now finish in a few quick steps instead of the full process.
+- Changes that add real logic still require failing tests to be written and checked before any code is touched.
+- Trivial changes now get a focused correctness check rather than the full review pass.
+
 ## 1.0.4 - 2026-05-31
 
 - Multi-step tasks now run their steps in dependency order and reuse each step's real output instead of guessing ahead and redoing work.

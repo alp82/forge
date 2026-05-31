@@ -64,6 +64,18 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Definition:** The always-on seed stage. Reads the request, publishes the path and opening signals (`ambiguous`, `bug`, risk sniffs, an advisory `est-size`); the router composes from there.
 **Avoid:** "classifier" (retired), "router" (triage seeds, the router composes).
 
+### Green-light
+**Definition:** The artifact that clears the implementer to start. On a trivial build `skip-tests` mints it directly; on a logic build `test-review` mints it after validating the red tests. The implementer lists it as an `input`, so the precedence graph forbids code before it exists.
+**Avoid:** "approval", "go-ahead".
+
+### Trivial
+**Definition:** A build with no new logic - docs, config, version, copy, formatting, or dependency edits. Published by `triage`; routes the short path (`skip-tests` + `planner`, then implement and a correctness check), skipping the test chain.
+**Avoid:** "small", "simple".
+
+### Needs-tests
+**Definition:** A build carrying real logic - any new or changed branch, loop, or computation. Published by `triage`; pulls the full spine plus the TDD chain.
+**Avoid:** "complex".
+
 ### Self-heal
 **Definition:** The `fixer`-driven repair cycle that reruns the lenses whose findings it addressed, until they come back `clean`. A signal cycle (`code-written` re-published), bounded by the oscillation guard.
 **Avoid:** "auto-fix", "retry loop".

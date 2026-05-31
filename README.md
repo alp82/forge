@@ -6,9 +6,15 @@
 
 Multi-step agent refinement for Claude Code. A deterministic router reads your request and composes the exact stages it needs - and only those - reshaping the set as the work reveals itself. Trivial asks stay out of your way; risky ones earn clarification, planning, adversarial challenge, test-first implementation, review, and self-heal.
 
-The whole thing ships in one folder: a router-driven workflow, 39 composable stages, 6 slash commands, and hooks that compile the stage catalog, gate tests, and inject context.
+The whole thing ships in one folder: a router-driven workflow, 40 composable stages, 6 slash commands, and hooks that compile the stage catalog, gate tests, and inject context.
 
 ## Latest updates
+
+**1.0.5**
+
+- Documentation, version, and configuration changes now finish in a few quick steps instead of the full process.
+- Changes that add real logic still require failing tests to be written and checked before any code is touched.
+- Trivial changes now get a focused correctness check rather than the full review pass.
 
 **1.0.4**
 
@@ -97,7 +103,7 @@ Two rules never bend: **precedence** (a stage can't run before the artifacts it 
 
 ## Agents
 
-39 composable stages plus a setup command, grouped by role. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`).
+40 composable stages plus a setup command, grouped by role. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`).
 
 ### Seed and intent
 | Agent | Model | Role |
@@ -131,7 +137,7 @@ Two rules never bend: **precedence** (a stage can't run before the artifacts it 
 | test-gap | sonnet | Always-on coverage lens; pulls test-author back for untested behavior. |
 | test-verifier | sonnet | Runs the suite and gates green. |
 
-`implement` lists validated tests as an `input`, so the precedence graph forbids code before tests exist - TDD is structural, not a guideline.
+`implement` lists a green-light as an `input`, so the precedence graph forbids code before it exists. On a logic change only `test-review` mints that green-light, and only after validating the red tests - TDD is structural, not a guideline.
 
 ### Build, review, heal, capture
 | Agent | Model | Role |
@@ -176,7 +182,7 @@ alp-river/
 │   ├── route.py           <- deterministic router
 │   ├── gen-catalog.py     <- compiles agent frontmatter into the catalog
 │   └── *.sh               <- inject-workflow, auto-format, context injection, ...
-├── agents/                <- 39 stage definitions + setup-agent
+├── agents/                <- 40 stage definitions + setup-agent
 ├── commands/              <- 6 slash commands
 └── templates/             <- copy into your project's docs/ for project-context injection
 ```

@@ -6,7 +6,7 @@ tools: Glob, Grep, Read, Edit, Write, Bash
 stage:
   routes: [build]
   data:
-    input: ['@approved-plan', '@validated-tests']
+    input: ['@approved-plan', '@green-light']
     output: ['@diff']
   signals:
     subscribes: ['#plan-ready']

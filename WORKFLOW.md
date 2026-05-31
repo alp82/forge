@@ -96,7 +96,7 @@ Each turn:
      ```
      build · M · 5 stages
        ✓ triage
-       ▶ reuse-scanner ← #build
+       ▶ reuse-scanner ← #needs-tests
        • planner ← #clarified
        • implementer ← #plan-ready
        • correctness-reviewer ← #code-written
@@ -111,7 +111,7 @@ Repeat until **convergence**: the router returns an empty route (no live signal 
 
 The route is rooted by the always-on `triage` stage. It reads the request and publishes exactly one **path** - `build`, `spike`, or `talk` - plus early signals (`ambiguous`, `novel-domain`, a bug-framing `bug`, risk sniffs) and one advisory `est-size:<tier>`. The router composes from there. The path is sticky but re-evaluated every turn: `talk` flips to `build` on "do it"; a `spike` graduates to `build` on the kept code.
 
-- **`build`** - the full composed route. A bug is a build: `triage` pairs `build` with a `bug` signal, the `investigator` diagnoses inside the route, and the build spine fixes the cause. There is no separate `diagnose` path.
+- **`build`** - the full composed route. A bug is a build: `triage` pairs `build` with a `bug` signal, the `investigator` diagnoses inside the route, and the build spine fixes the cause. There is no separate `diagnose` path. `triage` also sub-classifies the build as `trivial` or `needs-tests`: `implement` can't run before a `green-light`, which on a logic change only `test-review` produces (after validating the red tests); a trivial change gets its `green-light` from `skip-tests` and skips the test chain.
 - **`talk`** - the spine is parked; the `discuss` stage converses - options with worked examples, honest tradeoffs, one sharp question, never code. Recon stages (research, investigator, reuse-scan, design-explorer) stay summonable on demand, but nothing produces a `diff` and nothing is reviewed or captured.
 - **`spike`** - sandboxed throwaway (`.prototypes/`). `spike-build` runs relaxed; the build-only ceremony band (challenge, capture, plan-adherence, the quality/architecture/consistency lenses) is filtered off the path by each stage's `routes`. Correctness and security still apply. Graduating flips to `build`.
 
@@ -119,15 +119,16 @@ The route is rooted by the always-on `triage` stage. It reads the request and pu
 
 ### Worked routes
 
-Three `echo STATE | python3 hooks/route.py` traces, one per path:
+Four `echo STATE | python3 hooks/route.py` traces:
 
 - **build** - `{"live":["build","code-written","auth-surface"],"available":["confirmed-intent","diff"]}` composes `reuse-scanner` + `health-checker`, the full review fan-out (correctness, quality, architecture, structure, consistency, performance, reuse, acceptance, plan-adherence, test-gap, test-verifier, ux, accessibility, design-consistency, visual), `security-reviewer` pulled in by `auth-surface`, and `capture-agent`. Size XXL.
+- **trivial build** - `{"live":["build","trivial"],"available":["request","triage-read","confirmed-intent"]}` composes `skip-tests` + `planner`, then `implementer` + `correctness-reviewer` once a diff exists. Size S. None of the deep lenses, pre-flight, clarify, test-chain, challenge, or capture join - they wait on `#needs-tests`.
 - **spike** - `{"live":["spike","code-written"],"available":["confirmed-intent","diff"]}` composes just `spike-build` then `correctness-reviewer`; the 15 build-only lenses are dropped `off-path` by the `routes` filter. Size S.
 - **talk** - `{"live":["talk","ambiguous"],"available":["request","triage-read"]}` composes `interviewer` (pulled by `ambiguous`) then `discuss`, ordered after it because `discuss` optionally consumes the interviewer's `confirmed-intent`. No diff, nothing reviewed.
 
 ### Intent
 
-`triage` settles framing. When the request is clear, **state the one-line interpretation and proceed** - no confirmation gate; the user corrects in their next message if it is wrong. When `triage` publishes `ambiguous` (any genuine doubt - low bar), the `interviewer` stage joins and loops until intent is confirmed. Intent is always *stated*, never silently assumed (see Principles), but a clear ask is not stopped.
+`triage` settles framing. When the request is clear, **state the one-line interpretation and proceed** - no confirmation gate; the user corrects in their next message if it is wrong. `triage` mints `@confirmed-intent` on a clear build, so its pre-flight is satisfied without the interviewer. When `triage` publishes `ambiguous` (any genuine doubt - low bar), the `interviewer` stage joins and loops until intent is confirmed. Intent is always *stated*, never silently assumed (see Principles), but a clear ask is not stopped.
 
 ### Gates
 
@@ -209,6 +210,10 @@ There is no edge budget. A route runs until it converges: the router returns no 
 unrun stage and every lens that ran is `clean`. The only loop guard is oscillation - a
 `scope-shift` that re-fires without resolving is surfaced to the user, not retried
 silently. See `## Pipeline` > The loop.
+
+On a `scope-shift` that re-classifies a build from `trivial` to `needs-tests`, the
+orchestrator drops a stale `@green-light` from `available` so the implementer re-gates on
+`test-review`.
 
 ## Input Template Contract
 

@@ -9,7 +9,7 @@ stage:
     input: ['@approved-plan']
     output: ['@test-cases']
   signals:
-    subscribes: ['#plan-ready']
+    subscribes: ['#needs-tests']
     publishes: ['#test-cases-ready', '#scope-shift']
 ---
 

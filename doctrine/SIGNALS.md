@@ -10,7 +10,7 @@ New topics are added here first, then used.
 
 | topic | meaning | subscribed by |
 |---|---|---|
-| build | make or change something (bug fixes included) | reuse-scanner, health-checker, ... |
+| build | make or change something (bug fixes included) | (path filter) |
 | spike | throwaway exploration in a sandbox | spike-build (relaxed) |
 | talk | discussion, build spine parked | discuss; recon stages on demand |
 
@@ -24,6 +24,8 @@ New topics are added here first, then used.
 | intent-confirmed | outcome locked | intent | plan, classify-less downstream |
 | novel-domain | unfamiliar problem area | triage | research |
 | bug | a defect to diagnose before fixing - paired with `build`, never its own path | triage | investigator |
+| trivial | a build with no new logic (docs / config / version / copy / formatting / dependency edits) | triage | skip-tests, planner |
+| needs-tests | a build carrying real logic | triage | reuse-scanner, health-checker, prototype-identifier, plan-challenger, test-plan, the review lenses (acceptance, accessibility, architecture, assumptions, consistency, design-consistency, naming-clarity, performance, plan-adherence, quality, reuse-reviewer, structure, test-gap, test-verifier, ux, visual-verifier), capture-agent |
 
 ## shape / structure
 
@@ -66,9 +68,9 @@ New topics are added here first, then used.
 | clarified | requirements clear | clarify | plan |
 | design-needed | UI / design loop required | clarify | design-loop |
 | design-locked | design spec captured | design-loop | plan |
-| plan-ready | approved plan exists | plan | implement, challenge |
+| plan-ready | approved plan exists | plan | implementer |
 | plan-challenged | plan survived challenge | challenge | after-plan gate |
-| code-written | a diff exists | implement, fixer | lenses, test-verify |
+| code-written | a diff exists | implement, fixer | correctness-reviewer |
 | code-changed:&lt;area&gt; | a fix touched &lt;area&gt; | fixer | area lenses (precise re-review) |
 
 ## test  (TDD-first chain)
@@ -80,9 +82,11 @@ New topics are added here first, then used.
 | tests-misaligned | tests don't match intent | test-review | test-author |
 | tests-green | suite passes | test-verify | convergence |
 | tests-missing:&lt;criterion&gt; | acceptance gap uncovered | test-gap lens | test-author |
+| green-light | code is cleared to start | skip-tests, test-review | implement |
 
-Validated red tests are the artifact `validated-tests` (published by `test-review`);
-`implement` lists it under `data.input`, so the order graph forbids code before tests.
+The artifact `green-light` is what `implement` lists under `data.input`, so the order graph
+forbids code before it exists. On a logic build only `test-review` produces it (after
+validating the red tests - the TDD lock); on a trivial build `skip-tests` produces it directly.
 
 ## findings  (review lenses)
 

@@ -22,7 +22,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -49,7 +49,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -103,7 +103,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -130,7 +130,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -155,7 +155,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -182,7 +182,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -237,7 +237,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -343,7 +343,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "build"
+          "needs-tests"
         ]
       }
     },
@@ -353,7 +353,7 @@
           "optional": [],
           "required": [
             "approved-plan",
-            "validated-tests"
+            "green-light"
           ]
         },
         "output": [
@@ -454,7 +454,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -481,7 +481,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -507,7 +507,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -534,7 +534,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "plan-ready"
+          "needs-tests"
         ]
       }
     },
@@ -542,6 +542,7 @@
       "data": {
         "input": {
           "optional": [
+            "clarified-intent",
             "reuse-map",
             "health-findings",
             "research-findings",
@@ -549,7 +550,7 @@
             "design-spec"
           ],
           "required": [
-            "clarified-intent"
+            "confirmed-intent"
           ]
         },
         "output": [
@@ -566,7 +567,8 @@
           "scope-shift"
         ],
         "subscribes": [
-          "clarified"
+          "clarified",
+          "trivial"
         ]
       }
     },
@@ -593,8 +595,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "intent-confirmed",
-          "multi-file"
+          "needs-tests"
         ]
       }
     },
@@ -647,7 +648,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -732,7 +733,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -762,7 +763,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "build"
+          "needs-tests"
         ]
       }
     },
@@ -793,6 +794,29 @@
           "auth-surface",
           "secrets",
           "perms-change"
+        ]
+      }
+    },
+    "skip-tests": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": []
+        },
+        "output": [
+          "green-light"
+        ]
+      },
+      "name": "skip-tests",
+      "routes": [
+        "build"
+      ],
+      "signals": {
+        "publishes": [
+          "scope-shift"
+        ],
+        "subscribes": [
+          "trivial"
         ]
       }
     },
@@ -845,7 +869,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -901,7 +925,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -927,7 +951,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "plan-ready"
+          "needs-tests"
         ]
       }
     },
@@ -942,7 +966,7 @@
           ]
         },
         "output": [
-          "validated-tests"
+          "green-light"
         ]
       },
       "name": "test-review",
@@ -982,7 +1006,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -995,7 +1019,8 @@
           ]
         },
         "output": [
-          "triage-read"
+          "triage-read",
+          "confirmed-intent"
         ]
       },
       "name": "triage",
@@ -1016,6 +1041,8 @@
           "auth-surface",
           "secrets",
           "perms-change",
+          "trivial",
+          "needs-tests",
           "est-size",
           "scope-shift"
         ],
@@ -1047,7 +1074,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "needs-tests"
         ]
       }
     },
@@ -1074,7 +1101,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written",
+          "needs-tests",
           "run-visual"
         ]
       }

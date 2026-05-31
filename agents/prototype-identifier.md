@@ -9,7 +9,7 @@ stage:
     input: ['@confirmed-intent']
     output: ['@prototype-identification']
   signals:
-    subscribes: ['#intent-confirmed', '#multi-file']
+    subscribes: ['#needs-tests']
     publishes: ['#novel:high', '#alternative-shapes', '#scope-shift']
 ---
 
