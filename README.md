@@ -8,13 +8,12 @@
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2.svg)
 [![GitHub stars](https://img.shields.io/github/stars/alp82/alp-river?style=flat)](https://github.com/alp82/alp-river/stargazers)
 
-[![License](https://shieldcn.dev/badge/License-MIT-22c55e.svg)](LICENSE)
-![Claude Code plugin](https://shieldcn.dev/badge/Claude%20Code-plugin-8A2BE2.svg)
-[![GitHub stars](https://shieldcn.dev/github/stars/alp82/alp-river.svg)](https://github.com/alp82/alp-river/stargazers)
 
-![shimmer animation (shieldcn)](https://shieldcn.dev/badge/animate-shimmer-8A2BE2.svg?animate=shimmer)
+![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg&animate=shimmer)
+![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg)
 
-![shieldcn group badge: dynamic stars + dynamic license](https://shieldcn.dev/group/github/stars/alp82/alp-river+github/license/alp82/alp-river.svg?variant=branded)
+![Stars, Forks, Open Issues and License](https://shieldcn.dev/group/github/stars/alp82/alp-river+github/forks/alp82/alp-river+github/open-issues/alp82/alp-river+github/license/alp82/alp-river.svg?variant=branded)
+
 
 **Routes itself** · **Plans** · **Tests first** · **Reviews in parallel** · **Self-heals**
 
