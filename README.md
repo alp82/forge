@@ -7,11 +7,20 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2.svg)
 [![GitHub stars](https://img.shields.io/github/stars/alp82/alp-river?style=flat)](https://github.com/alp82/alp-river/stargazers)
-[![Featured in AI Stack](https://img.shields.io/badge/Featured-AI%20Stack-ff69b4.svg)](https://aistack.to/stacks/alper-ortac-unw0sl)
+
+[![License](https://shieldcn.dev/badge/License-MIT-22c55e.svg)](LICENSE)
+![Claude Code plugin](https://shieldcn.dev/badge/Claude%20Code-plugin-8A2BE2.svg)
+[![GitHub stars](https://shieldcn.dev/github/stars/alp82/alp-river.svg)](https://github.com/alp82/alp-river/stargazers)
+
+![shimmer animation (shieldcn)](https://shieldcn.dev/badge/animate-shimmer-8A2BE2.svg?animate=shimmer)
+
+![shieldcn group badge: dynamic stars + dynamic license](https://shieldcn.dev/group/github/stars/alp82/alp-river+github/license/alp82/alp-river.svg?variant=branded)
 
 **Routes itself** · **Plans** · **Tests first** · **Reviews in parallel** · **Self-heals**
 
 <img src="docs/assets/intro-example.png" alt="alp-river composing a route for a task" width="577">
+
+**Featured in:** [Alper Ortac's AI Stack](https://aistack.to/stacks/alper-ortac-unw0sl)
 
 </div>
 

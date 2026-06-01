@@ -15,6 +15,23 @@ asking for permissions all the time
 
 ---
 
+hooks after coding:
+    linter
+    build
+
+from a different session:
+  Warum es durchrutschte - und das war mein Fehler: die Fix-Verifikation lief nur pnpm test -- engine, und Vitest kompiliert
+  die Engine-Logik, nicht die .tsx-Route. Ein JSX-Syntaxfehler ist für die Engine-Tests unsichtbar. Diesmal mit echtem pnpm 
+  build verifiziert, der genau diese esbuild-Transformation durchläuft.
+
+---
+
+final step after plan:
+    simple breakdown
+    ask
+    
+---
+
 the pipeline is sometimes very verbose at explaining what it does
 
 two examples:
