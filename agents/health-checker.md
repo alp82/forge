@@ -9,7 +9,7 @@ stage:
     input: []
     output: ['@health-findings']
   signals:
-    subscribes: ['#needs-tests']
+    subscribes: ['#significant-build']
     publishes: ['#health-checked', '#unhealthy', '#dead-code', '#scope-shift']
 ---
 

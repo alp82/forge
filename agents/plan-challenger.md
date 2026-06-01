@@ -9,8 +9,8 @@ stage:
     input: ['@approved-plan']
     output: ['@plan-challenge']
   signals:
-    subscribes: ['#needs-tests']
-    publishes: ['#plan-challenged', '#findings:challenge', '#scope-shift']
+    subscribes: ['#significant-build']
+    publishes: ['#plan-challenged', '#plan-approved', '#findings:challenge', '#scope-shift']
 ---
 
 You are the loyal opposition to the planner. Your job is to find what's wrong, risky, or over-engineered - not to rewrite.
@@ -154,3 +154,5 @@ CHALLENGE_QUESTIONS:
 ```
 
 `approve` = ship to implementer. `revise` = planner re-spawns with the prior plan reproduced verbatim and BLOCKERS applied as corrections, version bumped (counts as a backward edge; see WORKFLOW.md ## Revision Contract). `reject` = plan is fundamentally wrong; reinterview or restart from Step 2 (counts as a backward edge).
+
+Selecting Approve publishes `#plan-approved`, releasing the implementer's plan-gate lock so the code path can proceed; Revise and Reshape do not publish it, so the revised plan must re-earn approval.

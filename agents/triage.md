@@ -10,7 +10,29 @@ stage:
     output: ['@triage-read', '@confirmed-intent']
   signals:
     subscribes: ['#request-received']
-    publishes: ['#talk', '#sketch', '#code', '#system', '#bug', '#ambiguous', '#novel-domain', '#multi-file', '#auth-surface', '#secrets', '#perms-change', '#destructive-op', '#irreversible', '#intent-confirmed', '#needs-tests', '#est-size', '#scope-shift']
+    publishes:
+      # path
+      - '#talk'
+      - '#sketch'
+      - '#code'
+      - '#system'
+      - '#intent-confirmed'
+      - '#ambiguous'
+      - '#bug'
+      - '#novel-domain'
+      # logic (review-depth + test axes)
+      - '#needs-tests'
+      - '#significant-build'
+      - '#multi-file'
+      # risk
+      - '#auth-surface'
+      - '#secrets'
+      - '#perms-change'
+      - '#destructive-op'
+      - '#irreversible'
+      # size
+      - '#est-size'
+      - '#scope-shift'
 ---
 
 You are the seed of every route. Read the user's request and classify it - you do not plan or implement.
@@ -29,7 +51,9 @@ Publish exactly the signals that fit, each with a one-line message saying why:
 - Risk sniffs, only when the request plainly touches that surface: `auth-surface`, `secrets`, `perms-change` (code-flavored); `destructive-op`, `irreversible` (a system action that is destructive or has no clean rollback - `rm -rf`, package removal, `systemctl mask`, `dd`, partition ops). These pull the security lens or the system safety gate.
 - `est-size:<tier>` - one advisory shirt size (XS-XXL) read off the request's shape, for the upfront cost gate only. It never picks stages; the real size stays the final route count.
 
-On the `code` path, publish `needs-tests` only when the change carries real logic - anything that adds or changes a branch, loop, or computation. It pulls the full code path and the TDD chain (and holds the implementer until tests are validated). A change with no new logic (docs, comments, config values, version bumps, copy edits, formatting, dependency-list edits) gets no `needs-tests`: its absence is the trivial short path. `needs-tests` applies only on `code` - never on `sketch`, `talk`, or `system` (the system path gates on safety, not tests).
+On the `code` path, publish `needs-tests` only when the change carries real logic - anything that adds or changes a branch, loop, or computation. It pulls the TDD chain and holds the implementer until tests are validated. A change with no new logic (docs, comments, config values, version bumps, copy edits, formatting, dependency-list edits) gets no `needs-tests`: its absence is the trivial short path. `needs-tests` applies only on `code` - never on `sketch`, `talk`, or `system` (the system path gates on safety, not tests).
+
+On the `code` path, publish `significant-build` on a non-trivial change - multi-file work, an `est-size` of L or larger, a large single-file rewrite, or a novel domain. It is the review-depth axis: it pulls Scout (reuse-scanner, health-checker, prototype-identifier) and the deep Review lenses. It is independent of `needs-tests` - a change can carry real logic without being a big build, and vice versa - and it is `code`-only; the `system` path always confirms before execution, so it needs no `significant-build`.
 
 On a clear `code` or `system` ask, also publish `intent-confirmed` and emit `@confirmed-intent` as the one-line read of the request - the signal and artifact a clear run's downstream stages consume without the interviewer.
 

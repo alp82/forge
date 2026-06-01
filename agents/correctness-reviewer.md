@@ -10,7 +10,7 @@ stage:
     output: ['@findings']
   signals:
     subscribes: ['#code-written']
-    publishes: ['#findings:correctness', '#clean', '#needs-tests', '#scope-shift']
+    publishes: ['#findings:correctness', '#clean', '#needs-tests', '#significant-build', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
@@ -25,7 +25,7 @@ Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/
 
 **Conventions**: Read the project's CLAUDE.md and verify compliance; the workflow doctrine you need is in your DOCTRINE block.
 
-**Cheap-path escalation**: On a build that bypassed the test chain (the cheap path, no `#needs-tests` yet), publishing `#needs-tests` escalates review depth - it pulls the test chain and the deep lenses in to retroactively test and scrutinize the diff. It does NOT re-hold the already-run implementer.
+**Cheap-path escalation**: On a build that bypassed the deeper chain (the cheap path), a late `#needs-tests` pulls the TDD chain in to retroactively test the diff, and a late `#significant-build` pulls the deep Review lenses in to scrutinize it. Publish whichever the diff warrants. Neither re-holds the already-run implementer - the loop skips `already_run`; the plan gate is strictly pre-implementation.
 
 ## Priority
 

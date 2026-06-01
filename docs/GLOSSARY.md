@@ -65,7 +65,7 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Avoid:** "classifier" (retired), "router" (triage seeds, the router composes).
 
 ### Lock
-**Definition:** A `{while, until}` signal gate on a stage. The stage is held out of the dispatch route while `while` is live and `until` is unpublished; it rejoins once `until` fires. The implementer's `{#needs-tests -> #tests-ready}` lock is the TDD gate. A scheduling gate, not a data input. See WORKFLOW.md > Locks.
+**Definition:** A `{while, until}` signal gate on a stage. The stage is held out of the dispatch route while `while` is live and `until` is unpublished; it rejoins once `until` fires. Multiple locks AND together. The `code-implementer` carries two locks: the TDD gate `{#needs-tests -> #tests-ready}` and the plan-approval gate `{#plan-ready -> #plan-approved}`; the `system-executor` likewise pairs its safety gate `{#destructive-op -> #safety-approved}` with the same plan-approval gate. A scheduling gate, not a data input. See WORKFLOW.md > Locks.
 **Avoid:** "green-light", "gate artifact".
 
 ### Trivial
@@ -73,8 +73,16 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Avoid:** "small", "simple".
 
 ### Needs-tests
-**Definition:** A code change carrying real logic - any new or changed branch, loop, or computation. Published by `triage`; pulls the full code path plus the TDD chain.
-**Avoid:** "complex".
+**Definition:** The TDD axis. A code change carrying real logic - any new or changed branch, loop, or computation. Published by `triage` (and late by `correctness-reviewer`); pulls only the TDD chain (test-plan, test-gap, test-verifier) and arms the implementer's TDD lock. Independent of the review-depth axis (`significant-build`).
+**Avoid:** "complex", conflating it with `significant-build` (review depth).
+
+### Significant-build
+**Definition:** The review-depth axis. A serious code build - multi-file, `est-size` L or larger, a large single-file rewrite, or a novel domain. Published by `triage` (and late by `correctness-reviewer`); pulls Scout (reuse-scanner, health-checker, prototype-identifier), the plan-challenger, and the deep Review lenses. `code`-only and independent of `needs-tests` - a build can carry logic without being big, and vice versa. The system path always confirms, so it carries none.
+**Avoid:** "complex", conflating it with `needs-tests` (the TDD axis).
+
+### Plan-approved
+**Definition:** The signal that releases both implementers' plan-approval lock. Published by `plan-challenger` on Approve (the `code` path); on the system and trivial-code paths, where no in-route stage publishes it, the orchestrator emits it as a hard required step - a one-tap confirm before execution (auto on a trivial single-file plan). Until it fires, the plan-gate lock holds the implementer/executor, so no change starts against an unapproved plan.
+**Avoid:** "green-light", "approved" (that is the generic gate verdict).
 
 ### Self-heal
 **Definition:** The `fixer`-driven repair cycle that reruns the lenses whose findings it addressed, until they come back `clean`. A signal cycle (`code-written` re-published), bounded by the oscillation guard.

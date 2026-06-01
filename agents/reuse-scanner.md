@@ -9,7 +9,7 @@ stage:
     input: ['@confirmed-intent']
     output: ['@reuse-map']
   signals:
-    subscribes: ['#needs-tests']
+    subscribes: ['#significant-build']
     publishes: ['#existing', '#duplication', '#missing-infra', '#reuse-done', '#scope-shift']
 ---
 

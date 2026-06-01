@@ -14,7 +14,11 @@ stage:
   lock:
     - while: '#needs-tests'
       until: '#tests-ready'
+    - while: '#plan-ready'
+      until: '#plan-approved'
 ---
+
+You run held behind two locks that AND together: the TDD gate `{while:#needs-tests, until:#tests-ready}` (held until the red tests are validated) and the plan gate `{while:#plan-ready, until:#plan-approved}` (held until the plan is approved). You are not dispatched until both clear, so by the time you run the tests are ready and the plan is approved.
 
 ## Rules
 

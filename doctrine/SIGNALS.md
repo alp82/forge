@@ -25,7 +25,8 @@ New topics are added here first, then used.
 | intent-confirmed | outcome locked | triage, interviewer | planner |
 | novel-domain | unfamiliar problem area | triage | research |
 | bug | a defect to diagnose before fixing - pairs with `code` or `system`, never its own path | triage | code-investigator, system-investigator |
-| needs-tests | a code change carrying real logic (`code` path only) | triage | reuse-scanner, health-checker, prototype-identifier, plan-challenger, test-plan, the Review lenses (acceptance, architecture, assumptions, consistency, naming-clarity, performance, plan-adherence, quality, reuse-reviewer, structure, test-gap, test-verifier), capture-agent |
+| needs-tests | a code change carrying real logic (`code` path only) - the TDD axis | triage, correctness-reviewer | test-plan, test-gap, test-verifier, the implementer's TDD lock (test-author joins via `#test-cases-ready`) |
+| significant-build | a serious `code` build - full Review depth plus Scout (`code` path only) - the review-depth axis | triage, correctness-reviewer | reuse-scanner, health-checker, prototype-identifier, plan-challenger, capture-agent, the deep Review lenses (acceptance, architecture, assumptions, consistency, naming-clarity, performance, plan-adherence, quality, reuse-reviewer, structure) |
 
 ## shape / structure
 
@@ -71,7 +72,7 @@ New topics are added here first, then used.
 | clarified | requirements clear | clarify | plan |
 | design-needed | UI / design loop required | clarify | design-loop |
 | design-locked | design spec captured | design-loop | plan |
-| plan-ready | approved plan exists | plan | implementer |
+| plan-ready | a plan artifact exists and is awaiting approval - arms the plan-gate lock on both implementers | code-planner, system-planner | code-implementer's plan-gate lock (while), system-executor's plan-gate lock (while) |
 | plan-challenged | plan survived challenge | challenge | after-plan gate |
 | code-written | a diff exists | implement, fixer, system-executor | correctness-reviewer |
 | code-changed:&lt;area&gt; | a fix touched &lt;area&gt; | fixer | area lenses (precise re-review) |
@@ -89,11 +90,13 @@ New topics are added here first, then used.
 | tests-missing:&lt;criterion&gt; | acceptance gap uncovered | test-gap lens | test-author |
 | tests-ready | implementer lock released | test-review | implementer's lock |
 
-The implementer holds under a `{while:#needs-tests, until:#tests-ready}` lock (see
-`WORKFLOW.md` > `## Locks`). On a logic code change `test-review` publishes `#tests-ready` after
-validating the red tests, releasing the lock - code cannot start against unvalidated tests.
-A trivial change carries no `#needs-tests`, so the lock is inactive and the implementer runs
-straight off the plan.
+The implementer carries two locks that AND together (see `WORKFLOW.md` > `## Locks`): the TDD
+lock `{while:#needs-tests, until:#tests-ready}` and the plan-gate lock
+`{while:#plan-ready, until:#plan-approved}`. On a logic code change `test-review` publishes
+`#tests-ready` after validating the red tests, releasing the TDD lock - code cannot start
+against unvalidated tests. A trivial change carries no `#needs-tests`, so the TDD lock is
+inactive. Either way the plan-gate lock still holds the implementer until `#plan-approved`
+fires, so code never starts against an unapproved plan.
 
 ## findings  (Review)
 
@@ -114,6 +117,7 @@ straight off the plan.
 | cleanup-first | health gate decision | health gate | orchestrator |
 | run-visual | user opted into a visual check | gate | visual-verifier |
 | safety-approved | user cleared a destructive/irreversible system action | safety-gate | system-executor's lock |
+| plan-approved | the plan cleared its approval gate, releasing both implementers' plan-gate lock | plan-challenger (code path); orchestrator (system / trivial-code, where no in-route stage publishes it) | code-implementer's lock, system-executor's lock |
 
 ## diagnose  (investigator runs inside the `code` or `system` path via `bug`, not a separate route)
 
