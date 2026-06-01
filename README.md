@@ -14,10 +14,11 @@
 
 ![Stars, Forks, Open Issues and License](https://shieldcn.dev/group/github/stars/alp82/alp-river+github/forks/alp82/alp-river+github/open-issues/alp82/alp-river+github/license/alp82/alp-river.svg?variant=secondary)
 
+<br>
 
-**Routes itself** · **Plans** · **Tests first** · **Reviews in parallel** · **Self-heals**
+### **Routes itself** · **Plans** · **Tests first** · **Reviews in parallel** · **Self-heals**
 
-<br><br>
+<br>
 
 <img src="docs/assets/intro-example.png" alt="alp-river composing a route for a task" width="577">
 
