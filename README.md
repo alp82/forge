@@ -168,11 +168,27 @@ code · XXL · 18 stages
 
 44 composable stages plus a command-only setup agent. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`).
 
+```mermaid
+flowchart LR
+    seed["🔎 Seed"]
+    seed --> pre["🧭 Pre-flight"] --> design["📐 Design"] --> tests["🧪 Tests"] --> code["🔨 Code"] --> rev["🔬 Review"] --> cap["📓 Capture"]
+    seed --> sys["🖥️ System spine"]
+    seed --> other["🚪 Other paths"]
+```
+
 ```text
 🔎 Seed
- ├─ code           🧭 → 📐 → 🧪 → 🔨 → 🔬 → 📓
- ├─ system         🖥️ System spine
- └─ talk / sketch  🚪 Other paths
+ ├─ code
+ │   🧭 Pre-flight
+ │   📐 Design and plan
+ │   🧪 Tests
+ │   🔨 Code spine
+ │   🔬 Review lenses
+ │   📓 Capture
+ ├─ system
+ │   🖥️ System spine
+ └─ talk / sketch
+     🚪 Other paths
 ```
 
 Every request starts at triage, then follows its path; each emoji marks one of the groups below.
