@@ -462,7 +462,8 @@
       "name": "interviewer",
       "routes": [
         "code",
-        "talk"
+        "talk",
+        "system"
       ],
       "signals": {
         "publishes": [

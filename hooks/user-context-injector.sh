@@ -22,7 +22,7 @@
 #   User-aware Y + Project-aware Y: most agents - interviewer, planner,
 #                                   plan-challenger, implementer, design-explorer,
 #                                   reviewers, fixer, investigator, capture-agent,
-#                                   adr-drafter, discuss, spike-build (see case arms
+#                                   adr-drafter, discuss, sketch-build (see case arms
 #                                   and READ_MAP)
 #   User-aware N + Project-aware Y: health-checker, prototype-identifier,
 #                                   researcher, prototyper  (user_aware=0)

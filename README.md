@@ -2,13 +2,20 @@
 
 > *A river of agents, composed to the task.*
 
-**Featured in:** [Alper Ortac's AI Stack](https://aistack.to/stacks/alper-ortac-unw0sl)
+![The workflow in action](docs/assets/intro-example.png)
 
 Multi-step agent refinement for Claude Code. You describe what you want; the plugin reads the request, picks how to handle it, and runs only the steps that request needs. A throwaway question stays out of your way. A real change earns clarification, planning, adversarial challenge, test-first implementation, review, and self-heal - and leaves a tested, reviewed result behind.
+
+**Featured in:** [Alper Ortac's AI Stack](https://aistack.to/stacks/alper-ortac-unw0sl)
 
 ## Latest updates
 
 The last three updates:
+
+**1.1.2**
+
+- An unclear system or OS request now asks a clarifying question instead of stalling.
+- Cancelling a destructive system step now ends the run cleanly, with nothing applied.
 
 **1.1.1**
 
@@ -22,11 +29,6 @@ The pipeline now recognizes four kinds of work instead of three, each routed to 
 - Throwaway exploration now spans code, diagrams, and mockups in one sandbox, not just code.
 - System and OS-level work - configs, troubleshooting, command-line tooling - is its own track, with a safety check before anything destructive or irreversible runs.
 - Independent checks now run in parallel instead of one after another, so results come back sooner.
-
-**1.0.8**
-
-- When the workflow reworks an earlier plan after a correction, it now amends that exact plan instead of redrafting it from scratch, so your prior decisions survive.
-- When tests need a fix or fill, the existing tests are amended in place rather than rewritten, keeping the cases you already had.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -140,15 +142,15 @@ A big code change - the full route, grouped by stage. This is what XXL looks lik
 
 ```text
 code · XXL · 18 stages
-  Intake
+  Intent
     triage
     interviewer
     requirements-clarifier
-  Pre-flight
+  Scout
     reuse-scanner
     health-checker
     researcher
-  Plan
+  Blueprint
     code-planner
     plan-challenger
   Tests (red first)
@@ -166,36 +168,21 @@ code · XXL · 18 stages
 
 ## Stages
 
-44 composable stages plus a command-only setup agent. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`).
+44 composable stages plus a command-only setup agent. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`). Below they are grouped by conversation path; a stage that runs in several paths appears under each.
 
-```mermaid
-flowchart LR
-    seed["🔎 Seed"]
-    seed --> pre["🧭 Pre-flight"] --> design["📐 Design"] --> tests["🧪 Tests"] --> code["🔨 Code"] --> rev["🔬 Review"] --> cap["📓 Capture"]
-    seed --> sys["🖥️ System spine"]
-    seed --> other["🚪 Other paths"]
-```
+### Code
 
 ```text
-🔎 Seed
- ├─ code
- │   🧭 Pre-flight
- │   📐 Design and plan
- │   🧪 Tests
- │   🔨 Code spine
- │   🔬 Review lenses
- │   📓 Capture
- ├─ system
- │   🖥️ System spine
- └─ talk / sketch
-     🚪 Other paths
+🔎 Intent
+🧭 Scout
+📐 Blueprint
+🧪 Tests
+🔨 Build
+🔬 Review
+📓 Document
 ```
 
-Every request starts at triage, then follows its path; each emoji marks one of the groups below.
-
-### 🔎 Seed and intent
-
-Reads the request, settles what you actually want, and frames the work before anything is built.
+🔎 **Intent** - reads the request, settles what you actually want, and frames the work.
 
 | Stage | Model | Role |
 |-------|-------|------|
@@ -203,9 +190,7 @@ Reads the request, settles what you actually want, and frames the work before an
 | interviewer | opus | When the ask is ambiguous, probes scope and success criteria, looping until intent settles. |
 | requirements-clarifier | opus | Researches the area, then surfaces edge cases and proposed acceptance criteria before planning. |
 
-### 🧭 Pre-flight (code)
-
-Surveys the ground before planning: what to reuse, how healthy the area is, what novelty needs a tracer-bullet first.
+🧭 **Scout** - surveys the ground: what to reuse, how healthy the area is, what novelty needs a tracer-bullet first.
 
 | Stage | Model | Role |
 |-------|-------|------|
@@ -215,9 +200,7 @@ Surveys the ground before planning: what to reuse, how healthy the area is, what
 | prototyper | sonnet | Builds a tracer-bullet against the real API to de-risk novelty before planning. |
 | researcher | haiku | Pulls library, framework, and domain knowledge from the web. |
 
-### 📐 Design and plan (code)
-
-Turns settled intent into a concrete blueprint, then attacks it adversarially before a line is written.
+📐 **Blueprint** - turns settled intent into a concrete blueprint, then attacks it adversarially.
 
 | Stage | Model | Role |
 |-------|-------|------|
@@ -225,9 +208,7 @@ Turns settled intent into a concrete blueprint, then attacks it adversarially be
 | code-planner | opus | Turns intent into a concrete step-by-step blueprint. |
 | plan-challenger | opus | Adversarial review of the plan: holes, failure modes, simpler alternatives. |
 
-### 🧪 Tests (TDD-first, code)
-
-Derives the test cases and writes them red, validated against intent before any code is allowed.
+🧪 **Tests** - derives the test cases and writes them red, validated against intent before any code is allowed.
 
 | Stage | Model | Role |
 |-------|-------|------|
@@ -235,31 +216,16 @@ Derives the test cases and writes them red, validated against intent before any 
 | test-author | sonnet | Writes the failing (red) tests before any implementation exists. |
 | test-review | opus | Validates the red tests against intent, then releases the implementer. |
 
-### 🔨 Code spine
-
-Builds the change to the plan, diagnoses bugs at their root, and heals what the reviewers flag.
+🔨 **Build** - builds the change to the plan, diagnoses bugs at their root, and gates anything destructive.
 
 | Stage | Model | Role |
 |-------|-------|------|
 | code-implementer | opus | Executes the approved plan. Held by the TDD lock until tests are validated. |
 | code-investigator | opus | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis. |
 | fixer | sonnet | Applies reviewer findings and reruns the lenses it touched until clean. |
-
-### 🖥️ System spine
-
-Plans, runs, and verifies OS-level changes, holding any destructive step behind a safety check.
-
-| Stage | Model | Role |
-|-------|-------|------|
-| system-planner | opus | Plans an OS-level change as ordered, reversible steps with backup and rollback. |
-| system-executor | sonnet | Runs the plan one step at a time. Held by the safety lock before destructive steps. |
-| system-verifier | sonnet | Confirms the change actually reached its intended state. |
-| system-investigator | sonnet | Root-cause diagnosis for OS-level faults from service state, logs, and configs. |
 | safety-gate | sonnet | Before anything destructive or irreversible, shows what is at stake and waits for your go-ahead. Sticky. |
 
-### 🔬 Review lenses
-
-Scrutinize every diff in parallel: correctness always, the rest as the change demands.
+🔬 **Review** - scrutinizes every diff in parallel: correctness always, the rest as the change demands.
 
 | Lens | Model | Runs when |
 |------|-------|-----------|
@@ -282,26 +248,112 @@ Scrutinize every diff in parallel: correctness always, the rest as the change de
 | design-consistency | sonnet | UI touched |
 | visual-verifier | sonnet | opt-in |
 
-On a trivial change only correctness runs; the rest join when the change carries real logic.
-
-### 📓 Capture
-
-Records the glossary, stack, and intent updates the run surfaced, only after you approve.
+📓 **Document** - records the glossary, stack, and intent updates the run surfaced, only after you approve.
 
 | Stage | Model | Role |
 |-------|-------|------|
 | capture-agent | opus | Proposes glossary / stack / intent updates surfaced during the run; writes only after your approval. |
+| adr-drafter | opus | Drafts a single ADR from a decision summary. Backs `/alp-river:adr`. |
 
-### 🚪 Other paths and entry points
+### System
 
-Builders for the talk and sketch paths, plus command-only helpers.
+```text
+🔎 Intent
+🖥️ System
+🔬 Review
+```
+
+🔎 **Intent** - triage frames system intent directly and picks the path.
+
+| Stage | Model | Role |
+|-------|-------|------|
+| triage | haiku | Always-on. Reads your request, picks the path, sniffs early risk and bug-framing. |
+
+🖥️ **System** - plans, runs, and verifies OS-level changes, holding any destructive step behind a safety check.
+
+| Stage | Model | Role |
+|-------|-------|------|
+| system-planner | opus | Plans an OS-level change as ordered, reversible steps with backup and rollback. |
+| system-executor | sonnet | Runs the plan one step at a time. Held by the safety lock before destructive steps. |
+| system-verifier | sonnet | Confirms the change actually reached its intended state. |
+| system-investigator | sonnet | Root-cause diagnosis for OS-level faults from service state, logs, and configs. |
+| safety-gate | sonnet | Before anything destructive or irreversible, shows what is at stake and waits for your go-ahead. Sticky. |
+
+🔬 **Review** - one lens guards the system path when it touches sensitive surface.
+
+| Lens | Model | Runs when |
+|------|-------|-----------|
+| security | sonnet | any system change that touches auth/secrets/permissions (sticky) |
+
+### Talk
+
+```text
+🔎 Intent
+🧭 Scout
+💬 Discuss
+📓 Document
+```
+
+🔎 **Intent** - reads the request and settles what you actually want before answering.
+
+| Stage | Model | Role |
+|-------|-------|------|
+| triage | haiku | Always-on. Reads your request, picks the path, sniffs early risk and bug-framing. |
+| interviewer | opus | When the ask is ambiguous, probes scope and success criteria, looping until intent settles. |
+
+🧭 **Scout** - look before answering: existing code, health, research, UI options, or a root-cause trace.
+
+| Stage | Model | Role |
+|-------|-------|------|
+| reuse-scanner | sonnet | Finds reusable code and quick wins; flags duplication and missing infra. |
+| health-checker | haiku | Scores the health of the area you're touching and surfaces cleanup targets. |
+| researcher | haiku | Pulls library, framework, and domain knowledge from the web. |
+| design-explorer | opus | For UI with multiple legitimate shapes, builds an interactive picker; you paste back the chosen spec. |
+| code-investigator | opus | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis. |
+| system-investigator | sonnet | Root-cause diagnosis for OS-level faults from service state, logs, and configs. |
+
+💬 **Discuss** - options with worked examples and tradeoffs, nothing written.
 
 | Stage | Model | Role |
 |-------|-------|------|
 | discuss | opus | The talk path: options with worked examples and tradeoffs; never writes code. |
-| sketch-build | sonnet | The sketch path: throwaway runnable code in `.prototypes/`, relaxed ceremony. |
+
+📓 **Document** - capture a decision the discussion reached, on request.
+
+| Stage | Model | Role |
+|-------|-------|------|
 | adr-drafter | opus | Drafts a single ADR from a decision summary. Backs `/alp-river:adr`. |
-| setup-agent | opus | Command-only (not a route stage). Bootstraps `docs/` via guided interview. Backs `/alp-river:setup`. |
+
+### Sketch
+
+```text
+🔎 Intent
+🔨 Build
+🔬 Review
+```
+
+🔎 **Intent** - triage frames the throwaway and picks the path.
+
+| Stage | Model | Role |
+|-------|-------|------|
+| triage | haiku | Always-on. Reads your request, picks the path, sniffs early risk and bug-framing. |
+
+🔨 **Build** - throwaway runnable artifact in `.prototypes/`, relaxed ceremony.
+
+| Stage | Model | Role |
+|-------|-------|------|
+| design-explorer | opus | For UI with multiple legitimate shapes, builds an interactive picker; you paste back the chosen spec. |
+| sketch-build | sonnet | The sketch path: throwaway runnable code in `.prototypes/`, relaxed ceremony. |
+| fixer | sonnet | Applies reviewer findings and reruns the lenses it touched until clean. |
+
+🔬 **Review** - correctness on every sketch; security if the surface demands it.
+
+| Lens | Model | Runs when |
+|------|-------|-----------|
+| correctness | sonnet | every sketch |
+| security | sonnet | sticky |
+
+*`setup-agent` (opus) is command-only - it backs `/alp-river:setup` and is not part of any path.*
 
 ## Slash commands
 

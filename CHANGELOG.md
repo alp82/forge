@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.1.2 - 2026-06-01
+
+- An unclear system or OS request now asks a clarifying question instead of stalling.
+- Cancelling a destructive system step now ends the run cleanly, with nothing applied.
+
 ## 1.1.1 - 2026-05-31
 
 - A research or review step that gets stuck on a slow or unreachable source no longer hangs the workflow - it gives up on that step and either moves on or tells you.

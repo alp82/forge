@@ -10,10 +10,10 @@ New topics are added here first, then used.
 
 | topic | meaning | subscribed by |
 |---|---|---|
-| talk | discussion, spine parked; the main agent answers inline | discuss; recon on confirm |
+| talk | discussion, path parked; the main agent answers inline | discuss; recon on confirm |
 | sketch | throwaway exploration in a sandbox - code tracer-bullets, diagrams, mockups, idea sketches | sketch-build; recon |
 | code | make or change code (bug fixes included) | (path filter) |
-| system | OS-level work: configs, troubleshooting, CLI tooling | system spine |
+| system | OS-level work: configs, troubleshooting, CLI tooling | system path |
 
 ## request / intent
 
@@ -25,7 +25,7 @@ New topics are added here first, then used.
 | intent-confirmed | outcome locked | triage, interviewer | planner |
 | novel-domain | unfamiliar problem area | triage | research |
 | bug | a defect to diagnose before fixing - pairs with `code` or `system`, never its own path | triage | code-investigator, system-investigator |
-| needs-tests | a code change carrying real logic (`code` path only) | triage | reuse-scanner, health-checker, prototype-identifier, plan-challenger, test-plan, the review lenses (acceptance, architecture, assumptions, consistency, naming-clarity, performance, plan-adherence, quality, reuse-reviewer, structure, test-gap, test-verifier), capture-agent |
+| needs-tests | a code change carrying real logic (`code` path only) | triage | reuse-scanner, health-checker, prototype-identifier, plan-challenger, test-plan, the Review lenses (acceptance, architecture, assumptions, consistency, naming-clarity, performance, plan-adherence, quality, reuse-reviewer, structure, test-gap, test-verifier), capture-agent |
 
 ## shape / structure
 
@@ -51,7 +51,7 @@ New topics are added here first, then used.
 | destructive-op | a system action that is destructive or hard to reverse (`rm -rf`, package removal, `systemctl mask`, `dd`, partition ops) | triage, system-planner | safety-gate |
 | irreversible | a system action with no clean rollback | triage, system-planner | safety-gate |
 
-## discovery  (pre-build steering)
+## discovery  (pre-code steering)
 
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|
@@ -63,11 +63,11 @@ New topics are added here first, then used.
 | novel:high | high-novelty external surface | prototype-identifier | prototype |
 | alternative-shapes | competing approaches exist | prototype-identifier | plan |
 
-## lifecycle  (the build spine)
+## lifecycle  (the code path)
 
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|
-| reuse-done, health-checked | pre-flight complete | reuse-scan, health-check | plan |
+| reuse-done, health-checked | Scout complete | reuse-scan, health-check | plan |
 | clarified | requirements clear | clarify | plan |
 | design-needed | UI / design loop required | clarify | design-loop |
 | design-locked | design spec captured | design-loop | plan |
@@ -90,12 +90,12 @@ New topics are added here first, then used.
 | tests-ready | implementer lock released | test-review | implementer's lock |
 
 The implementer holds under a `{while:#needs-tests, until:#tests-ready}` lock (see
-`WORKFLOW.md` > `## Locks`). On a logic build `test-review` publishes `#tests-ready` after
+`WORKFLOW.md` > `## Locks`). On a logic code change `test-review` publishes `#tests-ready` after
 validating the red tests, releasing the lock - code cannot start against unvalidated tests.
 A trivial change carries no `#needs-tests`, so the lock is inactive and the implementer runs
 straight off the plan.
 
-## findings  (review lenses)
+## findings  (Review)
 
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|

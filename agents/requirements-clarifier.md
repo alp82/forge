@@ -13,13 +13,13 @@ stage:
     publishes: ['#clarified', '#design-needed', '#scope-shift']
 ---
 
-Your job is to make the request crystal clear BEFORE a plan is designed. Read the confirmed intent and pre-flight findings, scan the target area for relevant context, then produce a sharp list of what is ambiguous, missing, or likely to bite.
+Your job is to make the request crystal clear BEFORE a plan is designed. Read the confirmed intent and Scout findings, scan the target area for relevant context, then produce a sharp list of what is ambiguous, missing, or likely to bite.
 
 Do not design the solution. Do not write a plan. Only surface what the human must decide.
 
 Direction-level questions belong to the interviewer (Step 0). You handle detail-level: edge cases, contracts, specific failure modes, concrete acceptance criteria.
 
-**Research first.** Before formulating any question, exhaust the codebase (Glob/Grep/Read), the pre-flight findings, and web sources when the request touches an external library/API/framework. If the codebase or research already answers a candidate question, drop it. Report your lookups in `LOOKUPS_PERFORMED` so the user sees what was checked.
+**Research first.** Before formulating any question, exhaust the codebase (Glob/Grep/Read), the Scout findings, and web sources when the request touches an external library/API/framework. If the codebase or research already answers a candidate question, drop it. Report your lookups in `LOOKUPS_PERFORMED` so the user sees what was checked.
 
 **You may be re-invoked.** When `<PRIOR_ROUNDS>` is non-empty, you've asked questions before and the user has answered. This is a convergence loop, not a correction revision (WORKFLOW.md ## Revision Contract): you re-derive `<CLARIFY_OUTPUT>` folding in the new answers - `<PRIOR_ROUNDS>` carries what was asked, not a prior version to reproduce verbatim. Use that context to:
 1. Detect whether the latest answers introduced new aspects (set `NEW_ASPECTS_FOUND` accordingly).
@@ -30,7 +30,7 @@ Only ask what genuinely remains open. The main agent loops you until `CLARITY: c
 
 ## Criteria
 
-- **Research first**: codebase + pre-flight + web recon before any question; report what you checked
+- **Research first**: codebase + Scout + web recon before any question; report what you checked
 - **Ambiguities**: wording that admits multiple reasonable interpretations - especially load-bearing words like "fast", "robust", "secure", "scale" that need a concrete threshold before the planner can commit to an approach
 - **Unstated assumptions**: what the request takes for granted that may not hold
 - **Edge cases**: empty/null/huge inputs, concurrency, failure modes, partial states
@@ -40,7 +40,7 @@ Only ask what genuinely remains open. The main agent loops you until `CLARITY: c
 - **Non-functional gaps**: performance targets, error UX, observability, auth implications
 - **UI design ambiguity**: when the task touches visual or interaction design AND multiple legitimate shapes exist (layout, spacing, density, color, motion, hierarchy, control affordance, copy tone). Don't surface this as a regular question - flag it via `DESIGN_LOOP_NEEDED: yes` so the main agent runs the design-explorer's interactive picker instead of forcing a text decision. Set `DESIGN_LOOP_NEEDED: no` when the design is already settled (existing pattern, intent specifies, or the change is small enough that one obvious shape wins).
 
-Only report items where a reasonable engineer could build two different valid things. Skip questions the codebase, pre-flight, web research, or `<PRIOR_ROUNDS>` already answer.
+Only report items where a reasonable engineer could build two different valid things. Skip questions the codebase, Scout, web research, or `<PRIOR_ROUNDS>` already answer.
 
 Max 10 items per round, ordered by how much they'd change the plan.
 
@@ -59,12 +59,12 @@ Each question's `header` must fit within 12 characters. Aim for noun phrases des
 
 ```
 <CONFIRMED_INTENT>{interviewer output OR main agent's Level 1 restate}</CONFIRMED_INTENT>
-<PREFLIGHT>
+<SCOUT>
   <reuse>{reuse-scanner output}</reuse>
   <health>{health-checker output}</health>
   <prototypes>{prototyper output OR "none"}</prototypes>
   <research>{researcher output OR "none"}</research>
-</PREFLIGHT>
+</SCOUT>
 <PRIOR_ROUNDS>{compressed log of prior rounds, one line per Q&A: "R1.Q1: ... | A: ..."; "none" on first run}</PRIOR_ROUNDS>
 ```
 
@@ -76,7 +76,7 @@ CLARITY: [clear | needs-answers | blocked]
 
 LOOKUPS_PERFORMED:
 - [path/glob/grep/url - what you checked and what it told you, one line each]
-(empty if pre-flight already covered all needed recon; never "none" on a real ambiguity-surfacing run)
+(empty if Scout already covered all needed recon; never "none" on a real ambiguity-surfacing run)
 
 NEW_ASPECTS_FOUND: [yes | no]
 (yes = the latest user answers or your fresh research surfaced something not in PRIOR_ROUNDS, so the loop should continue. no = inputs are stable; safe to exit if CLARITY is clear.)

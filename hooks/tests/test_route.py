@@ -112,18 +112,18 @@ def test_optional_input_never_drops_and_orders_after_producer():
 
 
 def test_routes_filter_drops_off_path_stage():
-    on_build = r(["code", "ping"], available=["intent"])
-    assert "codeonly" in on_build["route"] and "both" in on_build["route"]
-    assert "sketchonly" not in on_build["route"]
-    assert on_build["dropped"].get("sketchonly") == "off-path"
-    on_spike = r(["sketch", "ping"], available=["intent"])
-    assert "sketchonly" in on_spike["route"] and "both" in on_spike["route"]
-    assert "codeonly" not in on_spike["route"]
-    assert on_spike["dropped"].get("codeonly") == "off-path"
+    on_code = r(["code", "ping"], available=["intent"])
+    assert "codeonly" in on_code["route"] and "both" in on_code["route"]
+    assert "sketchonly" not in on_code["route"]
+    assert on_code["dropped"].get("sketchonly") == "off-path"
+    on_sketch = r(["sketch", "ping"], available=["intent"])
+    assert "sketchonly" in on_sketch["route"] and "both" in on_sketch["route"]
+    assert "codeonly" not in on_sketch["route"]
+    assert on_sketch["dropped"].get("codeonly") == "off-path"
 
 
 def test_no_path_signal_skips_routes_filter():
-    # pre-triage seed: no build/spike/talk live -> nothing is filtered by route
+    # pre-triage seed: no code/sketch/talk/system live -> nothing is filtered by route
     res = r(["ping"])
     assert {"codeonly", "sketchonly", "both"} <= set(res["route"])
 
@@ -176,7 +176,7 @@ def test_waves_present_and_flatten_to_route():
 
 
 def test_waves_independent_stages_share_a_wave():
-    # scan, buildonly, both all trigger with no inter-dependency -> one parallel cohort
+    # scan, codeonly, both all trigger with no inter-dependency -> one parallel cohort
     res = r(["code", "ping"], available=["intent"])
     wave = next(w for w in res["waves"] if "codeonly" in w)
     assert "both" in wave
@@ -205,7 +205,7 @@ def _real_catalog():
     )
 
 
-def test_real_catalog_build_spine():
+def test_real_catalog_code_path():
     cat = _real_catalog()
     assert set(cat["stages"]) >= {
         "code-implementer",
@@ -215,14 +215,14 @@ def test_real_catalog_build_spine():
         "sketch-build",
     }
     res = route.compute_route(cat, {"code"}, available={"confirmed-intent"})
-    # reuse-scanner now subscribes needs-tests, so it does NOT trigger on {build} alone
+    # reuse-scanner now subscribes needs-tests, so it does NOT trigger on {code} alone
     assert "reuse-scanner" not in res["route"]
-    assert "discuss" not in res["route"]  # talk-only stage stays off the build path
-    # health-checker now subscribes needs-tests too, so it does NOT trigger on {build} alone
+    assert "discuss" not in res["route"]  # talk-only stage stays off the code path
+    # health-checker now subscribes needs-tests too, so it does NOT trigger on {code} alone
     assert "health-checker" not in res["route"]
 
 
-def test_real_catalog_routes_filter_on_spike():
+def test_real_catalog_routes_filter_on_sketch():
     cat = _real_catalog()
     res = route.compute_route(
         cat,
@@ -230,8 +230,8 @@ def test_real_catalog_routes_filter_on_spike():
         available={"confirmed-intent", "diff"},
     )
     assert "sketch-build" in res["route"]
-    assert "correctness-reviewer" in res["route"]  # routes include spike
-    assert "quality-reviewer" not in res["route"]  # build-only lens, filtered off spike
+    assert "correctness-reviewer" in res["route"]  # routes include sketch
+    assert "quality-reviewer" not in res["route"]  # code-only lens, filtered off sketch
     assert res["dropped"].get("quality-reviewer") == "off-path"
 
 
@@ -314,13 +314,13 @@ def test_real_catalog_new_lenses_need_diff():
     assert "naming-clarity" not in res["route"]
     assert "assumptions" not in res["route"]
     # positive control: triage subscribes request-received and is seeded externally;
-    # use correctness-reviewer (build+spike lens, triggered by code-written) as positive control
+    # use correctness-reviewer (code+sketch lens, triggered by code-written) as positive control
     # but code-written requires diff, so use reuse-scanner which subscribes needs-tests
     # and has no required inputs - it should appear in route
     assert "reuse-scanner" in res["route"]
 
 
-def test_real_catalog_new_lenses_off_spike():
+def test_real_catalog_new_lenses_off_sketch():
     cat = _real_catalog()
     res = route.compute_route(
         cat,
@@ -331,7 +331,7 @@ def test_real_catalog_new_lenses_off_spike():
     assert res["dropped"].get("assumptions") == "off-path"
     assert (
         "sketch-build" in res["route"]
-    )  # positive control: spike route still composes
+    )  # positive control: sketch route still composes
 
 
 # ---------------------------------------------------------------------------
@@ -949,7 +949,7 @@ def test_real_catalog_implementer_in_route_after_tests_ready():
 
 
 # --- TC-I09 ---
-def test_real_catalog_trivial_build_implementer_runs():
+def test_real_catalog_trivial_code_implementer_runs():
     """Cheap path (no needs-tests): implementer lock inactive, runs normally, held empty."""
     cat = _real_catalog()
     res = route.compute_route(
@@ -1257,7 +1257,7 @@ def test_real_catalog_planner_runs_without_diagnosis():
 # ---------------------------------------------------------------------------
 
 
-def test_real_catalog_ui_lenses_off_non_ui_logic_build():
+def test_real_catalog_ui_lenses_off_non_ui_logic_code():
     """A logic build with code written but no `ui-touched`: the UI lenses stay off; the
     non-UI correctness lens still fires (positive control)."""
     cat = _real_catalog()
@@ -1322,11 +1322,11 @@ def test_real_catalog_visual_verifier_opt_in_only():
 
 
 # ---------------------------------------------------------------------------
-# SYSTEM PATH - spine, safety gate, and bug disambiguation by path
+# SYSTEM PATH - path, safety gate, and bug disambiguation by path
 # ---------------------------------------------------------------------------
 
 
-def test_real_catalog_system_spine_composes():
+def test_real_catalog_system_path_composes():
     """On the system path, the system-planner composes and the code-planner is off-path."""
     cat = _real_catalog()
     res = route.compute_route(
@@ -1339,6 +1339,21 @@ def test_real_catalog_system_spine_composes():
     ), "system-planner must compose on the system path"
     assert "code-planner" not in res["route"], "code-planner is off the system path"
     assert res["dropped"].get("code-planner") == "off-path"
+
+
+def test_real_catalog_ambiguous_system_pulls_interviewer():
+    """An ambiguous system request must reach the interviewer, not stall on an empty route."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"system", "ambiguous"},
+        available={"request", "triage-read"},
+        already_run={"triage"},
+    )
+    assert "interviewer" in res["route"], (
+        "interviewer must compose for an ambiguous system request - "
+        "without it the route is empty and the run stalls"
+    )
 
 
 def test_real_catalog_system_executor_held_on_destructive_op():

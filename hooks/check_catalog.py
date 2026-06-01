@@ -6,7 +6,7 @@ Verifies the invariants a composed route relies on:
   1. every subscribed signal has a publisher (family-aware) or is an external seed
   2. every REQUIRED input has an in-catalog producer or is an external-seed artifact
   3. `scope-shift` is published by every stage (each self-reports premise breaks)
-  4. `routes` is present, non-empty, and a subset of build/spike/talk on every stage
+  4. `routes` is present, non-empty, and a subset of code/sketch/talk/system on every stage
   5. every `lock` while/until signal has a publisher (family-aware) or is an external seed
 
 Runnable standalone (`python3 hooks/check_catalog.py`, exits 1 on any problem) and imported

@@ -29,7 +29,7 @@ Render **only** the lenses that produce something above the bar. Drop empty lens
 - **Unexpected behavior** - surprises against design intent
 - **Token-heavy steps** - disproportionate tokens for value returned
 - **Slow steps** - heavy *to the user*: rounds with the user, clarify-loop length, time-to-first-useful-output (internal tool-call counts belong in token-heavy)
-- **Quality issues** - reviewer misses, half-fixes, dropped captures, low signal-to-noise rounds
+- **Quality issues** - reviewer misses, half-fixes, dropped Document proposals, low signal-to-noise rounds
 - **Backward-edge reasoning** - each edge used: trigger, necessity, what earlier step could have caught it
 
 ## Output shape

@@ -22,14 +22,14 @@ Publish exactly the signals that fit, each with a one-line message saying why:
   - `sketch` - throwaway exploration in a sandbox: a code tracer-bullet, a diagram, a UI mockup, an idea sketch. Graduates to `code` or `system` when a result is worth keeping.
   - `code` - make or change code (bug fixes included).
   - `system` - OS-level work: update configs, troubleshoot, run CLI tooling, change the environment.
-- `bug` - the request frames a defect to explain before fixing. Publish it **alongside `code` or `system`** (whichever path the fix lands on), never as its own path: the matching investigator diagnoses inside that route and the spine fixes the cause.
+- `bug` - the request frames a defect to explain before fixing. Publish it **alongside `code` or `system`** (whichever path the fix lands on), never as its own path: the matching investigator diagnoses inside that route and the code path fixes the cause.
 - `ambiguous` - the request has more than one serious reading. Lean toward `talk` when you are genuinely unsure: a `talk` that turns out to be real work flips cheaply and loses nothing, whereas a misfired `code`/`system` run burns a plan.
 - `novel-domain` - it touches an unfamiliar area.
 - `multi-file` - it obviously spans several files.
 - Risk sniffs, only when the request plainly touches that surface: `auth-surface`, `secrets`, `perms-change` (code-flavored); `destructive-op`, `irreversible` (a system action that is destructive or has no clean rollback - `rm -rf`, package removal, `systemctl mask`, `dd`, partition ops). These pull the security lens or the system safety gate.
 - `est-size:<tier>` - one advisory shirt size (XS-XXL) read off the request's shape, for the upfront cost gate only. It never picks stages; the real size stays the final route count.
 
-On the `code` path, publish `needs-tests` only when the change carries real logic - anything that adds or changes a branch, loop, or computation. It pulls the full spine and the TDD chain (and holds the implementer until tests are validated). A change with no new logic (docs, comments, config values, version bumps, copy edits, formatting, dependency-list edits) gets no `needs-tests`: its absence is the trivial short path. `needs-tests` applies only on `code` - never on `sketch`, `talk`, or `system` (the system path gates on safety, not tests).
+On the `code` path, publish `needs-tests` only when the change carries real logic - anything that adds or changes a branch, loop, or computation. It pulls the full code path and the TDD chain (and holds the implementer until tests are validated). A change with no new logic (docs, comments, config values, version bumps, copy edits, formatting, dependency-list edits) gets no `needs-tests`: its absence is the trivial short path. `needs-tests` applies only on `code` - never on `sketch`, `talk`, or `system` (the system path gates on safety, not tests).
 
 On a clear `code` or `system` ask, also publish `intent-confirmed` and emit `@confirmed-intent` as the one-line read of the request - the signal and artifact a clear run's downstream stages consume without the interviewer.
 

@@ -13,7 +13,7 @@ stage:
     publishes: ['#code-written', '#scope-shift']
 ---
 
-You are the sketch path's maker. The point is a runnable answer to "does this work?", fast - not shippable code. Ceremony is relaxed: no approved plan and no validated tests gate you, and the code-only review lenses are filtered off this path (correctness and security still apply on what you write).
+You are the sketch path's maker. The point is a runnable answer to "does this work?", fast - not shippable code. Ceremony is relaxed: no approved plan and no validated tests gate you, and the code-only review is filtered off this path (correctness and security still apply on what you write).
 
 ## Rules
 
@@ -35,7 +35,7 @@ First step: parse `<CONFIRMED_INTENT>`. On a missing required slot, emit `INPUT_
 ## Output (strict)
 
 ```
-SPIKE:
+SKETCH:
 - [.prototypes/filename] - [what it proves, and what running it showed]
 VERIFIED: [yes - ran successfully | partial - details | no - details]
 KEY_FINDINGS:

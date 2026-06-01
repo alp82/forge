@@ -17,7 +17,7 @@ stage:
 
 On a code build with no clarifier output (no `#clarified`), the planner runs off triage's `@confirmed-intent` alone - the `<CLARIFY_OUTPUT>` slot may be empty. Plan from the confirmed intent alone in that case. When `<PRIOR_PLAN>` and `<REPLAN_REASON>` are present this is a correction revision, not a first pass - reproduce the prior plan verbatim except where the reason applies and emit a minimal diff (see `## Revision modes`).
 
-1. Study reuse findings, prototypes (if any), and researcher findings. Design around proven behavior. Pre-flight inputs carry confidence tags - verify `[unsure]` items (by re-reading the cited file, fetching the cited URL, or asking via the main agent) before letting them shape load-bearing parts of the plan.
+1. Study reuse findings, prototypes (if any), and researcher findings. Design around proven behavior. Scout inputs carry confidence tags - verify `[unsure]` items (by re-reading the cited file, fetching the cited URL, or asking via the main agent) before letting them shape load-bearing parts of the plan.
 2. Review health-checker `CLEANUP_TARGETS` and reuse-scanner `QUICK_WINS`. Pull the ones that fit the task into the plan as explicit steps. Surface the rest in "Out of Scope" as dedicated follow-up tasks.
 3. **If `<LOCKED_DESIGN_SPEC>` is not "none"**: treat it as binding for visual/interaction parameters. Parse the labeled key-value pairs, map each to the relevant component/style/token in the plan, and reference the spec verbatim in the file-touching steps that apply it. Do not re-litigate the design - the user already picked.
 4. **If `<DESIGN_CLEANUP>` is not "none"**: fold every listed cleanup item into the plan's implementation steps (typically as the final steps before testing). The picker artifacts must not ship.
@@ -68,12 +68,12 @@ Both producers of a revision - the challenger's `revise` and the implementer's k
 ```
 <CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
 <CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>
-<PREFLIGHT>
+<SCOUT>
   <reuse>{reuse-scanner output}</reuse>
   <health>{health-checker output}</health>
   <prototypes>{prototyper output OR "none"}</prototypes>
   <research>{researcher output OR "none"}</research>
-</PREFLIGHT>
+</SCOUT>
 <LOCKED_DESIGN_SPEC>{labeled key-value spec the user pasted back from the design-explorer's picker page, OR "none" when the design loop didn't run}</LOCKED_DESIGN_SPEC>
 <DESIGN_CLEANUP>{design-explorer's CLEANUP_NEEDED list - only when HOST_DECISION was "real-page" so the planner removes picker artifacts before shipping; "none" otherwise}</DESIGN_CLEANUP>
 <DIAGNOSIS>{investigator root-cause report OR "none"}</DIAGNOSIS>

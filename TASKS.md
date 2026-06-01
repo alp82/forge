@@ -1,3 +1,32 @@
+update vocab everywhere
+
+README:
+    centered engaging intro
+
+---
+
+asking for permissions all the time
+
+ Bash command
+     
+   grep -n "ProjectsSection\|stackSlug" /home/alp/dev/projects/aistack/aistack-web/src/routes/stacks.\$slug.tsx
+   Check ProjectsSection usage in the route
+
+ Shell expansion syntax in paths requires manual approval
+     
+ Do you want to proceed?
+ ❯ 1. Yes
+   2. Yes, allow reading from routes/ from this project
+   3. No
+
+---
+
+adding a component that lists cost breakdowns in a calculator classified as XXL
+based on amount of reviewers spawned (all of them)
+review fanout can be very heavy on interaction and effort
+
+---
+
 fore composing the planner, let me get the exact catalog vocabulary so my router calls are precise.
 
 ● Bash(python3 -c "

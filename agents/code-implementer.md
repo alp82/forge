@@ -43,12 +43,12 @@ Minor ambiguities that you can resolve by reading nearby code are not kickbacks.
 ```
 <CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
 <APPROVED_PLAN>{planner output, the current-version APPROVED_PLAN block}</APPROVED_PLAN>
-<PREFLIGHT>
+<SCOUT>
   <reuse>{reuse-scanner output}</reuse>
   <health>{health-checker output}</health>
   <prototypes>{prototyper output OR "none"}</prototypes>
   <research>{researcher output OR "none"}</research>
-</PREFLIGHT>
+</SCOUT>
 <BACKWARD_EDGES_USED>{integer - main agent's running count}</BACKWARD_EDGES_USED>
 ```
 

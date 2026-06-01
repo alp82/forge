@@ -15,7 +15,7 @@ Secondary: workflow tinkerers who want to swap personas, override grades in natu
 ## Success criteria
 
 - Small/mechanical tasks (S) finish in one pass via the main agent with no clarification, planning, or review overhead.
-- Larger tasks (M/L/XL) automatically gain the stages that fit their complexity - pre-flight fan-out, clarification, planning, adversarial challenge, broad and specialist review, self-heal.
+- Larger tasks (M/L/XL) automatically gain the stages that fit their complexity - Scout, clarification, planning, adversarial challenge, broad and specialist review, self-heal.
 - User stays in the loop only at the seams that matter: intent confirmation (every tier), clarifier questions (M/L/XL when ambiguity remains), design picker (UI multi-shape), plan selection (XL), after-plan stop (L/XL), after-diagnose stop (bug-framing). No other interruptions.
 - Tier classification is overridable in natural language (`treat this as L`, `skip clarify`, `go straight to plan`) without reaching for a flag.
 - Bug-shaped requests (stack traces, symptoms) automatically take a diagnose path - investigator first, then a continue/stop picker - rather than jumping to implementation.

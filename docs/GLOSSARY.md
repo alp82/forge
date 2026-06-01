@@ -29,15 +29,15 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Avoid:** "complexity tier", "grade" (the old driver framing, retired). Bare "tier" collides with model tier.
 
 ### Path
-**Definition:** `build`, `spike`, or `talk` - published by `triage`, exactly one per turn, re-evaluated each turn. Shapes the route: talk parks the spine (the `discuss` stage converses), spike relaxes rigor, build runs the full composition. A bug is `build` plus a `bug` signal, not a separate path.
-**Avoid:** "route type", "execution mode", "TYPE_BIAS" (retired); "diagnose" as a path (folded into build).
+**Definition:** `code`, `sketch`, `talk`, or `system` - published by `triage`, exactly one per turn, re-evaluated each turn. Shapes the route: talk parks the path (the `discuss` stage converses), sketch relaxes rigor, code runs the full composition. A bug is `code` plus a `bug` signal, not a separate path.
+**Avoid:** "route type", "execution mode", "TYPE_BIAS" (retired); "diagnose" as a path (folded into code).
 
 ### Routes
-**Definition:** The mandatory per-stage frontmatter list of paths (`build`/`spike`/`talk`) a stage may run on. The router drops a triggered stage whose `routes` exclude the live path; multi-path is normal (`correctness-reviewer: [build, spike]`).
+**Definition:** The mandatory per-stage frontmatter list of paths (`code`/`sketch`/`talk`/`system`) a stage may run on. The router drops a triggered stage whose `routes` exclude the live path; multi-path is normal (`correctness-reviewer: [code, sketch]`).
 **Avoid:** "route" singular (that is the composed per-task instance).
 
 ### Convergence
-**Definition:** A route is done when the router triggers no unrun stage and every review lens that ran is `clean`. Replaces the old backward-edge budget - there is no edge count.
+**Definition:** A route is done when the router triggers no unrun stage and every Review lens that ran is `clean`. Replaces the old backward-edge budget - there is no edge count.
 **Avoid:** "completion", "budget".
 
 ### Oscillation guard
@@ -69,11 +69,11 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Avoid:** "green-light", "gate artifact".
 
 ### Trivial
-**Definition:** A build with no new logic - docs, config, version, copy, formatting, or dependency edits. Published by `triage` as the absence of `needs-tests`; routes the short path (`planner`, then implement and a correctness check), skipping the test chain. The implementer's TDD lock is inactive because `#needs-tests` is absent.
+**Definition:** A code change with no new logic - docs, config, version, copy, formatting, or dependency edits. Published by `triage` as the absence of `needs-tests`; routes the short path (`planner`, then implement and a correctness check), skipping the test chain. The implementer's TDD lock is inactive because `#needs-tests` is absent.
 **Avoid:** "small", "simple".
 
 ### Needs-tests
-**Definition:** A build carrying real logic - any new or changed branch, loop, or computation. Published by `triage`; pulls the full spine plus the TDD chain.
+**Definition:** A code change carrying real logic - any new or changed branch, loop, or computation. Published by `triage`; pulls the full code path plus the TDD chain.
 **Avoid:** "complex".
 
 ### Self-heal

@@ -1,6 +1,6 @@
 ---
 name: health-checker
-description: Pre-flight code health assessment of the target area. Scores health and surfaces cleanup targets to handle before or during the primary change. Runs before M/L/XL implementation.
+description: Scout code health assessment of the target area. Scores health and surfaces cleanup targets to handle before or during the primary change. Runs before M/L/XL implementation.
 model: haiku
 tools: Glob, Grep, Read, Bash
 stage:

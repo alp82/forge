@@ -12,7 +12,7 @@ Authoring uses sigils, stripped at compile time (see doctrine/CATALOG.md):
 
 Sigil-bearing scalars are YAML-quoted ('@x', '?x', '#x') because @/?/# are reserved at the
 start of a YAML scalar. Storage is bare names; required-vs-optional is a structural split,
-never a sigil. Every stage MUST declare a `routes` list (a subset of build/spike/talk) -
+never a sigil. Every stage MUST declare a `routes` list (a subset of code/sketch/talk/system) -
 the generator errors loudly if one is missing or names an unknown path.
 """
 

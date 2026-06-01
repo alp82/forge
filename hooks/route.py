@@ -6,7 +6,7 @@ Pure function of (catalog, live_signals, available_artifacts, already_run). Step
 1. **trigger** - membership is OR over `subscribes`: any live topic a stage subscribes to
    triggers it (family-prefix aware: `findings` matches `findings:correctness`).
 2. **route filter** - drop a triggered stage whose `routes` exclude the live path
-   (build/spike/talk, read from the live signals). No path live yet (pre-triage) = no-op.
+   (code/sketch/talk/system, read from the live signals). No path live yet (pre-triage) = no-op.
 3. **drop unsatisfiable** - a stage whose REQUIRED inputs can't be produced is dropped.
    Optional (`?`) inputs never cause a drop.
 4. **lock** - a stage with an active `lock` (a `while` signal live and its `until` not) is

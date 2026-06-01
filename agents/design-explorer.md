@@ -52,12 +52,12 @@ You run once per phase (`confirm-params`, then `built`). You do not loop yoursel
 ```
 <CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
 <CLARIFY_OUTPUT>{requirements-clarifier output - includes DESIGN_PARAMS_PROPOSED}</CLARIFY_OUTPUT>
-<PREFLIGHT>
+<SCOUT>
   <reuse>{reuse-scanner output}</reuse>
   <health>{health-checker output}</health>
   <prototypes>{prototyper output OR "none"}</prototypes>
   <research>{researcher output OR "none"}</research>
-</PREFLIGHT>
+</SCOUT>
 <USER_PARAM_PICKS>{user's selections from PARAMS_TO_CONFIRM, OR "none" on the first invocation}</USER_PARAM_PICKS>
 ```
 
@@ -70,7 +70,7 @@ PHASE: confirm-params
 
 LOOKUPS_PERFORMED:
 - [path/glob/grep/url - what you checked and what it told you, one line each]
-(empty when clarifier and pre-flight already covered the needed recon)
+(empty when clarifier and Scout already covered the needed recon)
 
 PARAMS_TO_CONFIRM:
   (structured per Concise Surfacing Contract; max 4 entries; each picks which value set / range to expose for one parameter)
