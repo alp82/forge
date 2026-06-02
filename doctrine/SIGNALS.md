@@ -61,8 +61,9 @@ New topics are added here first, then used.
 | dead-code | removable code found | health-check | cleanup |
 | missing-infra:&lt;x&gt; | needed infra absent | reuse-scan | research, prototype |
 | unhealthy | touched area is low-health | health-check | cleanup gate |
-| novel:high | high-novelty external surface | prototype-identifier | prototype |
-| alternative-shapes | competing approaches exist | prototype-identifier | plan |
+| domain:integration | a prototyping target is an external API / SDK / integration | prototype-identifier | code-prototyper |
+| domain:data | a prototyping target is a schema / data model / transformation | prototype-identifier | data-prototyper |
+| domain:performance | a prototyping target is timing / scale-critical | prototype-identifier | performance-prototyper |
 
 ## lifecycle  (the code path)
 
@@ -70,8 +71,10 @@ New topics are added here first, then used.
 |---|---|---|---|
 | reuse-done, health-checked | Scout complete | reuse-scan, health-check | plan |
 | clarified | requirements clear | clarify | plan |
-| design-needed | UI / design loop required | clarify | design-loop |
-| design-locked | design spec captured | design-loop | plan |
+| design-needed | UI / design loop required | clarify | design-prototyper |
+| design-locked | design spec captured | design-prototyper | plan |
+| user-flow-needed | user-flow / state-sequence exploration required | clarify | ux-prototyper |
+| ux-flow-locked | user-flow spec captured | ux-prototyper | plan |
 | plan-ready | a plan artifact exists and is awaiting approval - arms the plan-gate lock on both implementers | code-planner, system-planner | code-implementer's plan-gate lock (while), system-executor's plan-gate lock (while) |
 | plan-challenged | plan survived challenge | challenge | after-plan gate |
 | code-written | a diff exists | implement, fixer, system-executor | correctness-reviewer |

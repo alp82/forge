@@ -824,6 +824,13 @@ _EXCLUSION_SET = {
     "prototype-identifier",
     "plan-challenger",
     "test-plan",
+    # TC-P09/TC-P10: prototypers subscribe significant-build indirectly (via prototype-identifier),
+    # so they must not appear on the cheap path (no significant-build signal).
+    "code-prototyper",
+    "data-prototyper",
+    "performance-prototyper",
+    "design-prototyper",
+    "ux-prototyper",
 }
 
 # The 16 deep lenses (exclusion set minus the non-lens stages). All stay absent on a cheap
@@ -850,13 +857,291 @@ _DEEP_LENSES = {
 }
 
 
-# --- TC-I01 ---
+# --- TC-I01 / TC-P01 ---
 def test_real_catalog_has_44_stages_no_skip_tests():
-    """After migration, catalog has 44 stages and skip-tests is absent."""
+    """After prototyper split, catalog has 47 stages and skip-tests is absent."""
     cat = _real_catalog()
     stages = cat["stages"]
-    assert len(stages) == 44, f"expected 44 stages, got {len(stages)}"
+    assert len(stages) == 47, f"expected 47 stages, got {len(stages)}"
     assert "skip-tests" not in stages, "skip-tests must NOT exist in migrated catalog"
+
+
+# ---------------------------------------------------------------------------
+# PROTOTYPER SPLIT TESTS (TC-P02 - TC-P19, RED until agents authored + catalog regen)
+# ---------------------------------------------------------------------------
+
+
+# --- TC-P16 ---
+def test_real_catalog_prototyper_renamed_to_code_prototyper():
+    """After the split, 'prototyper' is gone and 'code-prototyper' is present."""
+    stages = _real_catalog()["stages"]
+    assert "prototyper" not in stages, "'prototyper' must NOT exist after rename"
+    assert "code-prototyper" in stages, "'code-prototyper' must exist after rename"
+
+
+# --- TC-P17 ---
+def test_real_catalog_design_explorer_renamed_to_design_prototyper():
+    """After the split, 'design-explorer' is gone and 'design-prototyper' is present."""
+    stages = _real_catalog()["stages"]
+    assert (
+        "design-explorer" not in stages
+    ), "'design-explorer' must NOT exist after rename"
+    assert "design-prototyper" in stages, "'design-prototyper' must exist after rename"
+
+
+# --- TC-P11 ---
+def test_real_catalog_prototypers_do_not_subscribe_significant_build():
+    """None of the 5 prototypers subscribe 'significant-build' directly.
+
+    They are downstream of prototype-identifier (which subscribes significant-build);
+    direct subscription would make them appear on every significant-build route without
+    the identifier gate.
+    """
+    stages = _real_catalog()["stages"]
+    prototypers = (
+        "code-prototyper",
+        "data-prototyper",
+        "performance-prototyper",
+        "design-prototyper",
+        "ux-prototyper",
+    )
+    for name in prototypers:
+        s = stages[name]
+        subs = s["signals"]["subscribes"]
+        assert (
+            "significant-build" not in subs
+        ), f"{name} must NOT subscribe significant-build, got {subs}"
+
+
+# --- TC-P12 ---
+def test_real_catalog_prototype_identifier_subscribes_significant_build_not_needs_tests():
+    """prototype-identifier subscribes 'significant-build' and does NOT subscribe
+    'needs-tests' - the rename must not have changed this stage's signals."""
+    stages = _real_catalog()["stages"]
+    assert (
+        "prototype-identifier" in stages
+    ), "prototype-identifier must remain in catalog"
+    s = stages["prototype-identifier"]
+    subs = s["signals"]["subscribes"]
+    assert (
+        "significant-build" in subs
+    ), f"prototype-identifier must subscribe significant-build, got {subs}"
+    assert (
+        "needs-tests" not in subs
+    ), f"prototype-identifier must NOT subscribe needs-tests, got {subs}"
+
+
+# --- TC-P13 ---
+def test_real_catalog_prototypers_not_in_deep_lenses():
+    """None of the 5 new/renamed prototypers appear in the deep-lenses set.
+
+    Deep lenses subscribe significant-build and require 'diff' as input and produce
+    'findings:*'. Prototypers operate before implementation and must not be confused
+    with post-code review lenses.
+    """
+    stages = _real_catalog()["stages"]
+    prototypers = {
+        "code-prototyper",
+        "data-prototyper",
+        "performance-prototyper",
+        "design-prototyper",
+        "ux-prototyper",
+    }
+    for name in prototypers:
+        assert (
+            name not in _DEEP_LENSES
+        ), f"{name} must NOT be in _DEEP_LENSES (not a post-code review lens)"
+        if name in stages:
+            s = stages[name]
+            # Prototypers must not subscribe significant-build (TC-P11 already covers this,
+            # but an explicit check here keeps failure locality tight for this lens assertion)
+            assert (
+                "significant-build" not in s["signals"]["subscribes"]
+            ), f"{name} subscribes significant-build - would be a deep lens candidate"
+
+
+# --- TC-P14 ---
+def test_real_catalog_check_catalog_clean_after_prototyper_split():
+    """check_catalog.check() returns [] after the prototyper split is regenerated.
+
+    Sub-invariants enforced by check_catalog:
+    - domain:integration, domain:data, domain:performance each have a publisher + subscriber
+    - user-flow-needed has a publisher + subscriber
+    - ux-flow-locked is published but unsubscribed (like design-locked)
+    - every new/renamed prototyper has routes subset of {code,sketch,talk,system},
+      publishes scope-shift, and has a non-empty input_template
+    """
+    assert (
+        check_catalog.check(_real_catalog()) == []
+    ), "check_catalog.check() must return [] after prototyper split regen"
+
+
+# --- TC-P02 ---
+def test_real_catalog_code_prototyper_triggered_by_domain_integration():
+    """live {code, domain:integration} with prototype-identification available ->
+    code-prototyper is in route."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "domain:integration"},
+        available={"prototype-identification"},
+    )
+    assert (
+        "code-prototyper" in res["route"]
+    ), "code-prototyper must be in route on {code, domain:integration}"
+
+
+# --- TC-P03 ---
+def test_real_catalog_data_prototyper_triggered_by_domain_data():
+    """live {code, domain:data} with prototype-identification available ->
+    data-prototyper is in route."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "domain:data"},
+        available={"prototype-identification"},
+    )
+    assert (
+        "data-prototyper" in res["route"]
+    ), "data-prototyper must be in route on {code, domain:data}"
+
+
+# --- TC-P04 ---
+def test_real_catalog_performance_prototyper_triggered_by_domain_performance():
+    """live {code, domain:performance} with prototype-identification available ->
+    performance-prototyper is in route."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "domain:performance"},
+        available={"prototype-identification"},
+    )
+    assert (
+        "performance-prototyper" in res["route"]
+    ), "performance-prototyper must be in route on {code, domain:performance}"
+
+
+# --- TC-P06 ---
+def test_real_catalog_ux_prototyper_triggered_by_user_flow_needed():
+    """live {code, user-flow-needed} with clarified-intent available ->
+    ux-prototyper is in route."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "user-flow-needed"},
+        available={"clarified-intent"},
+    )
+    assert (
+        "ux-prototyper" in res["route"]
+    ), "ux-prototyper must be in route on {code, user-flow-needed}"
+
+
+# --- TC-P07 ---
+def test_real_catalog_design_and_ux_prototypers_same_wave():
+    """live {code, design-needed, user-flow-needed} with clarified-intent available ->
+    both design-prototyper and ux-prototyper are in route AND in the same wave."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "design-needed", "user-flow-needed"},
+        available={"clarified-intent"},
+    )
+    assert (
+        "design-prototyper" in res["route"]
+    ), "design-prototyper must be in route on {code, design-needed, user-flow-needed}"
+    assert (
+        "ux-prototyper" in res["route"]
+    ), "ux-prototyper must be in route on {code, design-needed, user-flow-needed}"
+    design_wave = next(
+        i for i, w in enumerate(res["waves"]) if "design-prototyper" in w
+    )
+    ux_wave = next(i for i, w in enumerate(res["waves"]) if "ux-prototyper" in w)
+    assert design_wave == ux_wave, (
+        f"design-prototyper (wave {design_wave}) and ux-prototyper (wave {ux_wave}) "
+        "must be in the same wave (no dependency between them)"
+    )
+
+
+# --- TC-P08 ---
+def test_real_catalog_three_domain_prototypers_coexist():
+    """live {code, domain:integration, domain:data, domain:performance} with
+    prototype-identification available -> all three domain prototypers are present
+    and toposort completes without error."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "domain:integration", "domain:data", "domain:performance"},
+        available={"prototype-identification"},
+    )
+    for name in ("code-prototyper", "data-prototyper", "performance-prototyper"):
+        assert (
+            name in res["route"]
+        ), f"{name} must be in route when its domain signal is live"
+
+
+# --- TC-P18 ---
+def test_real_catalog_ux_prototyper_absent_on_design_needed_only():
+    """live {code, design-needed} (no user-flow-needed) with clarified-intent available ->
+    ux-prototyper is NOT in route (subscription specificity)."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "design-needed"},
+        available={"clarified-intent"},
+    )
+    assert (
+        "ux-prototyper" not in res["route"]
+    ), "ux-prototyper must NOT be in route when only design-needed is live (not user-flow-needed)"
+
+
+# --- TC-P19 ---
+def test_real_catalog_design_prototyper_absent_on_user_flow_needed_only():
+    """live {code, user-flow-needed} (no design-needed) with clarified-intent available ->
+    design-prototyper is NOT in route (subscription specificity)."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "user-flow-needed"},
+        available={"clarified-intent"},
+    )
+    assert (
+        "design-prototyper" not in res["route"]
+    ), "design-prototyper must NOT be in route when only user-flow-needed is live (not design-needed)"
+
+
+# --- TC-P20 ---
+def test_real_catalog_requirements_clarifier_publishes_user_flow_needed():
+    """requirements-clarifier publishes user-flow-needed (publish-side coverage)."""
+    stages = _real_catalog()["stages"]
+    assert (
+        "user-flow-needed" in stages["requirements-clarifier"]["signals"]["publishes"]
+    ), "requirements-clarifier must publish user-flow-needed"
+
+
+# --- TC-P21 ---
+def test_real_catalog_code_planner_optional_ux_spec():
+    """code-planner accepts ux-spec as an optional input (merge-path catalog contract)."""
+    stages = _real_catalog()["stages"]
+    assert (
+        "ux-spec" in stages["code-planner"]["data"]["input"]["optional"]
+    ), "code-planner must list ux-spec in optional inputs"
+
+
+# --- TC-P22 ---
+def test_real_catalog_ux_prototyper_orders_before_code_planner():
+    """ux-prototyper precedes code-planner when user-flow-needed + ux-flow-locked
+    are live (ux-prototyper produces ux-spec, code-planner optionally consumes it)."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "user-flow-needed", "ux-flow-locked", "intent-confirmed", "clarified"},
+        available={"confirmed-intent", "clarified-intent", "ux-spec"},
+    )
+    assert "ux-prototyper" in res["route"], "ux-prototyper must be in route"
+    assert "code-planner" in res["route"], "code-planner must be in route"
+    assert res["route"].index("ux-prototyper") < res["route"].index(
+        "code-planner"
+    ), "ux-prototyper must be ordered before code-planner (via optional ux-spec edge)"
 
 
 # --- TC-I02 / D-01 ---

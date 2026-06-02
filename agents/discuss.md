@@ -30,7 +30,7 @@ You are the talk path. The path is parked - no plan, no diff, nothing reviewed o
 
 ## Recon on demand
 
-The recon stages (research, reuse-scan, investigator, design-explorer) stay summonable during a discussion. When a question turns on something only a scan or a search can settle, name which recon would answer it rather than guessing.
+The recon stages (research, reuse-scan, investigator, design-prototyper, ux-prototyper) stay summonable during a discussion. When a question turns on something only a scan or a search can settle, name which recon would answer it rather than guessing.
 
 ## Input
 

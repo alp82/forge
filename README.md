@@ -27,6 +27,11 @@
 
 The last three updates:
 
+**1.1.6**
+
+- Risky parts of a task are now de-risked by a prototype matched to what is actually uncertain - an integration, a data shape, or whether something is fast enough.
+- When the look of a UI is unsettled you get a visual picker; when the steps a user moves through are unsettled you get a separate clickable walk-through, each handed straight to the plan.
+
 **1.1.5**
 
 - A step whose result is lost to an internal error now recovers on its own from the work already on disk, instead of stalling the run.
@@ -38,12 +43,6 @@ The last three updates:
 - Every code or system change now waits for plan approval before any edit is made, so nothing runs on a plan you have not okayed.
 - A small system or trivial change clears that approval with a single tap, and a one-file change clears it automatically.
 - How deeply a change is reviewed no longer rides on whether it needs tests, so a large change gets a full review even when there is nothing new to test.
-
-**1.1.3**
-
-- The worked examples in the workflow guide now match what a run actually does.
-- A run shows a compact status card instead of narrating each step as it happens.
-- Runs are quieter and cost less context per task.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -183,7 +182,7 @@ code · XXL · 18 stages
 
 ## Stages
 
-44 composable stages plus a command-only setup agent. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`). Below they are grouped by conversation path; a stage that runs in several paths appears under each.
+47 composable stages plus a command-only setup agent. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`). Below they are grouped by conversation path; a stage that runs in several paths appears under each.
 
 ### Code
 
@@ -212,14 +211,17 @@ code · XXL · 18 stages
 | reuse-scanner | sonnet | Finds reusable code and quick wins; flags duplication and missing infra. |
 | health-checker | haiku | Scores the health of the area you're touching and surfaces cleanup targets. |
 | prototype-identifier | haiku | Flags unfamiliar APIs or SDKs and suggests shapes to try first. |
-| prototyper | sonnet | Builds a tracer-bullet against the real API to de-risk novelty before planning. |
+| code-prototyper | sonnet | Builds a tracer-bullet against the real API/integration (algorithm correctness as a mode) to de-risk novelty before planning. |
+| data-prototyper | sonnet | Tries competing schemas/data shapes against real samples and writes a human-reference report. |
+| performance-prototyper | sonnet | Measures timing/scale-critical unknowns with a runnable and a charted report. |
 | researcher | haiku | Pulls library, framework, and domain knowledge from the web. |
 
 📐 **Blueprint** - turns settled intent into a concrete blueprint, then attacks it adversarially.
 
 | Stage | Model | Role |
 |-------|-------|------|
-| design-explorer | opus | For UI with multiple legitimate shapes, builds an interactive picker; you paste back the chosen spec. |
+| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the chosen spec. |
+| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the chosen flow spec. |
 | code-planner | opus | Turns intent into a concrete step-by-step blueprint. |
 | plan-challenger | opus | Adversarial review of the plan: holes, failure modes, simpler alternatives. |
 
@@ -323,7 +325,8 @@ code · XXL · 18 stages
 | reuse-scanner | sonnet | Finds reusable code and quick wins; flags duplication and missing infra. |
 | health-checker | haiku | Scores the health of the area you're touching and surfaces cleanup targets. |
 | researcher | haiku | Pulls library, framework, and domain knowledge from the web. |
-| design-explorer | opus | For UI with multiple legitimate shapes, builds an interactive picker; you paste back the chosen spec. |
+| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the chosen spec. |
+| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the chosen flow spec. |
 | code-investigator | opus | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis. |
 | system-investigator | sonnet | Root-cause diagnosis for OS-level faults from service state, logs, and configs. |
 
@@ -357,7 +360,8 @@ code · XXL · 18 stages
 
 | Stage | Model | Role |
 |-------|-------|------|
-| design-explorer | opus | For UI with multiple legitimate shapes, builds an interactive picker; you paste back the chosen spec. |
+| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the chosen spec. |
+| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the chosen flow spec. |
 | sketch-build | sonnet | The sketch path: throwaway runnable code in `.prototypes/`, relaxed ceremony. |
 | fixer | sonnet | Applies reviewer findings and reruns the lenses it touched until clean. |
 
@@ -388,9 +392,9 @@ alp-river/
 ├── .claude-plugin/         <- plugin.json (version), marketplace.json
 ├── WORKFLOW.md             <- the full router-loop doctrine
 ├── doctrine/               <- CATALOG.md (stage schema), SIGNALS.md (signal vocabulary), ...
-├── generated/catalog.json  <- compiled stage catalog (44 stages; tracked; the router reads it)
+├── generated/catalog.json  <- compiled stage catalog (47 stages; tracked; the router reads it)
 ├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, reinject-state)
-├── agents/                 <- 44 stage definitions + setup-agent
+├── agents/                 <- 47 stage definitions + setup-agent
 ├── commands/               <- 6 slash commands
 ├── psychology/             <- per-agent voice / persona overrides
 └── templates/              <- copy into your project's docs/ for context injection

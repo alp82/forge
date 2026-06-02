@@ -6,7 +6,7 @@ tools: Glob, Grep, Read, WebSearch, WebFetch
 stage:
   routes: [code]
   data:
-    input: ['@confirmed-intent', '?clarified-intent', '?reuse-map', '?health-findings', '?research-findings', '?prototypes', '?design-spec', '?diagnosis']
+    input: ['@confirmed-intent', '?clarified-intent', '?reuse-map', '?health-findings', '?research-findings', '?prototypes', '?design-spec', '?ux-spec', '?diagnosis']
     output: ['@approved-plan']
   signals:
     subscribes: ['#clarified', '#intent-confirmed']
@@ -19,8 +19,10 @@ On a code build with no clarifier output (no `#clarified`), the planner runs off
 
 1. Study reuse findings, prototypes (if any), and researcher findings. Design around proven behavior. Scout inputs carry confidence tags - verify `[unsure]` items (by re-reading the cited file, fetching the cited URL, or asking via the main agent) before letting them shape load-bearing parts of the plan.
 2. Review health-checker `CLEANUP_TARGETS` and reuse-scanner `QUICK_WINS`. Pull the ones that fit the task into the plan as explicit steps. Surface the rest in "Out of Scope" as dedicated follow-up tasks.
-3. **If `<LOCKED_DESIGN_SPEC>` is not "none"**: treat it as binding for visual/interaction parameters. Parse the labeled key-value pairs, map each to the relevant component/style/token in the plan, and reference the spec verbatim in the file-touching steps that apply it. Do not re-litigate the design - the user already picked.
+3. **If `<LOCKED_DESIGN_SPEC>` is not "none"**: treat it as binding for visual parameters. Parse the labeled key-value pairs, map each to the relevant component/style/token in the plan, and reference the spec verbatim in the file-touching steps that apply it. Do not re-litigate the design - the user already picked.
+3b. **If `<LOCKED_UX_SPEC>` is not "none"**: treat it as binding for the user-flow / state sequence. It uses the SAME ` | `-delimited labeled key-value format as the design spec, so parse it the same way; map each state/transition to the relevant route/component/handler in the plan and reference the spec verbatim in the steps that apply it. The two specs are independent paste-backs you MERGE - the design spec settles visuals, the ux spec settles the flow; do not re-litigate either.
 4. **If `<DESIGN_CLEANUP>` is not "none"**: fold every listed cleanup item into the plan's implementation steps (typically as the final steps before testing). The picker artifacts must not ship.
+4b. **If `<UX_CLEANUP>` is not "none"**: fold every listed cleanup item into the plan's implementation steps (typically as the final steps before testing). The wireflow artifacts must not ship.
 5. **If `<DIAGNOSIS>` is not "none"** (bug-build): design the fix around the RECOMMENDED FIX and ROOT CAUSE in the diagnosis - target the named root-cause line(s), not the symptom.
 6. Trace similar features in the codebase - follow their patterns.
 7. If multiple viable architectural approaches exist (XL), present them before committing.
@@ -74,8 +76,10 @@ Both producers of a revision - the challenger's `revise` and the implementer's k
   <prototypes>{prototyper output OR "none"}</prototypes>
   <research>{researcher output OR "none"}</research>
 </SCOUT>
-<LOCKED_DESIGN_SPEC>{labeled key-value spec the user pasted back from the design-explorer's picker page, OR "none" when the design loop didn't run}</LOCKED_DESIGN_SPEC>
-<DESIGN_CLEANUP>{design-explorer's CLEANUP_NEEDED list - only when HOST_DECISION was "real-page" so the planner removes picker artifacts before shipping; "none" otherwise}</DESIGN_CLEANUP>
+<LOCKED_DESIGN_SPEC>{labeled key-value spec the user pasted back from the design-prototyper's picker page, OR "none" when the design loop didn't run}</LOCKED_DESIGN_SPEC>
+<DESIGN_CLEANUP>{design-prototyper's CLEANUP_NEEDED list - only when HOST_DECISION was "real-page" so the planner removes picker artifacts before shipping; "none" otherwise}</DESIGN_CLEANUP>
+<LOCKED_UX_SPEC>{labeled key-value flow spec the user pasted back from the ux-prototyper's wireflow page, OR "none" when the user-flow loop didn't run}</LOCKED_UX_SPEC>
+<UX_CLEANUP>{ux-prototyper's CLEANUP_NEEDED list - only when HOST_DECISION was "real-page" so the planner removes wireflow artifacts before shipping; "none" otherwise}</UX_CLEANUP>
 <DIAGNOSIS>{investigator root-cause report OR "none"}</DIAGNOSIS>
 <PRIOR_PLAN>{previous APPROVED_PLAN block - only on replan/plan-patch, otherwise absent; reproduce it verbatim except where REPLAN_REASON applies (## Revision modes)}</PRIOR_PLAN>
 <REPLAN_REASON>{challenger BLOCKERS or implementer kickback reason - only on replan/plan-patch; the exact corrections to apply, nothing else changes}</REPLAN_REASON>

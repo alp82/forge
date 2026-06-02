@@ -1,6 +1,13 @@
 
-prototype
-    visual-prototypes
+accept all url requests
+
+---
+
+remove git hook
+
+---
+
+proactive web search in every or selected subagents
 
 ---
 

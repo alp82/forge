@@ -10,7 +10,7 @@ stage:
     output: ['@prototype-identification']
   signals:
     subscribes: ['#significant-build']
-    publishes: ['#novel:high', '#alternative-shapes', '#scope-shift']
+    publishes: ['#domain:integration', '#domain:data', '#domain:performance', '#scope-shift']
 ---
 
 ## Triggers
@@ -30,6 +30,16 @@ Tag each target with a NOVELTY level - this gates whether the prototyper builds 
 
 When NOVELTY: high, also emit an `ALTERNATIVE_SHAPES` block pairing the target with two concrete shapes the prototyper should build side-by-side. Keep each shape description to one sentence - enough for the prototyper to pick a path, not a design doc.
 
+## Domain
+
+Tag each target with a DOMAIN - this routes it to the matching prototyper:
+
+- **integration**: an external API, SDK, third-party service, webhook, OAuth flow, or any unfamiliar integration surface. Routes to code-prototyper (which also covers algorithm-correctness tracers as a mode).
+- **data**: a schema, data model, storage shape, or non-trivial data transformation whose structure is uncertain. Routes to data-prototyper.
+- **performance**: a timing-critical or scale-critical unknown where the question is "is this fast/scalable enough". Routes to performance-prototyper.
+
+Default to integration when a target is clearly an external surface and no data/perf concern dominates.
+
 ## Input
 
 ```
@@ -42,8 +52,8 @@ When NOVELTY: high, also emit an `ALTERNATIVE_SHAPES` block pairing the target w
 ```
 PROTOTYPES_NEEDED: [yes | no]
 TARGETS:
-- [likely] NOVELTY: [low|med|high] - [description of what needs prototyping and why]
-- [unsure] NOVELTY: [low|med|high] - [description - planner should check if precedent already exists]
+- [likely] NOVELTY: [low|med|high] DOMAIN: [integration|data|performance] - [description of what needs prototyping and why]
+- [unsure] NOVELTY: [low|med|high] DOMAIN: [integration|data|performance] - [description - planner should check if precedent already exists]
 (max 5 items. "none" if no prototyping needed)
 ALTERNATIVE_SHAPES:
 - [target reference] - shape A: [one-sentence shape] | shape B: [one-sentence shape]

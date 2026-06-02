@@ -243,6 +243,7 @@
             "research-findings",
             "prototypes",
             "design-spec",
+            "ux-spec",
             "diagnosis"
           ],
           "required": [
@@ -253,7 +254,7 @@
           "approved-plan"
         ]
       },
-      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<LOCKED_DESIGN_SPEC>{labeled key-value spec the user pasted back from the design-explorer's picker page, OR \"none\" when the design loop didn't run}</LOCKED_DESIGN_SPEC>\n<DESIGN_CLEANUP>{design-explorer's CLEANUP_NEEDED list - only when HOST_DECISION was \"real-page\" so the planner removes picker artifacts before shipping; \"none\" otherwise}</DESIGN_CLEANUP>\n<DIAGNOSIS>{investigator root-cause report OR \"none\"}</DIAGNOSIS>\n<PRIOR_PLAN>{previous APPROVED_PLAN block - only on replan/plan-patch, otherwise absent; reproduce it verbatim except where REPLAN_REASON applies (## Revision modes)}</PRIOR_PLAN>\n<REPLAN_REASON>{challenger BLOCKERS or implementer kickback reason - only on replan/plan-patch; the exact corrections to apply, nothing else changes}</REPLAN_REASON>\n",
+      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<LOCKED_DESIGN_SPEC>{labeled key-value spec the user pasted back from the design-prototyper's picker page, OR \"none\" when the design loop didn't run}</LOCKED_DESIGN_SPEC>\n<DESIGN_CLEANUP>{design-prototyper's CLEANUP_NEEDED list - only when HOST_DECISION was \"real-page\" so the planner removes picker artifacts before shipping; \"none\" otherwise}</DESIGN_CLEANUP>\n<LOCKED_UX_SPEC>{labeled key-value flow spec the user pasted back from the ux-prototyper's wireflow page, OR \"none\" when the user-flow loop didn't run}</LOCKED_UX_SPEC>\n<UX_CLEANUP>{ux-prototyper's CLEANUP_NEEDED list - only when HOST_DECISION was \"real-page\" so the planner removes wireflow artifacts before shipping; \"none\" otherwise}</UX_CLEANUP>\n<DIAGNOSIS>{investigator root-cause report OR \"none\"}</DIAGNOSIS>\n<PRIOR_PLAN>{previous APPROVED_PLAN block - only on replan/plan-patch, otherwise absent; reproduce it verbatim except where REPLAN_REASON applies (## Revision modes)}</PRIOR_PLAN>\n<REPLAN_REASON>{challenger BLOCKERS or implementer kickback reason - only on replan/plan-patch; the exact corrections to apply, nothing else changes}</REPLAN_REASON>\n",
       "name": "code-planner",
       "routes": [
         "code"
@@ -266,6 +267,32 @@
         "subscribes": [
           "clarified",
           "intent-confirmed"
+        ]
+      }
+    },
+    "code-prototyper": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "prototype-identification"
+          ]
+        },
+        "output": [
+          "prototypes"
+        ]
+      },
+      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<PROTOTYPE_TARGETS>{prototype-identifier's TARGETS + ALTERNATIVE_SHAPES blocks - what needs validation and which targets need two shapes}</PROTOTYPE_TARGETS>\n",
+      "name": "code-prototyper",
+      "routes": [
+        "code"
+      ],
+      "signals": {
+        "publishes": [
+          "scope-shift"
+        ],
+        "subscribes": [
+          "domain:integration"
         ]
       }
     },
@@ -328,6 +355,32 @@
         ]
       }
     },
+    "data-prototyper": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "prototype-identification"
+          ]
+        },
+        "output": [
+          "prototypes"
+        ]
+      },
+      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<PROTOTYPE_TARGETS>{prototype-identifier's TARGETS + ALTERNATIVE_SHAPES blocks - what needs validation and which targets need two shapes}</PROTOTYPE_TARGETS>\n",
+      "name": "data-prototyper",
+      "routes": [
+        "code"
+      ],
+      "signals": {
+        "publishes": [
+          "scope-shift"
+        ],
+        "subscribes": [
+          "domain:data"
+        ]
+      }
+    },
     "design-consistency-reviewer": {
       "data": {
         "input": {
@@ -356,7 +409,7 @@
         ]
       }
     },
-    "design-explorer": {
+    "design-prototyper": {
       "data": {
         "input": {
           "optional": [],
@@ -369,7 +422,7 @@
         ]
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output - includes DESIGN_PARAMS_PROPOSED}</CLARIFY_OUTPUT>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<USER_PARAM_PICKS>{user's selections from PARAMS_TO_CONFIRM, OR \"none\" on the first invocation}</USER_PARAM_PICKS>\n",
-      "name": "design-explorer",
+      "name": "design-prototyper",
       "routes": [
         "code",
         "sketch",
@@ -526,6 +579,32 @@
         ]
       }
     },
+    "performance-prototyper": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "prototype-identification"
+          ]
+        },
+        "output": [
+          "prototypes"
+        ]
+      },
+      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<PROTOTYPE_TARGETS>{prototype-identifier's TARGETS + ALTERNATIVE_SHAPES blocks - what needs validation and which targets need two shapes}</PROTOTYPE_TARGETS>\n",
+      "name": "performance-prototyper",
+      "routes": [
+        "code"
+      ],
+      "signals": {
+        "publishes": [
+          "scope-shift"
+        ],
+        "subscribes": [
+          "domain:performance"
+        ]
+      }
+    },
     "performance-reviewer": {
       "data": {
         "input": {
@@ -629,39 +708,13 @@
       ],
       "signals": {
         "publishes": [
-          "novel:high",
-          "alternative-shapes",
+          "domain:integration",
+          "domain:data",
+          "domain:performance",
           "scope-shift"
         ],
         "subscribes": [
           "significant-build"
-        ]
-      }
-    },
-    "prototyper": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "prototype-identification"
-          ]
-        },
-        "output": [
-          "prototypes"
-        ]
-      },
-      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<PROTOTYPE_TARGETS>{prototype-identifier's TARGETS + ALTERNATIVE_SHAPES blocks - what needs validation and which targets need two shapes}</PROTOTYPE_TARGETS>\n",
-      "name": "prototyper",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "scope-shift"
-        ],
-        "subscribes": [
-          "novel:high",
-          "alternative-shapes"
         ]
       }
     },
@@ -716,6 +769,7 @@
         "publishes": [
           "clarified",
           "design-needed",
+          "user-flow-needed",
           "scope-shift"
         ],
         "subscribes": [
@@ -1251,6 +1305,35 @@
         ],
         "subscribes": [
           "request-received"
+        ]
+      }
+    },
+    "ux-prototyper": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "clarified-intent"
+          ]
+        },
+        "output": [
+          "ux-spec"
+        ]
+      },
+      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output - includes USER_FLOW_PROPOSED}</CLARIFY_OUTPUT>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<USER_FLOW_PICKS>{user's selections from FLOW_TO_CONFIRM, OR \"none\" on the first invocation}</USER_FLOW_PICKS>\n",
+      "name": "ux-prototyper",
+      "routes": [
+        "code",
+        "sketch",
+        "talk"
+      ],
+      "signals": {
+        "publishes": [
+          "ux-flow-locked",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "user-flow-needed"
         ]
       }
     },

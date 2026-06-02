@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.1.6 - 2026-06-02
+
+- Risky parts of a task are now de-risked by a prototype matched to what is actually uncertain - an integration, a data shape, or whether something is fast enough.
+- When the look of a UI is unsettled you get a visual picker; when the steps a user moves through are unsettled you get a separate clickable walk-through, each handed straight to the plan.
+
 ## 1.1.5 - 2026-06-02
 
 - A step whose result is lost to an internal error now recovers on its own from the work already on disk, instead of stalling the run.

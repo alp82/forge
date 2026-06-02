@@ -1,7 +1,10 @@
 {
-  "prototyper": "optimist",
+  "code-prototyper": "optimist",
+  "data-prototyper": "optimist",
+  "performance-prototyper": "optimist",
   "plan-challenger": "skeptic",
-  "design-explorer": "user-advocate",
+  "design-prototyper": "user-advocate",
+  "ux-prototyper": "user-advocate",
   "code-investigator": "detective",
   "system-investigator": "detective",
   "security-reviewer": "defender",

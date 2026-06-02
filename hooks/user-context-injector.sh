@@ -20,12 +20,13 @@
 #
 # An agent can be user-aware only, project-aware only, both, or neither:
 #   User-aware Y + Project-aware Y: most agents - interviewer, planner,
-#                                   plan-challenger, implementer, design-explorer,
-#                                   reviewers, fixer, investigator, capture-agent,
-#                                   adr-drafter, discuss, sketch-build (see case arms
-#                                   and READ_MAP)
+#                                   plan-challenger, implementer, design-prototyper,
+#                                   ux-prototyper, reviewers, fixer, investigator,
+#                                   capture-agent, adr-drafter, discuss, sketch-build
+#                                   (see case arms and READ_MAP)
 #   User-aware N + Project-aware Y: health-checker, prototype-identifier,
-#                                   researcher, prototyper  (user_aware=0)
+#                                   researcher, code-prototyper, data-prototyper,
+#                                   performance-prototyper  (user_aware=0)
 #   User-aware Y + Project-aware N: visual-verifier, plan-adherence-reviewer,
 #                                   setup-agent
 #   User-aware N + Project-aware N: test-verifier and accessibility-reviewer are
@@ -70,7 +71,7 @@ fi
 user_aware=1
 case "$subagent_type" in
   # User-aware: yes. Project-aware: depends on READ_MAP.
-  interviewer|code-planner|plan-challenger|code-implementer|fixer|code-investigator|setup-agent|capture-agent|adr-drafter|design-explorer|discuss|sketch-build|system-planner|system-executor|system-investigator|system-verifier|safety-gate)
+  interviewer|code-planner|plan-challenger|code-implementer|fixer|code-investigator|setup-agent|capture-agent|adr-drafter|design-prototyper|ux-prototyper|discuss|sketch-build|system-planner|system-executor|system-investigator|system-verifier|safety-gate)
     ;;
   requirements-clarifier|reuse-scanner|visual-verifier)
     ;;
@@ -83,7 +84,7 @@ case "$subagent_type" in
   design-consistency-reviewer|ux-reviewer)
     ;;
   # User-aware: no. Project-aware: yes (READ_MAP entries below).
-  health-checker|prototype-identifier|researcher|prototyper)
+  health-checker|prototype-identifier|researcher|code-prototyper|data-prototyper|performance-prototyper)
     user_aware=0
     ;;
   # User-aware: no. Project-aware: no. They cite doctrine, so they fall through
@@ -118,7 +119,9 @@ declare -A READ_MAP=(
   [health-checker]="stack"
   [prototype-identifier]="stack"
   [researcher]="stack"
-  [prototyper]="stack"
+  [code-prototyper]="stack"
+  [data-prototyper]="stack"
+  [performance-prototyper]="stack"
   [code-planner]="intent stack glossary adrs"
   [system-planner]="stack glossary adrs"
   [system-executor]="stack glossary"
@@ -126,7 +129,8 @@ declare -A READ_MAP=(
   [system-verifier]="stack"
   [safety-gate]="stack"
   [plan-challenger]="intent stack glossary adrs"
-  [design-explorer]="intent stack glossary adrs"
+  [design-prototyper]="intent stack glossary adrs"
+  [ux-prototyper]="intent stack glossary adrs"
   [code-implementer]="stack glossary adrs"
   [correctness-reviewer]="stack glossary"
   [quality-reviewer]="intent stack glossary"

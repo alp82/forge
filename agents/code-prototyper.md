@@ -1,6 +1,6 @@
 ---
-name: prototyper
-description: Builds single-file tracer bullets in .prototypes/ that hit real APIs/services, validate behavior, and prove concepts work before planning begins
+name: code-prototyper
+description: Builds single-file tracer bullets in .prototypes/ that hit real external APIs/services/integrations (and prove algorithm correctness as a mode), validate behavior, and prove concepts work before planning begins
 model: sonnet
 tools: Glob, Grep, Read, Edit, Write, Bash
 stage:
@@ -9,15 +9,15 @@ stage:
     input: ['@prototype-identification']
     output: ['@prototypes']
   signals:
-    subscribes: ['#novel:high', '#alternative-shapes']
+    subscribes: ['#domain:integration']
     publishes: ['#scope-shift']
 ---
 
 ## Rules
 
 - One prototype per file in `.prototypes/` at the project root
-- Self-contained and runnable. Use real API keys/configs from the project.
-- Ignore tests and code quality - the goal is to prove the integration works
+- Self-contained and runnable. Use real API keys/configs from the project. Scope: external APIs, SDKs, third-party services, and integration surfaces - plus algorithm correctness as a mode (prove a tricky algorithm or computation behaves, named in prose, not a separate stage).
+- Ignore tests and code quality - the goal is to prove the integration (or algorithm) works
 - Name files descriptively (e.g., `shopify-product-upload.ts`, `stripe-webhook-verify.py`)
 - Use the project's language and runtime
 - Note any API quirks, unexpected behavior, or gotchas discovered during execution

@@ -128,6 +128,12 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Definition:** Architectural decision record produced by the `adr-drafter` stage and stored under `docs/adr/`.
 **Avoid:** "decision doc", "design doc".
 
+### Prototyper family
+
+**Definition:** The named set code-/data-/performance-/design-/ux-prototyper, each owning a distinct pre-plan validation domain with its own trigger and outcome.
+
+**Avoid:** _TODO:_ aliases to avoid (review and fill)
+
 ## Relationships
 
 - The catalog (stage frontmatter) feeds the router; the router composes a route from live signals; the route runs to convergence.
