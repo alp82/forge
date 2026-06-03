@@ -2,6 +2,7 @@
 name: adr-drafter
 description: Drafts a single ADR from a decision summary, mirroring the canonical template. Read-only - emits a DRAFT or ADR_REJECTED when the proposed decision duplicates an existing active ADR. Never writes files. Used by /alp-river:adr.
 model: opus
+effort: high
 tools: Glob, Grep, Read
 stage:
   routes: [code, talk]

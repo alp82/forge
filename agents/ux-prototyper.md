@@ -2,6 +2,7 @@
 name: ux-prototyper
 description: Pre-plan user-flow exploration. Confirms which states and transitions are in play, decides whether to host the wireflow in a sandbox prototype or the real page, then writes a clickable low-fi wireflow where the user walks the state sequence and copies the chosen flow spec back into chat.
 model: opus
+effort: high
 tools: Glob, Grep, Read, Edit, Write, Bash, WebSearch, WebFetch
 stage:
   routes: [code, sketch, talk]

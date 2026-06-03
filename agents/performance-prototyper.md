@@ -2,6 +2,7 @@
 name: performance-prototyper
 description: Builds single-file tracer bullets in .prototypes/ that measure timing and scale-critical unknowns before planning begins - CLI or UI runnables that emit a human-reference HTML report
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Edit, Write, Bash
 stage:
   routes: [code]

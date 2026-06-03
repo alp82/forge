@@ -2,6 +2,7 @@
 name: system-executor
 description: Runs an approved system plan - edits configs and executes CLI commands - one ordered step at a time, backing up before each mutation. Held by a lock until the safety gate clears any destructive or irreversible step.
 model: sonnet
+effort: medium
 tools: Glob, Grep, Read, Edit, Write, Bash
 stage:
   routes: [system]

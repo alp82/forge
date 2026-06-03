@@ -156,6 +156,15 @@ lookups. The router spawns each stage at its declared model; there is no per-tie
 table. Swap a specific agent's voice under `alpRiver.psychologyOverrides`, or change its
 `model` in frontmatter.
 
+Alongside `model`, each stage declares an `effort` level - `medium`, `high`, or `max` -
+matched to the job rather than the model: mechanical stages that execute an upstream
+decision sit at `medium`, the analysis and review lenses at `high`, and the design and
+adversarial stages (the planners, the challenger, the intent loops, the deep reviewers) at
+`max`. Effort sets a stage's thinking budget independent of its model and is read by the
+harness at spawn, never by the router or catalog. It is model-gated: `haiku` does not honor
+effort, so the haiku classification stages (`triage`, `prototype-identifier`,
+`health-checker`) carry no `effort` line.
+
 ## Clarification Loops
 
 The `interviewer` and `requirements-clarifier` stages run as loops, not single passes -

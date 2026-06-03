@@ -2,6 +2,7 @@
 name: data-prototyper
 description: Builds single-file tracer bullets in .prototypes/ that validate schemas, data models, comparisons, and transformations before planning begins - writes a human-reference HTML report of the findings
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Edit, Write, Bash
 stage:
   routes: [code]

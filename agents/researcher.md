@@ -1,7 +1,8 @@
 ---
 name: researcher
 description: Quick external research on libraries, APIs, frameworks, algorithms, or domain knowledge relevant to the task. Surfaces current best practices, version info, and known pitfalls via targeted web search.
-model: haiku
+model: sonnet
+effort: high
 tools: WebSearch, WebFetch, Glob, Grep, Read
 stage:
   routes: [code, talk]

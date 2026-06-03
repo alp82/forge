@@ -2,6 +2,7 @@
 name: naming-clarity
 description: Reviews changed code for intrinsic name clarity - names that are vague, misleading, wrongly scoped, or lean on unexplained abbreviations, judged on their own terms rather than against repo convention
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]

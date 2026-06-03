@@ -2,6 +2,7 @@
 name: code-planner
 description: Designs a concrete implementation plan by analyzing the codebase, existing patterns, and reuse scan findings, then producing a step-by-step blueprint. Wraps output as APPROVED_PLAN with version.
 model: opus
+effort: max
 tools: Glob, Grep, Read, WebSearch, WebFetch
 stage:
   routes: [code]

@@ -2,6 +2,7 @@
 name: safety-gate
 description: A user-decision gate that fires before a destructive or irreversible action runs. Surfaces exactly what will be destroyed and how to recover, and holds the executor until the user clears it. Sticky - once armed, it stays until answered.
 model: sonnet
+effort: medium
 tools: Glob, Grep, Read
 stage:
   routes: [system, code]

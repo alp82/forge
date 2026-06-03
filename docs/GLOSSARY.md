@@ -134,6 +134,12 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 
 **Avoid:** _TODO:_ aliases to avoid (review and fill)
 
+### effort
+
+**Definition:** Official Claude Code subagent frontmatter field that sets a per-agent thinking budget independent of `model`. Values: low/medium/high/xhigh/max, with precedence env > invocation > frontmatter > parent. Model-gated (Haiku does not honor it; unsupported levels fall back silently). This repo uses medium/high/max, tuned per agent job-type, and leaves the haiku classification stages without an `effort` line.
+
+**Avoid:** _TODO:_ aliases to avoid (review and fill)
+
 ## Relationships
 
 - The catalog (stage frontmatter) feeds the router; the router composes a route from live signals; the route runs to convergence.

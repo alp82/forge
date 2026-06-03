@@ -2,6 +2,7 @@
 name: design-consistency-reviewer
 description: Reviews UI changes for visual consistency with the existing design system and UI patterns - only spawned when changes touch UI components
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]

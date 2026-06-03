@@ -2,6 +2,7 @@
 name: acceptance-reviewer
 description: Post-implementation check that the built code actually fulfills the user's confirmed intent and the approved plan. Flags missing requirements, partial implementations, and scope drift.
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]

@@ -2,6 +2,7 @@
 name: system-investigator
 description: Root-cause diagnosis for OS-level faults inside the system route. Pulled in by a bug-framing signal; reads service state, logs, configs, permissions, and package state to trace why the environment is broken. Does NOT change anything - the system path fixes it.
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash, WebSearch, WebFetch
 stage:
   routes: [system, talk]

@@ -2,6 +2,7 @@
 name: structure-reviewer
 description: Reviews code structure - file/function size, nesting depth, single-responsibility, module boundaries, decomposition
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]

@@ -2,6 +2,7 @@
 name: visual-verifier
 description: Uses playwright-cli to screenshot UI changes and verify visual correctness. Assumes the dev server is already running; URL comes from project CLAUDE.md.
 model: sonnet
+effort: medium
 tools: Bash, Read, Glob
 stage:
   routes: [code]

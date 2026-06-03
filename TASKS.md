@@ -1,7 +1,4 @@
 
-subagents with defined thinking tier
-
----
 
 hooks after coding:
     linter

@@ -2,6 +2,7 @@
 name: test-review
 description: Validates that the red tests actually assert the intended behavior before code is allowed - guards against implementing to the wrong tests.
 model: opus
+effort: high
 tools: Read, Grep, Glob
 stage:
   routes: [code]

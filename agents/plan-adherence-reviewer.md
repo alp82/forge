@@ -2,6 +2,7 @@
 name: plan-adherence-reviewer
 description: Post-implementation check that the implementer followed the approved plan - file list, function signatures, step ordering. Different from acceptance-reviewer (intent fulfillment); this is blueprint fidelity.
 model: sonnet
+effort: medium
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]

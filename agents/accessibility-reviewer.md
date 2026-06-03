@@ -2,6 +2,7 @@
 name: accessibility-reviewer
 description: Focused accessibility review - only spawned when changes touch UI components
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]

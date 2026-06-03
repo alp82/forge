@@ -2,6 +2,7 @@
 name: code-prototyper
 description: Builds single-file tracer bullets in .prototypes/ that hit real external APIs/services/integrations (and prove algorithm correctness as a mode), validate behavior, and prove concepts work before planning begins
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Edit, Write, Bash
 stage:
   routes: [code]

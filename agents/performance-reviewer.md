@@ -2,6 +2,7 @@
 name: performance-reviewer
 description: Focused performance review - only spawned when changes touch database queries, data processing, or request-handling hot paths
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]

@@ -2,6 +2,7 @@
 name: test-gap
 description: Always-on coverage lens. After code is written, checks acceptance criteria for untested behavior and pulls test-author back for the gaps.
 model: sonnet
+effort: high
 tools: Read, Grep, Glob
 stage:
   routes: [code]

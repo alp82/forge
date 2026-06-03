@@ -2,6 +2,7 @@
 name: sketch-build
 description: Sketch-path maker. Builds throwaway, runnable code in .prototypes/ to answer "does this work?" fast, with relaxed ceremony - no plan or tests required. Graduating a sketch is a separate code/system route on the kept work.
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Edit, Write, Bash
 stage:
   routes: [sketch]

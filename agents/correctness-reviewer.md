@@ -2,6 +2,7 @@
 name: correctness-reviewer
 description: Post-implementation review for correctness, type safety, dead code, and project convention adherence
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code, sketch]

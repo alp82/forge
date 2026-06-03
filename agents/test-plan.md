@@ -2,6 +2,7 @@
 name: test-plan
 description: Derives concrete test cases from the approved plan's acceptance criteria, before any code is written.
 model: sonnet
+effort: high
 tools: Read, Grep, Glob
 stage:
   routes: [code]

@@ -2,6 +2,7 @@
 name: consistency-reviewer
 description: Reviews new code for consistency with existing codebase conventions by comparing against 2-3 existing examples of the same kind
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]

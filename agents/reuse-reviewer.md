@@ -2,6 +2,7 @@
 name: reuse-reviewer
 description: Post-implementation review for missed reuse opportunities - finds duplicated code, extractable shared components, utilities that could be consolidated
 model: sonnet
+effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]

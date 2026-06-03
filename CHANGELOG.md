@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.1.8 - 2026-06-03
+
+- Each step now runs at a thinking depth matched to its job instead of all inheriting the deepest setting, so the hardest planning and reviews go deep while routine checks stay lean.
+- The security review and the external-research step each moved to a stronger model for more reliable findings.
+
 ## 1.1.7 - 2026-06-02
 
 - Planning and troubleshooting steps now look up a library, package, or version against current sources whenever the work commits to one, instead of only when something feels uncertain.

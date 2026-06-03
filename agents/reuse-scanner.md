@@ -2,6 +2,7 @@
 name: reuse-scanner
 description: Pre-implementation scan that finds reusable code AND identifies quick-win refactors to improve the codebase before new work begins
 model: sonnet
+effort: high
 tools: Glob, Grep, Read
 stage:
   routes: [code, talk]

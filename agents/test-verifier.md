@@ -2,6 +2,7 @@
 name: test-verifier
 description: Runs the project's test suite and verifies that changes pass. Identifies missing test coverage for new functionality.
 model: sonnet
+effort: medium
 tools: Bash, Read, Glob, Grep
 stage:
   routes: [code]

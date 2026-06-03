@@ -2,6 +2,7 @@
 name: test-author
 description: Writes the failing (red) tests from the test cases, before implementation exists.
 model: sonnet
+effort: medium
 tools: Read, Grep, Glob, Edit, Write, Bash
 stage:
   routes: [code]

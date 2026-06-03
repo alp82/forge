@@ -2,6 +2,7 @@
 name: fixer
 description: Fixes issues identified by quality gates. Receives structured findings and applies targeted fixes without scope creep. Emits a RE-RUN set so the main agent knows which gates to re-fire.
 model: sonnet
+effort: medium
 tools: Glob, Grep, Read, Edit, Write, Bash
 stage:
   routes: [code, sketch]

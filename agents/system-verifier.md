@@ -2,6 +2,7 @@
 name: system-verifier
 description: Confirms an executed system change actually reached its intended state - re-checks service status, reparses configs, re-runs the formerly failing command - and reports any drift from the plan's VERIFY condition.
 model: sonnet
+effort: medium
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [system]

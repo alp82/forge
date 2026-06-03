@@ -27,6 +27,11 @@
 
 The last three updates:
 
+**1.1.8**
+
+- Each step now runs at a thinking depth matched to its job instead of all inheriting the deepest setting, so the hardest planning and reviews go deep while routine checks stay lean.
+- The security review and the external-research step each moved to a stronger model for more reliable findings.
+
 **1.1.7**
 
 - Planning and troubleshooting steps now look up a library, package, or version against current sources whenever the work commits to one, instead of only when something feels uncertain.
@@ -36,12 +41,6 @@ The last three updates:
 
 - Risky parts of a task are now de-risked by a prototype matched to what is actually uncertain - an integration, a data shape, or whether something is fast enough.
 - When the look of a UI is unsettled you get a visual picker; when the steps a user moves through are unsettled you get a separate clickable walk-through, each handed straight to the plan.
-
-**1.1.5**
-
-- A step whose result is lost to an internal error now recovers on its own from the work already on disk, instead of stalling the run.
-- A step that hangs is now noticed and unstuck automatically, so a single stuck step no longer freezes everything behind it.
-- You are pulled in only when the recovered work genuinely does not add up, not on every hiccup.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

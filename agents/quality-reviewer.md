@@ -2,6 +2,7 @@
 name: quality-reviewer
 description: Post-implementation review for engineering judgment - hacky shortcuts when a clean path exists, bloat, wrong tool for the job, unelegant solutions
 model: opus
+effort: max
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]
