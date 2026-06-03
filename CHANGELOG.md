@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.1.10 - 2026-06-03
+
+- Correctness review now runs on a stronger model for sharper findings on every change.
+- Performance review catches more real slowdowns - loops that scale badly with data size and waits that should run in parallel.
+
 ## 1.1.9 - 2026-06-03
 
 - A change that writes to a database, file, network, or payment system is now reviewed for whether running it twice is safe, flagging any step that would double-apply or corrupt on a re-run.

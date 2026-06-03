@@ -27,6 +27,11 @@
 
 The last three updates:
 
+**1.1.10**
+
+- Correctness review now runs on a stronger model for sharper findings on every change.
+- Performance review catches more real slowdowns - loops that scale badly with data size and waits that should run in parallel.
+
 **1.1.9**
 
 - A change that writes to a database, file, network, or payment system is now reviewed for whether running it twice is safe, flagging any step that would double-apply or corrupt on a re-run.
@@ -35,11 +40,6 @@ The last three updates:
 
 - Each step now runs at a thinking depth matched to its job instead of all inheriting the deepest setting, so the hardest planning and reviews go deep while routine checks stay lean.
 - The security review and the external-research step each moved to a stronger model for more reliable findings.
-
-**1.1.7**
-
-- Planning and troubleshooting steps now look up a library, package, or version against current sources whenever the work commits to one, instead of only when something feels uncertain.
-- Each looked-up fact is recorded with its source and a confidence tag, so an assumption that could not be confirmed is visible rather than silently trusted.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -243,7 +243,7 @@ code · XXL · 18 stages
 
 | Lens | Model | Runs when |
 |------|-------|-----------|
-| correctness | sonnet | every change |
+| correctness | opus | every change |
 | quality | opus | logic changes |
 | acceptance | sonnet | logic changes |
 | plan-adherence | sonnet | logic changes |
@@ -256,7 +256,7 @@ code · XXL · 18 stages
 | performance | sonnet | logic changes |
 | test-gap | sonnet | logic changes |
 | test-verifier | sonnet | logic changes |
-| security | sonnet | auth / secrets / permissions surface (sticky) |
+| security | opus | auth / secrets / permissions surface (sticky) |
 | ux | sonnet | UI touched |
 | accessibility | sonnet | UI touched |
 | design-consistency | sonnet | UI touched |

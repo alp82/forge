@@ -1,7 +1,3 @@
-compare reviewer scopes
-after adjustments clarify model and effort too
-
----
 
 hooks after coding:
     linter
