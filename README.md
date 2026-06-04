@@ -27,19 +27,25 @@
 
 The last three updates:
 
+**1.2.1**
+
+- A build or type-check now runs when Claude finishes a task, blocking a broken build that the tests didn't catch.
+- The after-edit formatter now reports lint problems rather than silently rewriting code to fix them.
+- The finish-line test check now catches failures it had been silently letting through.
+- A missing or timed-out test runner is no longer misread as a failing test.
+
+**1.2.0**
+
+A big change is now built and reviewed in verified increments instead of in a single pass at the end, so problems surface early while each piece is small.
+
+- A large change is broken into checkpoints, with each one built, reviewed, and confirmed before the next begins.
+- A step that drifts from the agreed plan pauses for a fresh look instead of carrying the drift forward.
+- Small changes proceed exactly as before, with no extra ceremony.
+
 **1.1.11**
 
 - Plan approval now shows a short plain-language summary, a concrete example, and a small visual before you confirm.
 - The smallest auto-approved changes stay silent as before.
-
-**1.1.10**
-
-- Correctness review now runs on a stronger model for sharper findings on every change.
-- Performance review catches more real slowdowns - loops that scale badly with data size and waits that should run in parallel.
-
-**1.1.9**
-
-- A change that writes to a database, file, network, or payment system is now reviewed for whether running it twice is safe, flagging any step that would double-apply or corrupt on a re-run.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -80,7 +86,7 @@ flowchart TD
 |------|-----------|------------------------|
 | **talk** | thinking out loud, asking, weighing options | nothing - answers, worked examples, tradeoffs. Reads freely; only expensive moves (a web search, a diagram) ask first. |
 | **sketch** | trying an idea fast | a throwaway artifact in `.prototypes/` - code, a diagram, or a UI mockup. Relaxed ceremony; correctness and security still apply. |
-| **code** | changing the codebase | a reviewed, tested change in your repo. The full route: clarify, plan, challenge, red tests, implement, review fan-out, self-heal. |
+| **code** | changing the codebase | a reviewed, tested change in your repo. The full route: clarify, plan, challenge, red tests, implement, review fan-out, self-heal. A large change proceeds as verified milestones - each built, reviewed, and confirmed before the next. |
 | **system** | changing the machine (configs, troubleshooting, CLI tooling) | a verified change, with a safety check before anything destructive or irreversible. |
 
 ### Where you stay in the loop

@@ -2,6 +2,21 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.2.1 - 2026-06-04
+
+- A build or type-check now runs when Claude finishes a task, blocking a broken build that the tests didn't catch.
+- The after-edit formatter now reports lint problems rather than silently rewriting code to fix them.
+- The finish-line test check now catches failures it had been silently letting through.
+- A missing or timed-out test runner is no longer misread as a failing test.
+
+## 1.2.0 - 2026-06-04
+
+A big change is now built and reviewed in verified increments instead of in a single pass at the end, so problems surface early while each piece is small.
+
+- A large change is broken into checkpoints, with each one built, reviewed, and confirmed before the next begins.
+- A step that drifts from the agreed plan pauses for a fresh look instead of carrying the drift forward.
+- Small changes proceed exactly as before, with no extra ceremony.
+
 ## 1.1.11 - 2026-06-03
 
 - Plan approval now shows a short plain-language summary, a concrete example, and a small visual before you confirm.

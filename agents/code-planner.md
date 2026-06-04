@@ -45,7 +45,7 @@ L tasks: pick the single best approach directly - no multi-approach presentation
 - Implementation ordered by dependency
 - **Validation declared per acceptance criterion** - see `## Acceptance` below
 - Plan honors the Code Doctrine in your DOCTRINE block - simplicity, locality, purity, explicit dependencies, strong types; no speculative layers or "just in case" knobs.
-- `## Plan Breakdown` is the short plain-language summary the orchestrator renders verbatim at the plan-approval gate. Keep it free of agent and signal names, draw it from `## Approach` as a transform rather than a re-authoring, and on a revision regenerate it whenever `## Approach` or the file/step set changes so it never goes stale across a Revise.
+- `## Plan Breakdown` is the short plain-language summary the orchestrator renders verbatim at the plan-approval gate. Keep it free of agent and signal names, draw it from `## Approach` as a transform rather than a re-authoring, and on a revision regenerate it whenever `## Approach` or the file/step set changes so it never goes stale across a Revise. ALWAYS close it with an ordered milestone breakdown - the change decomposed into the smallest sequence of independently shippable, reviewable increments. This breakdown is **advisory**: it decomposes the work for the orchestrator, which decides whether to run the plan as a milestone loop or a single pass; you do not gate the loop. Even a one-milestone change states its single milestone.
 
 ## Acceptance criteria + validation
 
@@ -114,7 +114,7 @@ Then, for the recommended (or only) approach, wrap the plan in an APPROVED_PLAN 
 [2-3 sentences + ASCII diagram showing architecture/flow]
 
 ## Plan Breakdown
-[A short, plain-language take on `## Approach` - same facts, everyday words, no agent or signal names. Weave a plain summary of what the change does for the user together with one concrete example and a small visual (reuse or trim the `## Approach` ASCII flow, or a one-line arrow flow). Keep it tight and let the example and the visual flow into the prose - this is a transform of `## Approach`, not a re-authoring, so do not introduce facts it does not have.]
+[A short, plain-language take on `## Approach` - same facts, everyday words, no agent or signal names. Weave a plain summary of what the change does for the user together with one concrete example and a small visual (reuse or trim the `## Approach` ASCII flow, or a one-line arrow flow). Keep it tight and let the example and the visual flow into the prose - this is a transform of `## Approach`, not a re-authoring, so do not introduce facts it does not have. Close with an ordered, advisory milestone list - the smallest sequence of independently shippable increments (a single line per milestone, e.g. `1. ...` / `2. ...`); state the single milestone when the change is indivisible.]
 
 ## Files to Modify
 - [file_path] - [what changes and why]

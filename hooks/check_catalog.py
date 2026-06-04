@@ -59,6 +59,9 @@ def check(catalog):
             problems.append(f"{name}: routes {routes} not a subset of {list(PATHS)}")
         if "scope-shift" not in s["signals"]["publishes"]:
             problems.append(f"{name}: does not publish `scope-shift`")
+        ms = s.get("milestone-scope")
+        if ms is not None and ms not in {"local", "both"}:
+            problems.append(f"{name}: milestone-scope '{ms}' not in {{local, both}}")
         for sub in s["signals"]["subscribes"]:
             if sub not in SEED_SIGNALS and not _family_match(sub, published):
                 problems.append(f"{name}: subscribes `{sub}` - no publisher or seed")

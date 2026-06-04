@@ -14,7 +14,7 @@ mkdir -p "$HOME/.claude/debug" 2>/dev/null || true
 # Accumulates formatter failures for the EXIT trap to emit as additionalContext.
 failures=""
 
-# Rotate log if it exceeds 1MB — keep the last 512KB
+# Rotate log if it exceeds 1MB - keep the last 512KB
 if [ -f "$log_file" ] && [ "$(stat -c%s "$log_file" 2>/dev/null || echo 0)" -gt 1048576 ]; then
   tail -c 524288 "$log_file" > "${log_file}.tmp" 2>/dev/null && mv "${log_file}.tmp" "$log_file"
 fi
@@ -45,7 +45,7 @@ run_fmt() {
     echo "---" >> "$log_file" 2>/dev/null
     local tail_output
     tail_output=$(printf '%s' "$output" | tail -n 10)
-    failures+="$name failed on $file_path (exit $exit_code) — see ~/.claude/debug/auto-format.log. Tail: $tail_output"
+    failures+="$name failed on $file_path (exit $exit_code) - see ~/.claude/debug/auto-format.log. Tail: $tail_output"
   fi
 }
 
@@ -78,11 +78,22 @@ ext="${file_path##*.}"
 if [[ "$ext" =~ ^(js|jsx|ts|tsx|json|css|scss|html|md|yaml|yml)$ ]]; then
   if [ -f ".prettierrc" ] || [ -f ".prettierrc.json" ] || [ -f ".prettierrc.js" ] || [ -f "prettier.config.js" ] || [ -f "prettier.config.mjs" ] || ([ -f "package.json" ] && grep -q '"prettier"' package.json 2>/dev/null); then
     run_fmt prettier npx prettier --write "$file_path"
-    exit 0
-  fi
-  if [ -f "biome.json" ] || [ -f "biome.jsonc" ]; then
+    # ESLint surfacing (report-only): only when configured AND locally resolvable.
+    if [ -f ".eslintrc" ] || [ -f ".eslintrc.json" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc.cjs" ] || [ -f ".eslintrc.yaml" ] || [ -f ".eslintrc.yml" ] || [ -f "eslint.config.js" ] || [ -f "eslint.config.mjs" ] || [ -f "eslint.config.cjs" ] || ([ -f "package.json" ] && grep -q '"eslintConfig"' package.json 2>/dev/null); then
+      if [ -x "node_modules/.bin/eslint" ]; then
+        run_fmt eslint node_modules/.bin/eslint "$file_path"
+      elif command -v npx &>/dev/null; then
+        run_fmt eslint npx --no-install eslint "$file_path"
+      fi
+    fi
+  elif [ -f "biome.json" ] || [ -f "biome.jsonc" ]; then
     run_fmt biome npx @biomejs/biome format --write "$file_path"
-    exit 0
+    # Biome lint surfacing (report-only): only when locally resolvable.
+    if [ -x "node_modules/.bin/biome" ]; then
+      run_fmt "biome lint" node_modules/.bin/biome lint "$file_path"
+    elif command -v npx &>/dev/null; then
+      run_fmt "biome lint" npx --no-install @biomejs/biome lint "$file_path"
+    fi
   fi
 fi
 
@@ -90,12 +101,9 @@ fi
 if [[ "$ext" == "py" ]]; then
   if command -v ruff &>/dev/null && ([ -f "pyproject.toml" ] || [ -f "ruff.toml" ] || [ -f ".ruff.toml" ]); then
     run_fmt "ruff format" ruff format "$file_path"
-    run_fmt "ruff check --fix" ruff check --fix "$file_path"
-    exit 0
-  fi
-  if command -v black &>/dev/null; then
+    run_fmt "ruff check" ruff check "$file_path"
+  elif command -v black &>/dev/null; then
     run_fmt black black --quiet "$file_path"
-    exit 0
   fi
 fi
 

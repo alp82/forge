@@ -160,6 +160,8 @@ def normalize_stage(name, stage, input_template=""):
         entry["guard"] = stage["guard"]
     if stage.get("lock"):
         entry["lock"] = _normalize_lock(stage["lock"], name)
+    if stage.get("milestone-scope"):
+        entry["milestone-scope"] = stage["milestone-scope"]
     return entry
 
 

@@ -11,7 +11,7 @@ stage:
     output: ['@diff']
   signals:
     subscribes: ['#plan-ready']
-    publishes: ['#code-written', '#ui-touched', '#scope-shift']
+    publishes: ['#code-written', '#ui-touched', '#milestone-diverged', '#scope-shift']
   lock:
     - while: '#needs-tests'
       until: '#tests-ready'
@@ -42,6 +42,10 @@ When the plan can't be executed as written, kick back instead of guessing. Three
 Kickback re-enters the route via a planner rerun. A kickback re-spawns the planner per WORKFLOW.md ## Revision Contract - the orchestrator hands it the prior plan as `<PRIOR_PLAN>` and this kickback's REASON as `<REPLAN_REASON>`, so the planner amends rather than redesigns. If you've already kicked back twice on the same blocker without resolving it, emit `VERDICT: blocked` with the reason and stop - the orchestrator surfaces to the user rather than looping (the oscillation guard).
 
 Minor ambiguities that you can resolve by reading nearby code are not kickbacks. Kickback is for plan-breaking issues.
+
+## Milestone divergence
+
+During a milestone-loop build you implement one milestone at a time. When implementing the current milestone reveals that the remaining milestone breakdown is wrong - scope grew, ordering broke, or a dependency surfaced - publish `#milestone-diverged`. It is a forward signal about milestones k+1..N only; the completed milestones 1..k stand. This is not a kickback: the current milestone still ships; the re-split applies to what is left.
 
 ## Input
 

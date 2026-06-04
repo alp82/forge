@@ -1,42 +1,17 @@
-
-hooks after coding:
-    linter
-    build
-
-from a different session:
-  Warum es durchrutschte - und das war mein Fehler: die Fix-Verifikation lief nur pnpm test -- engine, und Vitest kompiliert
-  die Engine-Logik, nicht die .tsx-Route. Ein JSX-Syntaxfehler ist für die Engine-Tests unsichtbar. Diesmal mit echtem pnpm 
-  build verifiziert, der genau diese esbuild-Transformation durchläuft.
+STUCK
 
 ---
 
-adding a component that lists cost breakdowns in a calculator classified as XXL
-based on amount of reviewers spawned (all of them)
+identify task size. interesting for both milestone planning and complexity classifiation
+https://github.com/pskoett/pskoett-ai-skills/blob/main/skills%2Fskill-pipeline%2FSKILL.md
 
 ---
 
-visual verifier
-    https://github.com/browser-use/browser-use
+https://github.com/EveryInc/compound-engineering-plugin
 
 ---
 
-XXL as sequence of tasks
-goal based looping
-
----
-
-formal verification
-    linter
-    TDD
-    etc.
-
----
-
-https://github.com/robinebers/skills/blob/main/skills/code-upgrade/SKILL.md
-
----
-
-https://github.com/multica-ai/andrej-karpathy-skills
+https://nolanlawson.com/2026/05/25/using-ai-to-write-better-code-more-slowly/?ck_subscriber_id=887775429
 
 ---
 
@@ -49,6 +24,15 @@ https://github.com/affaan-m/everything-claude-code
 
 ---
 
+https://github.com/robinebers/skills/blob/main/skills/code-upgrade/SKILL.md
+
+---
+
+visual verifier
+    https://github.com/browser-use/browser-use
+
+---
+
 SOUL.md continuation
 
 ---
@@ -56,10 +40,15 @@ SOUL.md continuation
 image generation
 
 ---
-
+1.
 video generation
 
 ---
 
 remove git hook
 
+---
+
+codex fork
+
+---

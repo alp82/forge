@@ -10,7 +10,7 @@ stage:
     input: ['@approved-plan']
     output: ['@plan-challenge']
   signals:
-    subscribes: ['#significant-build']
+    subscribes: ['#significant-build', '#milestone-diverged']
     publishes: ['#plan-challenged', '#plan-approved', '#findings:challenge', '#scope-shift']
 ---
 
@@ -41,6 +41,10 @@ Read the plan, the confirmed intent, and the relevant parts of the codebase. The
 **Scope vs. value mismatch**: scan the plan for work that the intent's "Primary outcome" does not actually require - extra files, defensive layers, second-order features. Heuristic, advisory: when you find one, name the smallest thing the plan should drop AND name what stays. Output via `SCOPE_MISMATCH`. Do not change VERDICT on this signal alone.
 
 Be sharp. A polite "looks good" is a failure. If the plan is solid, say so crisply and move on.
+
+## Milestone divergence re-split
+
+When you run on `#milestone-diverged` (the implementer found the remaining breakdown wrong mid-loop), re-split the REMAINING milestones k+1..N only. Never re-touch the completed milestones 1..k - they have shipped and been reviewed. This is a forward correction, the same shape as the late-escalation rule at `WORKFLOW.md` (## Convergence, "Late escalation, never a re-gate"): you re-split what is left, you do not re-gate what is done.
 
 ## HEADER_GUIDANCE
 

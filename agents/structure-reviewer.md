@@ -6,6 +6,7 @@ effort: high
 tools: Glob, Grep, Read, Bash
 stage:
   routes: [code]
+  milestone-scope: local
   data:
     input: ['@diff']
     output: ['@findings']

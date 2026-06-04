@@ -89,6 +89,11 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/verify-tests.sh",
             "timeout": 130
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/verify-build.sh",
+            "timeout": 190
           }
         ]
       }

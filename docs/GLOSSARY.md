@@ -60,6 +60,10 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Definition:** A stage whose published output is a user decision, rendered via `AskUserQuestion`. Fires only when triggered AND the answer could change the outcome.
 **Avoid:** "checkpoint", "Gate 1", "XXL pushback" (retired named gates).
 
+### Build gate
+**Definition:** The finish-line check (`hooks/verify-build.sh`) that runs the project's real build or type-check when Claude tries to finish, blocking on a broken build so a compile error in a file no test imports cannot slip through. Twin of the **test gate** (`hooks/verify-tests.sh`). Both fire on the Stop event, run in parallel, fall back to a silent pass when their tool is absent, and cap at one retry per session.
+**Avoid:** confusing with **Gate** (a workflow stage whose output is a user decision) - the build and test gates are Stop hooks, not stages.
+
 ### Triage
 **Definition:** The always-on seed stage. Reads the request, publishes the path and opening signals (`ambiguous`, `bug`, risk sniffs, an advisory `est-size`); the router composes from there.
 **Avoid:** "classifier" (retired), "router" (triage seeds, the router composes).
@@ -87,6 +91,26 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 ### Self-heal
 **Definition:** The `fixer`-driven repair cycle that reruns the lenses whose findings it addressed, until they come back `clean`. A signal cycle (`code-written` re-published), bounded by the oscillation guard.
 **Avoid:** "auto-fix", "retry loop".
+
+### Milestone loop / Milestone
+**Definition:** A `#significant-build` decomposed into independently-verifiable slices (milestones), executed and reviewed one increment at a time rather than in a single pass. A milestone is one such slice; the milestone loop is the per-milestone execute-then-review cadence the orchestrator runs, engaged only while `#significant-build` is live.
+**Avoid:** "increment", "chunk", "phase".
+
+### milestone-scope
+**Definition:** The optional `stage:` frontmatter field marking which review lenses run in the per-milestone EARLY pass: `local` (runs only on each milestone's diff slice) or `both` (runs in the EARLY pass and again in the End Review wave, e.g. `test-verifier`). Untagged is the default - the lens runs only in the End Review wave.
+**Avoid:** "review-scope", "milestone-tag".
+
+### EARLY pass
+**Definition:** The per-milestone review fired at each milestone boundary (N>1 builds only): only the `milestone-scope`-tagged lenses (correctness, surface-gated security, structure, test-verifier smoke) over that milestone's diff slice. Distinct from the End Review wave - the full global lens set firing once over the whole `@diff` after the final milestone.
+**Avoid:** "early review", conflating it with the End Review wave.
+
+### #milestone-diverged
+**Definition:** The signal `code-implementer` publishes mid-loop when implementing a milestone reveals the remaining breakdown is wrong. It triggers `plan-challenger` to re-split the remaining milestones (k+1..N) forward-only, never re-gating the shipped ones (1..k).
+**Avoid:** "replan"; not "scope-shift" (which breaks a route premise - this re-splits remaining milestones).
+
+### Colored milestone render
+**Definition:** The milestone-status layer the render card adds during a milestone build: a `milestone k of N` header and the milestone list marked 🟩 (verified) / 🟨 (building) / 🟥 (pending), atop the existing per-stage `▶ ✓ 🔒 •` markers.
+**Avoid:** "progress bar", "status colors".
 
 ## Surfacing
 

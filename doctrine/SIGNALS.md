@@ -78,6 +78,8 @@ New topics are added here first, then used.
 | plan-ready | a plan artifact exists and is awaiting approval - arms the plan-gate lock on both implementers | code-planner, system-planner | code-implementer's plan-gate lock (while), system-executor's plan-gate lock (while) |
 | plan-challenged | plan survived challenge | challenge | after-plan gate |
 | code-written | a diff exists | implement, fixer, system-executor | correctness-reviewer |
+| milestone-diverged | the remaining milestone breakdown is wrong; re-split forward | code-implementer | plan-challenger |
+| milestones-complete | the final milestone shipped; the orchestrator releases @diff and #code-written for the End Review wave | orchestrator | orchestrator |
 | code-changed:&lt;area&gt; | a fix touched &lt;area&gt; | fixer | area lenses (precise re-review) |
 | config-changed | a system change touched a tracked config file | system-executor | system-verifier |
 | verified | the system reached its desired state | system-verifier | convergence |

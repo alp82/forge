@@ -6,6 +6,7 @@ effort: high
 tools: Glob, Grep, Read, Bash, WebSearch, WebFetch
 stage:
   routes: [code, sketch, system]
+  milestone-scope: local
   data:
     input: ['@diff']
     output: ['@findings']
