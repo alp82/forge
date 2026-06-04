@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.1.11 - 2026-06-03
+
+- Plan approval now shows a short plain-language summary, a concrete example, and a small visual before you confirm.
+- The smallest auto-approved changes stay silent as before.
+
 ## 1.1.10 - 2026-06-03
 
 - Correctness review now runs on a stronger model for sharper findings on every change.

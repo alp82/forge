@@ -10,12 +10,6 @@ from a different session:
 
 ---
 
-final step after plan:
-    simple breakdown
-    ask
-
----
-
 adding a component that lists cost breakdowns in a calculator classified as XXL
 based on amount of reviewers spawned (all of them)
 

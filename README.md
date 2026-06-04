@@ -27,6 +27,11 @@
 
 The last three updates:
 
+**1.1.11**
+
+- Plan approval now shows a short plain-language summary, a concrete example, and a small visual before you confirm.
+- The smallest auto-approved changes stay silent as before.
+
 **1.1.10**
 
 - Correctness review now runs on a stronger model for sharper findings on every change.
@@ -35,11 +40,6 @@ The last three updates:
 **1.1.9**
 
 - A change that writes to a database, file, network, or payment system is now reviewed for whether running it twice is safe, flagging any step that would double-apply or corrupt on a re-run.
-
-**1.1.8**
-
-- Each step now runs at a thinking depth matched to its job instead of all inheriting the deepest setting, so the hardest planning and reviews go deep while routine checks stay lean.
-- The security review and the external-research step each moved to a stronger model for more reliable findings.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

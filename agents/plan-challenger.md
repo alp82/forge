@@ -105,7 +105,7 @@ CHALLENGE_QUESTIONS:
     multiSelect: false
     options:
       - label: Approve
-        description: Ship plan to implementer. Outstanding CONCERNS become known risks.
+        description: Proceed with implementation. Outstanding CONCERNS become known risks.
         preview: [STRENGTHS one-liner + top CONCERNS as one line each, best-effort]
       - label: Revise
         description: Planner re-spawns with the prior plan reproduced verbatim, BLOCKERS applied as corrections, version bumped. Counts as one backward edge.
@@ -144,7 +144,7 @@ CHALLENGE_QUESTIONS:
     multiSelect: false
     options:
       - label: Approve
-        description: Ship plan to implementer. Outstanding CONCERNS become known risks.
+        description: Proceed with implementation. Outstanding CONCERNS become known risks.
         preview: [STRENGTHS one-liner + top CONCERNS as one line each, best-effort]
       - label: Revise
         description: Planner re-spawns with the prior plan reproduced verbatim, BLOCKERS applied as corrections, version bumped. Counts as one backward edge.
