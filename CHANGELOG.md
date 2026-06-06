@@ -2,6 +2,12 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.2.6 - 2026-06-06
+
+- A new command reports a health scorecard for the workflow itself, ranked by the fixes that would help most.
+- Reflection can now review saved notes against their conventions and capture new ones, proposing each change for approval before writing.
+- Code review now names the specific silent-failure traps it checks for, so swallowed errors and missing timeouts get caught.
+
 ## 1.2.5 - 2026-06-05
 
 - The per-turn pipeline status now renders as formatted text, so its step icons and progress markers show reliably instead of as raw monospace.

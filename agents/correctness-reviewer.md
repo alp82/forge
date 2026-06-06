@@ -19,7 +19,7 @@ Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/
 
 ## Criteria
 
-**Correctness**: Logic errors, null/undefined handling, off-by-one, race conditions, resource leaks. Injection/XSS/auth bypasses. Edge cases. Error handling - not swallowed, not over-caught.
+**Correctness**: Logic errors, null/undefined handling, off-by-one, race conditions, resource leaks. Injection/XSS/auth bypasses. Edge cases. Error handling - not swallowed, not over-caught. Silent-failure sub-patterns: swallowed errors / empty catch blocks; masking default returns (a catch that returns a fallback hiding the failure); lost stack traces (a re-throw or log that drops the cause); missing timeouts around network/file/db calls.
 
 **Type safety and explicit dependencies**: Type holes in typed languages - `any`/`unknown` escape hatches without justification, missing return types where the language infers `any`, casts that erase type information, generics widened to `Object`/`object`. Flag holes the type system was designed to prevent. Also flag functions whose parameters lie about what they need - signatures that accept a broader type than the body uses, or signatures missing dependencies the body reaches for through module-level imports. Naming a community-standard tool that enforces this property is encouraged where one exists (`mypy --strict`, `ruff`, `tsc --noImplicitAny`); skip the tool reference when the language lacks one.
 

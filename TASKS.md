@@ -1,19 +1,3 @@
-
-plan breakdown is unformatted at the end of the render card
-
----
-
-https://nolanlawson.com/2026/05/25/using-ai-to-write-better-code-more-slowly/?ck_subscriber_id=887775429
-
----
-
-https://loadout.hellomilo.app/
-
----
-
-scan for usefulness
-https://github.com/affaan-m/everything-claude-code
-
 ---
 
 https://github.com/robinebers/skills/blob/main/skills/code-upgrade/SKILL.md

@@ -45,3 +45,9 @@ No formatter, linter, or build step; manual versioning across `.claude-plugin/pl
 Claude Code plugin marketplace (`/plugin marketplace add alp82/alp-river` + `/plugin install alp-river@alperortac`); GitHub mirror at github.com/alp82/alp-river.
 - **Constraint:** Distribution is `git pull`-based via Claude Code's marketplace machinery - no CI/CD, no release artifacts; consumers get the current `main` branch contents when they install or update; cross-platform expectation - hooks must work on macOS, Linux, and WSL.
 - **Why:** Claude Code's marketplace is the only distribution channel; no compiled artifact means no build pipeline to maintain.
+
+## Drift observed
+
+Items here surfaced during pipeline runs and have not been reconciled with the layers above. Triage and either update the layer or remove the bullet.
+
+- Tooling - the Tooling layer states "No formatter, linter, or build step", but the repo now ships a deterministic self-audit health-check tool: `/alp-river:audit` over `hooks/audit.py`, a repo-fact scoring surface that is neither formatter, linter, nor build, yet is a standing quality/health gate - evidence: hooks/audit.py - sources: capture pipeline

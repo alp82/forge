@@ -27,6 +27,12 @@
 
 The last three updates:
 
+**1.2.6**
+
+- A new command reports a health scorecard for the workflow itself, ranked by the fixes that would help most.
+- Reflection can now review saved notes against their conventions and capture new ones, proposing each change for approval before writing.
+- Code review now names the specific silent-failure traps it checks for, so swallowed errors and missing timeouts get caught.
+
 **1.2.5**
 
 - The per-turn pipeline status now renders as formatted text, so its step icons and progress markers show reliably instead of as raw monospace.
@@ -36,13 +42,6 @@ The last three updates:
 
 - Code review now flags unsafe database migrations - non-reversible changes, constraints added without a backfill, and renames that break instances still running during a rollout.
 - The build and test completion checks are more reliable, so a failing build or suite can no longer slip through to a clean finish.
-
-**1.2.3**
-
-- Reviews now surface a finding only when it carries a concrete, observable consequence, cutting "this could be cleaner" noise from the results.
-- A review no longer flags an issue that a guard or framework default outside the change already fully handles before the touched code runs.
-- Debugging now traces the full chain from cause to symptom and treats an unexplained jump as the next thing to investigate rather than a conclusion.
-- When candidate causes keep getting ruled out, the investigator steps back to ask why it is stuck instead of spawning more variations of a dead theory.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -383,6 +382,7 @@ code · XXL · 18 stages
 /alp-river:review    Review specified files for quality, bugs, duplication, and dead code.
 /alp-river:verify    Visual verification of UI changes using playwright-cli screenshots.
 /alp-river:reflect   Reflect on the current session to surface workflow friction worth tuning.
+/alp-river:audit     Self-audit the plugin and report a health scorecard with top fixes.
 ```
 
 ## Structure
@@ -395,7 +395,7 @@ alp-river/
 ├── generated/catalog.json  <- compiled stage catalog (47 stages; tracked; the router reads it)
 ├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, reinject-state)
 ├── agents/                 <- 47 stage definitions + setup-agent
-├── commands/               <- 6 slash commands
+├── commands/               <- 7 slash commands
 ├── psychology/             <- per-agent voice / persona overrides
 └── templates/              <- copy into your project's docs/ for context injection
 ```

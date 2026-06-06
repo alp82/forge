@@ -27,3 +27,9 @@ Secondary: workflow tinkerers who want to swap personas, override grades in natu
 - Not a plugin marketplace browser or installer UI - Claude Code's `/plugin` commands handle install and updates.
 - Not a multi-user/team-coordination tool - the pipeline is one developer per Claude Code session; team conventions belong in the consumer's `docs/`.
 - Not a substitute for project-context docs themselves. The plugin reads INTENT/STACK/GLOSSARY/ADRs from each consumer project; it doesn't generate the project's intent for them (though `/alp-river:setup` helps bootstrap the files).
+
+## Drift observed
+
+Items here surfaced during pipeline runs and have not been reconciled with the sections above. Triage and either update a section or remove the bullet.
+
+- Memory stewardship - Alp River now owns a load-side memory-convention surface: `doctrine/MEMORY-CONVENTIONS.md` plus the `/reflect` memory-audit and capture write phases steward the user's Claude Code file-memory (conventions, dedup, expiry reconciliation), never touching memory files outside those approved two-phase writes - evidence: doctrine/MEMORY-CONVENTIONS.md - sources: capture pipeline

@@ -164,6 +164,44 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 
 **Avoid:** _TODO:_ aliases to avoid (review and fill)
 
+## Self-audit and memory
+
+### Self-audit
+
+**Definition:** The deterministic plugin health check run by `/alp-river:audit` via `hooks/audit.py`: a pure function of repo facts (catalog stages, doctrine files, registered hooks) that scores five fixed categories and emits a 0-100 scorecard plus a machine JSON block (a `SCORECARD_JSON ` prefixed line). Stdlib-only, fail-open, always exits 0; the same repo state always yields the same scorecard. Scoring lives entirely in the hook; the command only runs and renders it.
+
+**Avoid:** "lint", "quality check" (overloaded); confusing with the build/test gates (Stop hooks).
+
+### Health categories
+
+**Definition:** The five fixed scoring axes of the self-audit: `tool/agent coverage`, `context efficiency`, `quality gates`, `memory persistence`, `security guardrails`. Each yields an int score and a list of concrete fix actions; `top_fixes` orders worst-category-first with alphabetical tie-break.
+
+**Avoid:** "audit sections", "metrics".
+
+### Memory audit (reflect step)
+
+**Definition:** The `/alp-river:reflect` memory-audit step that runs by default as part of /reflect, reviewing MEMORY.md and linked topic files against `doctrine/MEMORY-CONVENTIONS.md`, classifying each memory Keep / Improve / Retire / Merge. Runs as a two-phase write (PROPOSAL -> per-item approval -> WRITE) executed by the main agent directly, never a capture-agent spawn. Where pending-fact expiry, over-long index lines, and overlap are reconciled operationally.
+
+**Avoid:** "memory cleanup", "garbage collection".
+
+### Capture (reflect step)
+
+**Definition:** The `/alp-river:reflect` step that persists a session-surfaced pattern to memory after dedup by semantic equivalence against MEMORY.md and its topic files; surviving captures are tagged absorb-into-existing vs create-new. Two-phase write, main-agent-direct. Distinct from capture-agent, which writes `docs/` only and never memory.
+
+**Avoid:** confusing with capture-agent (the `docs/`-only project-context harvester).
+
+### Memory frontmatter
+
+**Definition:** The optional per-fact keys a Claude Code memory may carry: `status: pending` (provisional, absence means durable), `expires: YYYY-MM-DD` (lapse date for a pending fact, enforced at memory-audit time, not at load - no hook reads it), `priority: high|normal|low` (retention weight under memory pressure, absence means normal).
+
+**Avoid:** "metadata", "tags".
+
+### One-line index entry
+
+**Definition:** The memory convention that each line in MEMORY.md's index stays a single short line (under ~150-200 chars), with detail pushed to the linked topic file. Mirrors the native load contract: the platform loads the index eagerly and topic files on demand, so a bloated index line spends load budget owed to the topic file.
+
+**Avoid:** "summary line", "memory entry".
+
 ## Relationships
 
 - The catalog (stage frontmatter) feeds the router; the router composes a route from live signals; the route runs to convergence.

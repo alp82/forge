@@ -170,6 +170,15 @@ harness at spawn, never by the router or catalog. It is model-gated: `haiku` doe
 effort, so the haiku classification stages (`triage`, `prototype-identifier`,
 `health-checker`) carry no `effort` line.
 
+## Instruction-to-hook
+
+Promote a repeated agent instruction to a deterministic hook when the check is
+mechanical, has a single correct answer, and recurs across runs - reproducible work that
+belongs off the per-agent prompt budget. Keep it an agent instruction when it needs
+judgment or run-specific context. Example: "the build and tests must be green at finish" is
+mechanical and recurs every run, so it lives in the `verify-build` / `verify-tests` Stop
+hooks rather than in each implementer's prompt.
+
 ## Clarification Loops
 
 The `interviewer` and `requirements-clarifier` stages run as loops, not single passes -
