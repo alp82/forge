@@ -78,7 +78,7 @@ case "$subagent_type" in
     ;;
   requirements-clarifier|reuse-scanner|visual-verifier)
     ;;
-  correctness-reviewer|quality-reviewer|acceptance-reviewer|plan-adherence-reviewer)
+  correctness-reviewer|quality-reviewer|simplicity-reviewer|acceptance-reviewer|plan-adherence-reviewer)
     ;;
   structure-reviewer|architecture-reviewer|consistency-reviewer|reuse-reviewer|naming-clarity|assumptions)
     ;;
@@ -136,6 +136,7 @@ declare -A READ_MAP=(
   [ux-prototyper]="intent stack glossary adrs"
   [code-implementer]="stack glossary adrs"
   [correctness-reviewer]="stack glossary"
+  [simplicity-reviewer]="stack glossary"
   [quality-reviewer]="intent stack glossary"
   [acceptance-reviewer]="intent glossary"
   [structure-reviewer]="glossary adrs"
@@ -162,6 +163,7 @@ declare -A READ_MAP=(
 # psychology axes (see the header).
 declare -A DOCTRINE_MAP=(
   [correctness-reviewer]="reviewer-contract confidence-tagging discoveries communication"
+  [simplicity-reviewer]="reviewer-contract confidence-tagging discoveries communication"
   [quality-reviewer]="reviewer-contract confidence-tagging discoveries communication"
   [architecture-reviewer]="reviewer-contract confidence-tagging discoveries communication"
   [security-reviewer]="reviewer-contract confidence-tagging discoveries communication"

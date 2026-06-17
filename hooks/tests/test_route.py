@@ -859,10 +859,10 @@ _DEEP_LENSES = {
 
 # --- TC-I01 / TC-P01 ---
 def test_real_catalog_has_44_stages_no_skip_tests():
-    """After prototyper split, catalog has 47 stages and skip-tests is absent."""
+    """After prototyper split, catalog has 48 stages and skip-tests is absent."""
     cat = _real_catalog()
     stages = cat["stages"]
-    assert len(stages) == 47, f"expected 47 stages, got {len(stages)}"
+    assert len(stages) == 48, f"expected 48 stages, got {len(stages)}"
     assert "skip-tests" not in stages, "skip-tests must NOT exist in migrated catalog"
 
 
@@ -1432,6 +1432,9 @@ def test_real_catalog_significant_build_deep_lenses_on_code_written():
         assert (
             stage in res["route"]
         ), f"{stage} must be in route on significant-build + code-written with diff"
+    assert (
+        "simplicity-reviewer" in res["route"]
+    ), "simplicity-reviewer must be in route when significant-build is live (always-on via #code-written)"
 
 
 # --- TC-I15: re-numbered to avoid clash with the original TC-I11 block above ---
@@ -1517,6 +1520,9 @@ def test_real_catalog_cheap_path_post_code():
     assert (
         "correctness-reviewer" in res["route"]
     ), "correctness-reviewer must appear post-code on cheap path"
+    assert (
+        "simplicity-reviewer" in res["route"]
+    ), "simplicity-reviewer must appear post-code on cheap path"
     route_set = set(res["route"])
     for stage in _DEEP_LENSES:
         assert (
@@ -2381,6 +2387,268 @@ def test_real_catalog_family_prefix_plan_approved_releases_plan_gate_code_implem
     assert (
         res.get("held", {}).get("code-implementer") is None
     ), "implementer must not be held once plan-approved:auto releases the plan-gate"
+
+
+# ---------------------------------------------------------------------------
+# TC-SR: SIMPLICITY-REVIEWER (always-on post-code reviewer)
+# RED until: agent authored, catalog regenerated, injector wired
+# ---------------------------------------------------------------------------
+
+
+# --- TC-SR-01 ---
+def test_simplicity_reviewer_catalog_contract():
+    """simplicity-reviewer catalog entry: routes==['code'], input.required==['diff'],
+    output==['findings'], subscribes==['code-written'] (not significant-build),
+    publishes contains findings:simplicity, clean, scope-shift.
+
+    RED until agent authored + catalog regenerated.
+    """
+    cat = _real_catalog()
+    s = cat["stages"]["simplicity-reviewer"]  # KeyError until catalog regen
+    assert s["routes"] == [
+        "code"
+    ], f"simplicity-reviewer routes must be ['code'], got {s['routes']}"
+    assert s["data"]["input"]["required"] == [
+        "diff"
+    ], f"simplicity-reviewer required input must be ['diff'], got {s['data']['input']['required']}"
+    assert s["data"]["output"] == [
+        "findings"
+    ], f"simplicity-reviewer output must be ['findings'], got {s['data']['output']}"
+    subs = s["signals"]["subscribes"]
+    assert (
+        "code-written" in subs
+    ), f"simplicity-reviewer must subscribe code-written, got {subs}"
+    assert (
+        "significant-build" not in subs
+    ), f"simplicity-reviewer must NOT subscribe significant-build (always-on), got {subs}"
+    pubs = s["signals"]["publishes"]
+    assert (
+        "findings:simplicity" in pubs
+    ), f"simplicity-reviewer must publish findings:simplicity, got {pubs}"
+    assert "clean" in pubs, f"simplicity-reviewer must publish clean, got {pubs}"
+    assert (
+        "scope-shift" in pubs
+    ), f"simplicity-reviewer must publish scope-shift, got {pubs}"
+
+
+# --- TC-SR-02 ---
+def test_simplicity_reviewer_always_on():
+    """simplicity-reviewer is in route when live contains {code, intent-confirmed, code-written}
+    and diff is available. triggered_by == 'code-written'. correctness-reviewer also in route
+    (positive control - both always-on post-code reviewers).
+
+    RED until catalog regenerated.
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "intent-confirmed", "code-written"},
+        available={
+            "request",
+            "triage-read",
+            "confirmed-intent",
+            "approved-plan",
+            "diff",
+        },
+    )
+    assert "simplicity-reviewer" in res["route"], (
+        "simplicity-reviewer must be in route on {code, intent-confirmed, code-written} "
+        f"with diff available; route={res['route']}"
+    )
+    assert res["triggered_by"].get("simplicity-reviewer") == "code-written", (
+        "simplicity-reviewer must be triggered by code-written, "
+        f"got triggered_by={res['triggered_by'].get('simplicity-reviewer')!r}"
+    )
+    assert (
+        "correctness-reviewer" in res["route"]
+    ), "correctness-reviewer must also be in route (positive control - both always-on)"
+
+
+# --- TC-SR-03 ---
+def test_simplicity_reviewer_absent_pre_code():
+    """simplicity-reviewer is NOT in route when code-written is absent from live signals.
+
+    Pre-code signal set: {code, intent-confirmed}. The stage must not trigger.
+    After regen this is a post-regen invariant: the stage exists but must still be absent
+    pre-code because it subscribes code-written.
+
+    RED until catalog regenerated (currently KeyError - stage absent; post-regen stays RED
+    only if the assertion fails, which it must not once wired correctly).
+    """
+    cat = _real_catalog()
+    # Verify the stage exists first (otherwise the test is vacuously true today)
+    assert (
+        "simplicity-reviewer" in cat["stages"]
+    ), "simplicity-reviewer must exist in catalog (RED: agent not yet authored)"
+    res = route.compute_route(
+        cat,
+        {"code", "intent-confirmed"},
+        available={"request", "triage-read", "confirmed-intent"},
+    )
+    assert (
+        "simplicity-reviewer" not in res["route"]
+    ), "simplicity-reviewer must NOT be in route when code-written is absent"
+
+
+# --- TC-SR-04 ---
+def test_simplicity_reviewer_unsatisfiable_without_diff():
+    """simplicity-reviewer is dropped as unsatisfiable-input when diff is not available,
+    even though code-written is live.
+
+    RED until catalog regenerated.
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "intent-confirmed", "code-written"},
+        available={"request", "triage-read", "confirmed-intent"},
+        # diff intentionally absent
+    )
+    assert res["dropped"].get("simplicity-reviewer") == "unsatisfiable-input", (
+        "simplicity-reviewer must be dropped as unsatisfiable-input when diff is absent; "
+        f"dropped={res['dropped'].get('simplicity-reviewer')!r}"
+    )
+
+
+# --- TC-SR-05 ---
+def test_simplicity_reviewer_off_sketch():
+    """simplicity-reviewer routes==['code'] so it is dropped as off-path on a sketch build.
+    correctness-reviewer (which routes include sketch) is in route as a positive control.
+
+    RED until catalog regenerated.
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"sketch", "code-written"},
+        available={"confirmed-intent", "diff"},
+    )
+    assert res["dropped"].get("simplicity-reviewer") == "off-path", (
+        "simplicity-reviewer must be dropped as off-path on sketch; "
+        f"dropped={res['dropped'].get('simplicity-reviewer')!r}"
+    )
+    assert (
+        "correctness-reviewer" in res["route"]
+    ), "correctness-reviewer must be in route on sketch (positive control)"
+
+
+# --- TC-SR-06 ---
+def test_simplicity_reviewer_not_in_exclusion_or_deep_lenses():
+    """simplicity-reviewer must NOT appear in _EXCLUSION_SET or _DEEP_LENSES.
+
+    It is an always-on post-code reviewer (like correctness-reviewer), so it must be
+    absent from both gating sets. GREEN now - guards against future re-gating.
+    """
+    assert (
+        "simplicity-reviewer" not in _EXCLUSION_SET
+    ), "simplicity-reviewer must NOT be in _EXCLUSION_SET (it is always-on, not deep-lens-gated)"
+    assert (
+        "simplicity-reviewer" not in _DEEP_LENSES
+    ), "simplicity-reviewer must NOT be in _DEEP_LENSES (it subscribes code-written, not significant-build)"
+
+
+def _parse_doctrine_map_reviewers(text: str) -> set:
+    """Return DOCTRINE_MAP keys whose value contains 'reviewer-contract', comment lines excluded."""
+    import re
+
+    result: set[str] = set()
+    in_doctrine_map = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if "declare -A DOCTRINE_MAP" in stripped:
+            in_doctrine_map = True
+            continue
+        if in_doctrine_map:
+            if stripped == ")":
+                in_doctrine_map = False
+                continue
+            if stripped.startswith("#"):
+                continue
+            # match: [agent-name]="...reviewer-contract..."
+            m = re.match(r'\[([^\]]+)\]="([^"]*)"', stripped)
+            if m and "reviewer-contract" in m.group(2):
+                result.add(m.group(1))
+    return result
+
+
+def _parse_case_arm_agents(text: str) -> set:
+    """Return the |-split case-arm tokens from the case "$subagent_type" block, comment lines excluded."""
+    result: set[str] = set()
+    in_case = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if 'case "$subagent_type"' in stripped:
+            in_case = True
+            continue
+        if in_case:
+            if stripped == "esac":
+                in_case = False
+                continue
+            if stripped.startswith("#"):
+                continue
+            if stripped.endswith(")"):
+                arm_body = stripped[:-1]  # strip trailing )
+                for token in arm_body.split("|"):
+                    token = token.strip()
+                    if token and not token.startswith("*"):
+                        result.add(token)
+    return result
+
+
+# The fixed expected set of known reviewer-contract agents.
+# A mis-parsed DOCTRINE_MAP line will shrink the parsed set below this floor and fail loudly.
+_EXPECTED_REVIEWER_CONTRACT_AGENTS = {
+    "correctness-reviewer",
+    "quality-reviewer",
+    "simplicity-reviewer",
+    "architecture-reviewer",
+    "structure-reviewer",
+    "consistency-reviewer",
+    "reuse-reviewer",
+    "security-reviewer",
+    "performance-reviewer",
+    "acceptance-reviewer",
+    "naming-clarity",
+    "assumptions",
+}
+
+
+# --- TC-SR-07 ---
+def test_every_reviewer_contract_agent_is_wired():
+    """Every agent in DOCTRINE_MAP whose value contains 'reviewer-contract' must appear
+    as a case arm in user-context-injector.sh.
+
+    Checks that simplicity-reviewer is also wired in the case statement. Excludes
+    commented lines. plan-adherence-reviewer and test-gap are communication-only
+    (no reviewer-contract) and must not false-fail.
+    """
+    injector_path = (
+        Path(__file__).resolve().parents[2] / "hooks" / "user-context-injector.sh"
+    )
+    text = injector_path.read_text(encoding="utf-8")
+
+    reviewer_contract_agents = _parse_doctrine_map_reviewers(text)
+    case_arm_agents = _parse_case_arm_agents(text)
+
+    # Hard floor: parsed set must be a superset of the known agents.
+    # A single mis-parsed DOCTRINE_MAP line shrinks the set and fails loudly here.
+    missing_expected = _EXPECTED_REVIEWER_CONTRACT_AGENTS - reviewer_contract_agents
+    assert not missing_expected, (
+        f"DOCTRINE_MAP parse returned fewer reviewer-contract agents than expected. "
+        f"Missing from parsed set: {sorted(missing_expected)}. "
+        "Check that the injector file was read correctly and DOCTRINE_MAP contains all known agents."
+    )
+
+    assert (
+        case_arm_agents
+    ), "case arms must be non-empty; check that the injector file was read correctly"
+
+    # Assert that every reviewer-contract-keyed agent is a subset of case arm agents
+    missing = reviewer_contract_agents - case_arm_agents
+    assert not missing, (
+        f"Agents in DOCTRINE_MAP with reviewer-contract but missing from case arms: {sorted(missing)}. "
+        "Wire them into the case statement in user-context-injector.sh."
+    )
 
 
 if __name__ == "__main__":

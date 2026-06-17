@@ -1,6 +1,6 @@
 ## Reviewer Contract
 
-Shared rules for every specialized reviewer (correctness, quality, architecture, security, performance, accessibility, design-consistency, ux, consistency, structure, reuse, naming-clarity, assumptions). Each reviewer's own file carries only its Criteria list and any specialization - the rest lives here.
+Shared rules for every specialized reviewer (correctness, quality, simplicity, architecture, security, performance, accessibility, design-consistency, ux, consistency, structure, reuse, naming-clarity, assumptions). Each reviewer's own file carries only its Criteria list and any specialization - the rest lives here.
 
 ### Confidence tagging (reviewer reporting threshold)
 
@@ -24,6 +24,15 @@ Reviewers Read those files directly to inspect current state. Reviewers that nee
 
 Main agent fills slots verbatim from predecessor output. No paraphrase.
 
+### Cut lanes
+
+Cut lanes do not overlap. Each lens owns one:
+
+- **simplicity** owns the YAGNI ladder and net-lines line-count cuts - the 5 deletion tags (`delete:`/`stdlib:`/`native:`/`yagni:`/`shrink:`).
+- **quality** owns wrong-tool / wrong-altitude judgment only.
+- **architecture** owns module shape, seams, and the earns-its-keep deletion test (is this abstraction earning its keep?).
+- **structure** owns decomposition and layers.
+
 ### Base output format
 
 ```
@@ -46,6 +55,10 @@ A reviewer MUST NOT:
 - Flag code you don't understand. Ask or skip; don't speculate.
 - Frame readability or correctness sacrifices as performance/UX wins.
 - Flag an issue that a guard, middleware, or framework default outside the diff fully handles before the touched code runs. (A defect in code you touched still surfaces when that code is reachable around or before the upstream defense.)
+
+### Floor
+
+Shared do-not-flag-as-bloat list for every cut-making reviewer. A required trust-boundary validation, data-loss-preventing error handler, security/accessibility affordance, hardware calibration, or the one runnable check behind non-trivial logic is the floor, not a cut. Do not tag it `delete:`/`yagni:`/`shrink:`. Removing it is taking out a wall, not trimming fat.
 
 ### Example output (consistency-reviewer)
 

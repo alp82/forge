@@ -27,6 +27,12 @@
 
 The last three updates:
 
+**1.2.10**
+
+- The workflow health scorecard now tracks a sixth area that flags when load-bearing doctrine wording goes missing.
+- Code review now reports bloat as a concrete cut with its replacement named and the lines saved tallied, instead of vague "could be simpler" hedges.
+- The doctrine now spells out a floor that must never be simplified away - input validation, data-loss-preventing error handling, security, accessibility, calibration, and the one runnable check behind non-trivial logic.
+
 **1.2.9**
 
 - The handful of stages that were pinned to a now-retired model tier (planning, plan challenge, the intent loops, debugging, and the deepest reviews) now run on the most capable available tier, so no stage points at a model that is no longer offered.
@@ -35,10 +41,6 @@ The last three updates:
 
 - A clear follow-up request now proceeds immediately on a one-line restatement instead of pausing for confirmation; only a genuinely ambiguous one stops to settle intent first.
 - Intent and review stages now run at a calmer thinking budget, so clarification loops settle faster and post-build reviews raise fewer speculative flags; the generative planning and plan-challenge stages keep full budget.
-
-**1.2.7**
-
-- The stages whose single output steers the rest of the run - intent, planning, plan challenge, debugging, and the deepest reviews - now run on Claude Code's most capable model tier.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

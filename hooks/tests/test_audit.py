@@ -5,8 +5,9 @@ audit.py exists and these tests are green.
 CONTRACT:
   - build_scorecard(root) -> {"overall": int, "categories": {name: {"score": int,
     "fixes": [str,...]}}, "top_fixes": [str,...]}
-  - 5 category names: "tool/agent coverage", "context efficiency",
-    "quality gates", "memory persistence", "security guardrails"
+  - 6 category names: "tool/agent coverage", "context efficiency",
+    "quality gates", "memory persistence", "security guardrails",
+    "doctrine integrity"
   - Deterministic: same input -> identical scorecard
   - Fail-open: missing or malformed catalog yields a valid scorecard without raising
   - top_fixes: worst-category-first, deterministic tie-break by category name ascending
@@ -37,6 +38,7 @@ CATEGORY_NAMES = {
     "quality gates",
     "memory persistence",
     "security guardrails",
+    "doctrine integrity",
 }
 
 # A minimal valid catalog - stages dict has representative entries
@@ -99,6 +101,13 @@ _CATALOG_WITHOUT_QUALITY_GATES = {
 _CATALOG_EMPTY_STAGES = {"stages": {}}
 
 
+def _write_stub_catalog(root):
+    """Write a minimal stub generated/catalog.json under root (a Path)."""
+    gen = root / "generated"
+    gen.mkdir(exist_ok=True)
+    (gen / "catalog.json").write_text(json.dumps({"stages": {}}), encoding="utf-8")
+
+
 def _make_repo_root(catalog_dict):
     """Create a temp dir with generated/catalog.json populated from catalog_dict."""
     root = tempfile.mkdtemp()
@@ -158,8 +167,8 @@ def test_a02_shape_overall_is_int():
         shutil.rmtree(root, ignore_errors=True)
 
 
-def test_a02_shape_categories_has_exactly_five_names():
-    """A-02: categories has exactly the 5 required category names."""
+def test_a02_shape_categories_has_exactly_six_names():
+    """A-02: categories has exactly the 6 required category names."""
     root = _make_repo_root(_FULL_CATALOG)
     try:
         result = audit.build_scorecard(root)
@@ -825,9 +834,7 @@ def _make_repo_with_hooks(
     if include_verify_tests:
         (hooks_dir / "verify-tests.py").write_text("# stub")
     # Provide an empty generated/catalog.json so catalog path doesn't interfere.
-    gen = root / "generated"
-    gen.mkdir()
-    (gen / "catalog.json").write_text(json.dumps({"stages": {}}))
+    _write_stub_catalog(root)
     return root
 
 
@@ -900,3 +907,391 @@ def test_g02_verify_tests_file_absent_lower_score():
     finally:
         shutil.rmtree(root_present, ignore_errors=True)
         shutil.rmtree(root_absent, ignore_errors=True)
+
+
+# ---------------------------------------------------------------------------
+# Group H - Doctrine integrity scorer (_score_doctrine_integrity)
+# ---------------------------------------------------------------------------
+
+
+def _make_doctrine_root(
+    tmp_path,
+    workflow_content=None,
+    code_doctrine_content=None,
+    include_workflow=True,
+    include_code_doctrine=True,
+):
+    """Build a minimal repo root in tmp_path with controlled doctrine files.
+
+    workflow_content and code_doctrine_content default to strings that contain
+    all required phrases when not specified.  Pass a custom string to control
+    presence/absence of individual phrases.  Pass include_workflow=False /
+    include_code_doctrine=False to omit the file entirely.
+    """
+    if workflow_content is None:
+        workflow_content = (
+            "# WORKFLOW\n"
+            "trivial code: only when est-size > S blah blah\n"
+            "auto-publish iff the plan touches <=1 file AND est-size <= S\n"
+        )
+    if code_doctrine_content is None:
+        code_doctrine_content = (
+            "# code-doctrine\n"
+            "Each task must have ONE runnable check before work starts.\n"
+        )
+
+    if include_workflow:
+        (tmp_path / "WORKFLOW.md").write_text(workflow_content, encoding="utf-8")
+
+    doctrine_dir = tmp_path / "doctrine"
+    doctrine_dir.mkdir(exist_ok=True)
+    if include_code_doctrine:
+        (doctrine_dir / "code-doctrine.md").write_text(
+            code_doctrine_content, encoding="utf-8"
+        )
+
+    # Provide a stub catalog so other scorers do not interfere.
+    _write_stub_catalog(tmp_path)
+
+    return tmp_path
+
+
+def test_h01_scorer_is_callable():
+    """H-01: audit._score_doctrine_integrity exists and is callable."""
+    assert callable(
+        audit._score_doctrine_integrity
+    ), "_score_doctrine_integrity must be a callable on the audit module"
+
+
+def test_h02_scorer_accepts_root_returns_tuple(tmp_path):
+    """H-02: _score_doctrine_integrity(root) returns (int, list)."""
+    root = _make_doctrine_root(tmp_path)
+    result = audit._score_doctrine_integrity(root)
+    assert (
+        isinstance(result, tuple) and len(result) == 2
+    ), f"expected (int, list) 2-tuple, got {result!r}"
+    score, fixes = result
+    assert isinstance(score, int), f"score must be int, got {type(score)}"
+    assert isinstance(fixes, list), f"fixes must be list, got {type(fixes)}"
+
+
+def test_h03_green_path_all_phrases_present(tmp_path):
+    """H-03: WORKFLOW.md has both est-size phrases, code-doctrine.md has ONE runnable check
+    -> score 100 and empty fixes list."""
+    root = _make_doctrine_root(tmp_path)
+    score, fixes = audit._score_doctrine_integrity(root)
+    assert score == 100, f"all phrases present: expected score 100, got {score}"
+    assert fixes == [], f"all phrases present: expected empty fixes, got {fixes!r}"
+
+
+def test_h04_missing_workflow_est_size_lte_s_phrase_gives_zero(tmp_path):
+    """H-04: WORKFLOW.md missing 'est-size <= S' -> score 0 and non-empty fixes."""
+    root = _make_doctrine_root(
+        tmp_path,
+        workflow_content=(
+            "# WORKFLOW\n"
+            "trivial code: only when est-size > S blah blah\n"
+            # 'est-size <= S' intentionally absent
+        ),
+    )
+    score, fixes = audit._score_doctrine_integrity(root)
+    assert score == 0, f"missing 'est-size <= S': expected score 0, got {score}"
+    assert len(fixes) > 0, "missing 'est-size <= S': expected non-empty fixes"
+
+
+def test_h05_missing_workflow_est_size_gt_s_phrase_gives_zero(tmp_path):
+    """H-05: WORKFLOW.md missing 'est-size > S' -> score 0 and non-empty fixes."""
+    root = _make_doctrine_root(
+        tmp_path,
+        workflow_content=(
+            "# WORKFLOW\n"
+            # 'est-size > S' intentionally absent
+            "auto-publish iff the plan touches <=1 file AND est-size <= S\n"
+        ),
+    )
+    score, fixes = audit._score_doctrine_integrity(root)
+    assert score == 0, f"missing 'est-size > S': expected score 0, got {score}"
+    assert len(fixes) > 0, "missing 'est-size > S': expected non-empty fixes"
+
+
+def test_h06_missing_one_runnable_check_phrase_gives_zero(tmp_path):
+    """H-06: doctrine/code-doctrine.md missing 'ONE runnable check' -> score 0 and non-empty fixes."""
+    root = _make_doctrine_root(
+        tmp_path,
+        code_doctrine_content=(
+            "# code-doctrine\n"
+            "Each task must have a runnable check before work starts.\n"
+            # 'ONE runnable check' intentionally absent
+        ),
+    )
+    score, fixes = audit._score_doctrine_integrity(root)
+    assert score == 0, f"missing 'ONE runnable check': expected score 0, got {score}"
+    assert len(fixes) > 0, "missing 'ONE runnable check': expected non-empty fixes"
+
+
+def test_h07_all_phrases_absent_score_zero(tmp_path):
+    """H-07: all three required phrases absent -> score 0."""
+    root = _make_doctrine_root(
+        tmp_path,
+        workflow_content="# WORKFLOW\nno relevant phrases here\n",
+        code_doctrine_content="# code-doctrine\nno relevant phrases here\n",
+    )
+    score, fixes = audit._score_doctrine_integrity(root)
+    assert score == 0, f"all phrases absent: expected score 0, got {score}"
+
+
+def test_h12_all_phrases_absent_exactly_three_fixes(tmp_path):
+    """H-12: all three required phrases absent -> exactly 3 problem strings (one per table entry)."""
+    root = _make_doctrine_root(
+        tmp_path,
+        workflow_content="# WORKFLOW\nno relevant phrases here\n",
+        code_doctrine_content="# code-doctrine\nno relevant phrases here\n",
+    )
+    _, fixes = audit._score_doctrine_integrity(root)
+    assert len(fixes) == 3, (
+        f"all phrases absent: expected exactly 3 fixes (one per pinned phrase), "
+        f"got {len(fixes)}: {fixes!r}"
+    )
+
+
+def test_h08_missing_lte_fix_mentions_phrase_and_file(tmp_path):
+    """H-08: missing 'est-size <= S' -> a fix string contains both phrase and 'WORKFLOW.md'."""
+    root = _make_doctrine_root(
+        tmp_path,
+        workflow_content=(
+            "# WORKFLOW\n"
+            "trivial code: only when est-size > S blah blah\n"
+            # 'est-size <= S' intentionally absent
+        ),
+    )
+    _, fixes = audit._score_doctrine_integrity(root)
+    matching = [f for f in fixes if "est-size <= S" in f and "WORKFLOW.md" in f]
+    assert matching, (
+        f"missing 'est-size <= S': expected a fix containing both 'est-size <= S' "
+        f"and 'WORKFLOW.md'; got fixes={fixes!r}"
+    )
+
+
+def test_h08b_missing_est_size_gt_fix_mentions_phrase_and_file(tmp_path):
+    """H-08b: missing 'est-size > S' -> a fix string contains both phrase and 'WORKFLOW.md'."""
+    root = _make_doctrine_root(
+        tmp_path,
+        workflow_content=(
+            "# WORKFLOW\n"
+            # 'est-size > S' intentionally absent
+            "auto-publish iff the plan touches <=1 file AND est-size <= S\n"
+        ),
+    )
+    _, fixes = audit._score_doctrine_integrity(root)
+    matching = [f for f in fixes if "est-size > S" in f and "WORKFLOW.md" in f]
+    assert matching, (
+        f"missing 'est-size > S': expected a fix containing both 'est-size > S' "
+        f"and 'WORKFLOW.md'; got fixes={fixes!r}"
+    )
+
+
+def test_h09_missing_one_runnable_check_fix_mentions_phrase_and_file(tmp_path):
+    """H-09: missing 'ONE runnable check' -> a fix string contains phrase and file path."""
+    root = _make_doctrine_root(
+        tmp_path,
+        code_doctrine_content="# code-doctrine\nno relevant phrases here\n",
+    )
+    _, fixes = audit._score_doctrine_integrity(root)
+    matching = [
+        f
+        for f in fixes
+        if "ONE runnable check" in f and "doctrine/code-doctrine.md" in f
+    ]
+    assert matching, (
+        f"missing 'ONE runnable check': expected a fix containing both "
+        f"'ONE runnable check' and 'doctrine/code-doctrine.md'; got fixes={fixes!r}"
+    )
+
+
+def test_h10_workflow_md_absent_no_raise_score_zero(tmp_path):
+    """H-10: WORKFLOW.md file entirely absent -> no raise, score 0, non-empty fixes."""
+    root = _make_doctrine_root(tmp_path, include_workflow=False)
+    try:
+        score, fixes = audit._score_doctrine_integrity(root)
+    except Exception as exc:
+        raise AssertionError(
+            f"_score_doctrine_integrity must not raise when WORKFLOW.md is absent; "
+            f"got {type(exc).__name__}: {exc}"
+        ) from exc
+    assert score == 0, f"WORKFLOW.md absent: expected score 0, got {score}"
+    assert len(fixes) > 0, "WORKFLOW.md absent: expected non-empty fixes"
+
+
+def test_h10c_non_utf8_file_no_raise(tmp_path):
+    """H-10c: doctrine/WORKFLOW.md contains invalid UTF-8 bytes -> _score_doctrine_integrity
+    does NOT raise, returns score 0, and fixes is non-empty."""
+    root = _make_doctrine_root(tmp_path)
+    # Overwrite WORKFLOW.md with bytes that are not valid UTF-8.
+    (root / "WORKFLOW.md").write_bytes(b"\xff\xfe not utf-8")
+    try:
+        score, fixes = audit._score_doctrine_integrity(root)
+    except Exception as exc:
+        raise AssertionError(
+            f"_score_doctrine_integrity must not raise on non-UTF-8 file; "
+            f"got {type(exc).__name__}: {exc}"
+        ) from exc
+    assert score == 0, f"non-UTF-8 WORKFLOW.md: expected score 0, got {score}"
+    assert len(fixes) > 0, "non-UTF-8 WORKFLOW.md: expected non-empty fixes"
+
+
+def test_h11_code_doctrine_absent_no_raise_score_zero(tmp_path):
+    """H-11: doctrine/code-doctrine.md absent -> no raise, score 0, non-empty fixes."""
+    root = _make_doctrine_root(tmp_path, include_code_doctrine=False)
+    try:
+        score, fixes = audit._score_doctrine_integrity(root)
+    except Exception as exc:
+        raise AssertionError(
+            f"_score_doctrine_integrity must not raise when code-doctrine.md is absent; "
+            f"got {type(exc).__name__}: {exc}"
+        ) from exc
+    assert score == 0, f"code-doctrine.md absent: expected score 0, got {score}"
+    assert len(fixes) > 0, "code-doctrine.md absent: expected non-empty fixes"
+
+
+def test_h13_read_text_raises_does_not_raise_returns_zero(tmp_path):
+    """H-13: monkeypatch Path.read_text to raise OSError -> _score_doctrine_integrity
+    does NOT raise, returns score 0, and fixes is non-empty (all phrases read as missing
+    because _read_file swallows the OSError and returns "").
+    """
+    root = _make_doctrine_root(tmp_path)
+    with mock.patch.object(Path, "read_text", side_effect=OSError("injected")):
+        try:
+            score, fixes = audit._score_doctrine_integrity(root)
+        except Exception as exc:
+            raise AssertionError(
+                f"_score_doctrine_integrity must not propagate when read_text raises; "
+                f"got {type(exc).__name__}: {exc}"
+            ) from exc
+    assert score == 0, f"read_text raises: expected score 0, got {score}"
+    assert (
+        len(fixes) > 0
+    ), f"read_text raises: expected non-empty fixes (all phrases missing); got {fixes!r}"
+
+
+def test_h14_read_text_raises_build_scorecard_still_returns_all_keys(tmp_path):
+    """H-14: monkeypatch Path.read_text to raise -> build_scorecard still returns a dict
+    with all required keys and 'doctrine integrity' score is int 0 (no sentinel assertion -
+    OSError is swallowed by _read_file, all phrases read as missing, score degrades to 0).
+    """
+    root = _make_doctrine_root(tmp_path)
+    with mock.patch.object(Path, "read_text", side_effect=OSError("injected")):
+        try:
+            result = audit.build_scorecard(root)
+        except Exception as exc:
+            raise AssertionError(
+                f"build_scorecard must not raise when read_text raises; "
+                f"got {type(exc).__name__}: {exc}"
+            ) from exc
+    assert isinstance(result, dict), "result must be a dict"
+    assert "overall" in result, "result must have 'overall' key"
+    assert "categories" in result, "result must have 'categories' key"
+    assert "doctrine integrity" in result.get(
+        "categories", {}
+    ), "result['categories'] must contain 'doctrine integrity'"
+    di_score = result["categories"]["doctrine integrity"]["score"]
+    assert isinstance(
+        di_score, int
+    ), f"'doctrine integrity' score must be int, got {type(di_score)}"
+    assert (
+        di_score == 0
+    ), f"'doctrine integrity' score must be 0 when read_text raises, got {di_score}"
+
+
+def test_h15_build_scorecard_categories_has_six_entries(tmp_path):
+    """H-15: build_scorecard(root)['categories'] has exactly 6 entries."""
+    root = _make_doctrine_root(tmp_path)
+    result = audit.build_scorecard(root)
+    assert len(result["categories"]) == 6, (
+        f"expected exactly 6 category entries, got {len(result['categories'])}: "
+        f"{list(result['categories'].keys())}"
+    )
+
+
+def test_h16_build_scorecard_includes_doctrine_integrity(tmp_path):
+    """H-16: build_scorecard(root)['categories'] includes 'doctrine integrity'."""
+    root = _make_doctrine_root(tmp_path)
+    result = audit.build_scorecard(root)
+    assert "doctrine integrity" in result["categories"], (
+        f"'doctrine integrity' must be in categories; "
+        f"got {list(result['categories'].keys())}"
+    )
+
+
+def test_h17_doctrine_integrity_entry_has_score_and_fixes(tmp_path):
+    """H-17: 'doctrine integrity' entry has score (int) and fixes (list)."""
+    root = _make_doctrine_root(tmp_path)
+    result = audit.build_scorecard(root)
+    cat = result["categories"].get("doctrine integrity", {})
+    assert "score" in cat, "'doctrine integrity' category missing 'score' key"
+    assert "fixes" in cat, "'doctrine integrity' category missing 'fixes' key"
+    assert isinstance(
+        cat["score"], int
+    ), f"'doctrine integrity' score must be int, got {type(cat['score'])}"
+    assert isinstance(
+        cat["fixes"], list
+    ), f"'doctrine integrity' fixes must be list, got {type(cat['fixes'])}"
+
+
+def test_h18_doctrine_integrity_score_in_range(tmp_path):
+    """H-18: 'doctrine integrity' score is in [0, 100]."""
+    root = _make_doctrine_root(tmp_path)
+    result = audit.build_scorecard(root)
+    score = result["categories"]["doctrine integrity"]["score"]
+    assert 0 <= score <= 100, f"'doctrine integrity' score {score} is out of [0, 100]"
+
+
+def test_h19_live_repo_doctrine_integrity_score_100():
+    """H-19: build_scorecard(REAL_REPO_ROOT)['categories']['doctrine integrity']['score'] == 100.
+    RED until BOTH _score_doctrine_integrity is implemented AND M1 adds
+    'ONE runnable check' to doctrine/code-doctrine.md."""
+    result = audit.build_scorecard(REAL_REPO_ROOT)
+    assert (
+        "doctrine integrity" in result["categories"]
+    ), "'doctrine integrity' must be in live-repo scorecard categories"
+    score = result["categories"]["doctrine integrity"]["score"]
+    assert score == 100, (
+        f"live repo 'doctrine integrity' must score 100; got {score} "
+        f"(RED until scorer is wired AND 'ONE runnable check' is in code-doctrine.md)"
+    )
+
+
+def test_h20_subprocess_live_repo_exits_0_with_doctrine_integrity():
+    """H-20: audit.py subprocess on live repo still exits 0."""
+    result = subprocess.run(
+        ["python3", str(AUDIT_PY)],
+        capture_output=True,
+        text=True,
+        cwd=str(REAL_REPO_ROOT),
+    )
+    assert result.returncode == 0, (
+        f"audit.py must exit 0; got {result.returncode}; "
+        f"stdout={result.stdout!r} stderr={result.stderr!r}"
+    )
+
+
+def test_h21_subprocess_scorecard_json_has_doctrine_integrity():
+    """H-21: SCORECARD_JSON from audit.py subprocess has 'doctrine integrity' nested under categories."""
+    result = subprocess.run(
+        ["python3", str(AUDIT_PY)],
+        capture_output=True,
+        text=True,
+        cwd=str(REAL_REPO_ROOT),
+    )
+    scorecard_line = None
+    for line in result.stdout.splitlines():
+        if line.startswith("SCORECARD_JSON "):
+            scorecard_line = line[len("SCORECARD_JSON ") :]
+            break
+    assert (
+        scorecard_line is not None
+    ), f"stdout must contain a 'SCORECARD_JSON ' line; got {result.stdout!r}"
+    parsed = json.loads(scorecard_line)
+    assert "doctrine integrity" in parsed.get("categories", {}), (
+        f"parsed SCORECARD_JSON must have 'doctrine integrity' under categories; "
+        f"got categories={list(parsed.get('categories', {}).keys())}"
+    )

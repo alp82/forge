@@ -934,6 +934,34 @@
         ]
       }
     },
+    "simplicity-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
+      "name": "simplicity-reviewer",
+      "routes": [
+        "code"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:simplicity",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "code-written"
+        ]
+      }
+    },
     "sketch-build": {
       "data": {
         "input": {

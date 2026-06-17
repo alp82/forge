@@ -168,15 +168,21 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 
 ### Self-audit
 
-**Definition:** The deterministic plugin health check run by `/alp-river:audit` via `hooks/audit.py`: a pure function of repo facts (catalog stages, doctrine files, registered hooks) that scores five fixed categories and emits a 0-100 scorecard plus a machine JSON block (a `SCORECARD_JSON ` prefixed line). Stdlib-only, fail-open, always exits 0; the same repo state always yields the same scorecard. Scoring lives entirely in the hook; the command only runs and renders it.
+**Definition:** The deterministic plugin health check run by `/alp-river:audit` via `hooks/audit.py`: a pure function of repo facts (catalog stages, doctrine files, registered hooks) that scores six fixed categories and emits a 0-100 scorecard plus a machine JSON block (a `SCORECARD_JSON ` prefixed line). Stdlib-only, fail-open, always exits 0; the same repo state always yields the same scorecard. Scoring lives entirely in the hook; the command only runs and renders it.
 
 **Avoid:** "lint", "quality check" (overloaded); confusing with the build/test gates (Stop hooks).
 
 ### Health categories
 
-**Definition:** The five fixed scoring axes of the self-audit: `tool/agent coverage`, `context efficiency`, `quality gates`, `memory persistence`, `security guardrails`. Each yields an int score and a list of concrete fix actions; `top_fixes` orders worst-category-first with alphabetical tie-break.
+**Definition:** The six fixed scoring axes of the self-audit: `tool/agent coverage`, `context efficiency`, `quality gates`, `memory persistence`, `security guardrails`, `doctrine integrity`. Each yields an int score and a list of concrete fix actions; `top_fixes` orders worst-category-first with alphabetical tie-break.
 
 **Avoid:** "audit sections", "metrics".
+
+### Drift canary (doctrine-integrity check)
+
+**Definition:** The sixth `/audit` category (`hooks/audit.py`, `DOCTRINE_PHRASES` + `_score_doctrine_integrity`): a presence-allowlist asserting each pinned load-bearing doctrine phrase still appears verbatim in its required file. All-or-nothing (100 or 0) and fail-open. Catches deletion of a pinned phrase, not a one-sided reword.
+
+**Avoid:** "doctrine lint", "phrase check".
 
 ### Memory audit (reflect step)
 
@@ -201,6 +207,26 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Definition:** The memory convention that each line in MEMORY.md's index stays a single short line (under ~150-200 chars), with detail pushed to the linked topic file. Mirrors the native load contract: the platform loads the index eagerly and topic files on demand, so a bloated index line spends load budget owed to the topic file.
 
 **Avoid:** "summary line", "memory entry".
+
+## Review doctrine
+
+### Simplicity review
+
+**Definition:** The always-on lens in `agents/simplicity-reviewer.md` that fires on every code build. It walks the YAGNI ladder - does-it-need-to-exist -> stdlib -> native platform feature -> already-installed dependency -> one line -> the minimum that works - stopping at the first rung that holds (a rung higher than necessary is the cut). It scores each cut and ends with `net: -N lines possible` or `Lean already. Ship.` Fires once at End Review over the cumulative diff, not per milestone; milestone-scope ownership is intentionally outside its charter.
+
+**Avoid:** "simplification pass", "dead-code scan".
+
+### Deletion tag
+
+**Definition:** One of `delete:` / `stdlib:` / `native:` / `yagni:` / `shrink:`, attached by simplicity-reviewer to each proposed cut, each naming the replacement. Defined in `doctrine/reviewer-contract.md`.
+
+**Avoid:** "cut marker", "removal label".
+
+### Floor (never simplify away)
+
+**Definition:** The hard stop on the lean-toward bias: required trust-boundary input validation, data-loss-preventing error handling, security, accessibility, hardware calibration, and the one runnable check behind non-trivial logic are load-bearing, not bloat. A reviewer never tags these `delete:` / `yagni:` / `shrink:`. Defined in `doctrine/code-doctrine.md` and echoed in `doctrine/reviewer-contract.md`.
+
+**Avoid:** "essential code", "non-negotiables".
 
 ## Relationships
 

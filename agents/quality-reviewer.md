@@ -56,6 +56,7 @@ Abstraction-shape bloat (shallow wrappers, single-call modules, generic-vs-concr
 - Flagging unfamiliar code as bloat without checking what it does.
 - Treating intentional simplicity as bloat (a 5-line function isn't bloat just because someone could imagine extracting a helper).
 - Flagging things other reviewers own: correctness (correctness-reviewer), decomposition / layer violations (structure-reviewer), interface depth / shallow wrappers / leaky abstractions (architecture-reviewer), naming / pattern conformity (consistency-reviewer), duplication (reuse-reviewer).
+- Line-count and stdlib/native/YAGNI-ladder cuts (the 5 deletion tags) are simplicity-reviewer's lane, not this one - keep wrong-tool/altitude judgment here.
 
 ## Priority
 

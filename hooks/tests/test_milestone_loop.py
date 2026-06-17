@@ -20,7 +20,7 @@ TC-M6  GREEN - TDD lock holds code-implementer when #needs-tests is live and #te
                milestone spec reuses
 TC-M7  RED   - check_catalog does not yet validate milestone-scope values or detect the
                orphaned milestone-diverged subscription
-TC-M8  GREEN - stage count is 47 and absence of milestone-scope is the valid state right
+TC-M8  GREEN - stage count is 48 and absence of milestone-scope is the valid state right
                now; the gen-catalog guard-emit (absence stays absence) is already correct
 """
 
@@ -286,7 +286,7 @@ def test_check_catalog_flags_invalid_milestone_scope_value():
 
 # --- TC-M8 ---
 def test_stage_count_stays_47_and_absence_is_valid():
-    """REUSE-GUARD: stage count stays at 47 (no stages added by this change) and a
+    """REUSE-GUARD: stage count stays at 48 (no stages added by this change) and a
     stage without milestone-scope has no such key in the catalog (gen-catalog guard
     emit - absence stays absence).
 
@@ -296,8 +296,8 @@ def test_stage_count_stays_47_and_absence_is_valid():
     stages = cat["stages"]
 
     assert (
-        len(stages) == 47
-    ), f"stage count must remain 47 after milestone-loop change, got {len(stages)}"
+        len(stages) == 48
+    ), f"stage count must remain 48 after milestone-loop change, got {len(stages)}"
 
     # Spot-check: stages that must NOT gain milestone-scope
     _NO_SCOPE_STAGES = (

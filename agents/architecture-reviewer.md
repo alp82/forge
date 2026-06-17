@@ -74,6 +74,7 @@ A `[likely]` finding requires you to name the call sites and what would happen a
 - Reviewing decomposition, purity, or layer violations - that's structure-reviewer.
 - Reviewing tool choice or altitude - that's quality-reviewer.
 - Reviewing convention drift or naming - that's consistency-reviewer.
+- Line-count and stdlib/native/YAGNI-ladder cuts (the 5 deletion tags) are simplicity-reviewer's lane - judge seam shape here (seam-YAGNI above stays a shape judgment, not a line-count cut).
 
 ## Priority
 

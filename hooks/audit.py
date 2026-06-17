@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic self-audit: score the plugin against five health categories.
+"""Deterministic self-audit: score the plugin against six health categories.
 
 Mirrors the verify-build.py shape - stdlib only, fail-open, always exits 0. The
 score is a pure function of repo facts (catalog stages, doctrine files, registered
@@ -22,17 +22,37 @@ import check_catalog
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# Exactly the five category names the contract pins.
+# Exactly the six category names the contract pins.
 CATEGORIES = (
     "tool/agent coverage",
     "context efficiency",
     "quality gates",
     "memory persistence",
     "security guardrails",
+    "doctrine integrity",
+)
+
+# Pinned doctrine phrases: each entry is (phrase, repo-relative-path).
+# A phrase is considered present if it appears anywhere in the named file
+# (whole-file substring check). This catches deletion of the pinned literal
+# but not a one-sided reword when the same phrase also appears elsewhere.
+# These phrases are load-bearing canaries - their presence confirms doctrine
+# integrity; adding or renaming them here requires updating the source file too.
+DOCTRINE_PHRASES = (
+    ("est-size > S", "WORKFLOW.md"),
+    ("est-size <= S", "WORKFLOW.md"),
+    ("ONE runnable check", "doctrine/code-doctrine.md"),
 )
 
 # Catalog stages that mark a present quality gate (test chain + review lenses).
 QUALITY_GATE_HINTS = ("test-plan", "test-verifier", "reviewer")
+
+
+def _read_file(root, relpath):
+    try:
+        return (root / relpath).read_text(encoding="utf-8")
+    except (OSError, ValueError):
+        return ""
 
 
 def _load_catalog(root):
@@ -193,6 +213,16 @@ def _score_security(root, hooks_text):
     return _clamp(score), fixes
 
 
+def _score_doctrine_integrity(root):
+    """Every pinned doctrine phrase still present in its file. All-or-nothing."""
+    problems = [
+        f"add the pinned phrase '{phrase}' back to {relpath}"
+        for phrase, relpath in DOCTRINE_PHRASES
+        if phrase not in _read_file(root, relpath)
+    ]
+    return (100, []) if not problems else (0, problems)
+
+
 def build_scorecard(root):
     """Pure scorecard over repo facts. Fail-open: never raises, every score an int."""
     root = Path(root)
@@ -215,6 +245,7 @@ def build_scorecard(root):
     )
     category_results["memory persistence"] = _score_memory(root)
     category_results["security guardrails"] = _score_security(root, hooks_text)
+    category_results["doctrine integrity"] = _score_doctrine_integrity(root)
 
     categories = {}
     for name in CATEGORIES:
