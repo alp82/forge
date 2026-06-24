@@ -266,12 +266,12 @@ def test_B05_check_flags_orphan_when_seeds_absent():
 
 
 # --- TC-B06 ---
-def test_B06_catalog_has_49_stages():
-    """After plan-arbiter is added, the catalog must have 49 stages (baseline 48 + arbiter)."""
+def test_B06_catalog_has_48_stages():
+    """After visual-verifier removal, the catalog must have 48 stages."""
     cat = _real_catalog()
     assert (
-        len(cat["stages"]) == 49
-    ), f"expected 49 stages after plan-arbiter addition, got {len(cat['stages'])}"
+        len(cat["stages"]) == 48
+    ), f"expected 48 stages after visual-verifier removal, got {len(cat['stages'])}"
 
 
 # --- TC-B07 ---

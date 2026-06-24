@@ -1429,34 +1429,6 @@
           "ui-touched"
         ]
       }
-    },
-    "visual-verifier": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "diff"
-          ]
-        },
-        "output": [
-          "findings"
-        ]
-      },
-      "input_template": "<TARGET>{route, component, or URL path to verify - from main agent or inferred from touched UI files}</TARGET>\n<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
-      "name": "visual-verifier",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "findings:ux",
-          "clean",
-          "scope-shift"
-        ],
-        "subscribes": [
-          "run-visual"
-        ]
-      }
     }
   }
 }

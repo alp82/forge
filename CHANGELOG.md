@@ -2,6 +2,15 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.2.15 - 2026-06-24
+
+- A finished run now ends with a timing summary: total time, time per phase, and time per milestone when the work was built in milestones.
+
+## 1.2.14 - 2026-06-24
+
+- Removed the opt-in screenshot-based visual check because they were unreliable
+- The static UI reviews and the design and flow preview pages are unchanged.
+
 ## 1.2.13 - 2026-06-18
 
 - A big change with several genuinely different ways to build it can now explore those approaches in parallel and settle on the strongest one, or blend the best parts, before any code is written.
@@ -309,4 +318,4 @@ Most code assistants either rush past intent and get the wrong thing, or pile ev
 - Tasks get classified S, M, L, or XL - small ones skip review, big ones get the full pipeline.
 - Plan, build, review, and self-heal are separate steps so they don't soften each other.
 - After-compaction state recovery so long sessions don't lose your intent or plan.
-- Six slash commands cover feature work, fixes, plans, investigations, reviews, and visual verification.
+- Five slash commands cover feature work, fixes, plans, investigations, and reviews.

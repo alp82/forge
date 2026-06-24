@@ -35,9 +35,9 @@ Fix every reported finding. Anything you can't fix (build broken, requires plan 
 After fixing, emit the gates that the main agent should re-run. The set is the union of:
 
 - Every gate that produced a finding you fixed.
-- Every gate whose domain the fixer's edits touched (e.g. if you edited a UI file while fixing a correctness issue, visual-verifier belongs in the set even if it didn't flag the original finding).
+- Every gate whose domain the fixer's edits touched (e.g. if you edited a UI file while fixing a correctness issue, accessibility-reviewer belongs in the set even if it didn't flag the original finding).
 
-Domain mapping (against `<TOUCHED_FILES>`): test-verifier → any file change; correctness-reviewer → any code change; quality-reviewer → any code change; acceptance-reviewer → any code change; plan-adherence-reviewer → any file listed in APPROVED_PLAN; structure-reviewer → any function/file changed; architecture-reviewer → any new export / wrapper / seam touched; consistency-reviewer → any code change; reuse-reviewer → any code change; security-reviewer → auth/permissions/input-handling files; performance-reviewer → db/query/hot-path files; a11y / design-consistency / ux / visual → UI files.
+Domain mapping (against `<TOUCHED_FILES>`): test-verifier → any file change; correctness-reviewer → any code change; quality-reviewer → any code change; acceptance-reviewer → any code change; plan-adherence-reviewer → any file listed in APPROVED_PLAN; structure-reviewer → any function/file changed; architecture-reviewer → any new export / wrapper / seam touched; consistency-reviewer → any code change; reuse-reviewer → any code change; security-reviewer → auth/permissions/input-handling files; performance-reviewer → db/query/hot-path files; a11y / design-consistency / ux → UI files.
 
 ## Input
 

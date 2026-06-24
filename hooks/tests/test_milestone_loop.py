@@ -246,21 +246,6 @@ def test_check_catalog_flags_invalid_milestone_scope_value():
         f"problems={problems}"
     )
 
-    # --- Part B: absence is valid - untagged stage produces no milestone-scope problem ---
-    cat2 = copy.deepcopy(_real_catalog())
-    # visual-verifier has no milestone-scope (and must not)
-    assert (
-        "milestone-scope" not in cat2["stages"]["visual-verifier"]
-    ), "pre-condition: visual-verifier must not have milestone-scope in real catalog"
-    problems2 = check_catalog.check(cat2)
-    ms_problems_for_vv = [
-        p for p in problems2 if "visual-verifier" in p and "milestone-scope" in p
-    ]
-    assert ms_problems_for_vv == [], (
-        f"absence of milestone-scope on visual-verifier must produce no problem; "
-        f"got {ms_problems_for_vv}"
-    )
-
     # --- Part C: orphan subscriber when publisher is removed ---
     # Deep-copy the real catalog (which already has the milestone-diverged edge wired)
     # and remove ALL occurrences of milestone-diverged from code-implementer's publishes,
@@ -285,7 +270,7 @@ def test_check_catalog_flags_invalid_milestone_scope_value():
 
 
 # --- TC-M8 ---
-def test_stage_count_stays_47_and_absence_is_valid():
+def test_stage_count_stays_48_and_absence_is_valid():
     """REUSE-GUARD: stage count is 48 and a
     stage without milestone-scope has no such key in the catalog (gen-catalog guard
     emit - absence stays absence).
@@ -295,11 +280,10 @@ def test_stage_count_stays_47_and_absence_is_valid():
     cat = _real_catalog()
     stages = cat["stages"]
 
-    assert len(stages) == 49, f"stage count must remain 49, got {len(stages)}"
+    assert len(stages) == 48, f"stage count must remain 48, got {len(stages)}"
 
     # Spot-check: stages that must NOT gain milestone-scope
     _NO_SCOPE_STAGES = (
-        "visual-verifier",
         "quality-reviewer",
         "code-implementer",
         "code-planner",

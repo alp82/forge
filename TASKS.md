@@ -20,8 +20,9 @@ linting & testing
 
 ---
 
-visual verifier
-    https://github.com/browser-use/browser-use
+mdx: visual plan & recap
+    https://github.com/BuilderIO/skills/tree/main/skills/visual-plan
+    https://github.com/BuilderIO/skills/tree/main/skills/visual-recap
 
 ---
 

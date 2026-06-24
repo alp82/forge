@@ -29,7 +29,6 @@ PATHS = ("talk", "sketch", "code", "system")
 SEED_SIGNALS = {
     "request-received",
     "reshape",
-    "run-visual",
     "design-decision",
     # Multi-plan adjudication trigger - enters the route from outside any stage; the
     # orchestrator seeds it (atomic co-publish, see doctrine/multi-plan.md). Same basis as

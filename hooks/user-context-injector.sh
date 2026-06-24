@@ -27,7 +27,7 @@
 #   User-aware N + Project-aware Y: health-checker, prototype-identifier,
 #                                   researcher, code-prototyper, data-prototyper,
 #                                   performance-prototyper  (user_aware=0)
-#   User-aware Y + Project-aware N: visual-verifier, plan-adherence-reviewer,
+#   User-aware Y + Project-aware N: plan-adherence-reviewer,
 #                                   setup-agent
 #   User-aware N + Project-aware N: test-verifier, accessibility-reviewer, and
 #                                   test-gap are user_aware=0 arms that fall
@@ -76,7 +76,7 @@ case "$subagent_type" in
   # User-aware: yes. Project-aware: depends on READ_MAP.
   interviewer|code-planner|plan-challenger|plan-arbiter|code-implementer|fixer|code-investigator|setup-agent|capture-agent|adr-drafter|design-prototyper|ux-prototyper|discuss|sketch-build|system-planner|system-executor|system-investigator|system-verifier|safety-gate)
     ;;
-  requirements-clarifier|reuse-scanner|visual-verifier)
+  requirements-clarifier|reuse-scanner)
     ;;
   correctness-reviewer|quality-reviewer|simplicity-reviewer|acceptance-reviewer|plan-adherence-reviewer)
     ;;

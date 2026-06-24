@@ -27,18 +27,17 @@
 
 The last three updates:
 
+**1.2.15**
+
+- A finished run now ends with a timing summary: total time, time per phase, and time per milestone when the work was built in milestones.
+
+**1.2.14**
+
+- Removed the opt-in screenshot-based visual check because they were unreliable.
+
 **1.2.13**
 
 - A big change with several genuinely different ways to build it can now explore those approaches in parallel and settle on the strongest one, or blend the best parts, before any code is written.
-
-**1.2.12**
-
-- The specialist review and build voices now open by stating their guiding principle in their own words, so each stays in character throughout its work.
-
-**1.2.11**
-
-- The workflow health scorecard now also flags when the same instruction is copied across files and when a hard rule lacks a stated reason.
-- Post-build plan checks now follow a structured receipt the build leaves behind, so each planned item traces straight to where it landed.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -184,7 +183,7 @@ code · XXL · 18 stages
 
 ## Stages
 
-47 composable stages plus a command-only setup agent. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`). Below they are grouped by conversation path; a stage that runs in several paths appears under each.
+48 composable stages plus a command-only setup agent. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`). Below they are grouped by conversation path; a stage that runs in several paths appears under each.
 
 ### Code
 
@@ -265,7 +264,6 @@ code · XXL · 18 stages
 | ux | sonnet | UI touched |
 | accessibility | sonnet | UI touched |
 | design-consistency | sonnet | UI touched |
-| visual-verifier | sonnet | opt-in |
 
 📓 **Document** - records the glossary, stack, and intent updates the run surfaced, only after you approve.
 
@@ -383,7 +381,6 @@ code · XXL · 18 stages
 /alp-river:setup     Set up project-context docs (INTENT/STACK/GLOSSARY) in docs/ via guided interview.
 /alp-river:adr       Manually draft and write an architectural decision record.
 /alp-river:review    Review specified files for quality, bugs, duplication, and dead code.
-/alp-river:verify    Visual verification of UI changes using playwright-cli screenshots.
 /alp-river:reflect   Reflect on the current session to surface workflow friction worth tuning.
 /alp-river:audit     Self-audit the plugin and report a health scorecard with top fixes.
 ```
@@ -395,10 +392,10 @@ alp-river/
 ├── .claude-plugin/         <- plugin.json (version), marketplace.json
 ├── WORKFLOW.md             <- the full router-loop doctrine
 ├── doctrine/               <- CATALOG.md (stage schema), SIGNALS.md (signal vocabulary), ...
-├── generated/catalog.json  <- compiled stage catalog (47 stages; tracked; the router reads it)
+├── generated/catalog.json  <- compiled stage catalog (48 stages; tracked; the router reads it)
 ├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, reinject-state)
-├── agents/                 <- 47 stage definitions + setup-agent
-├── commands/               <- 7 slash commands
+├── agents/                 <- 48 stage definitions + setup-agent
+├── commands/               <- 6 slash commands
 ├── psychology/             <- per-agent voice / persona overrides
 └── templates/              <- copy into your project's docs/ for context injection
 ```

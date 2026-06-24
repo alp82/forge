@@ -121,7 +121,6 @@ fires, so code never starts against an unapproved plan.
 | size-crossed:&lt;tier&gt; | route grew past a tier line | router | cost-check |
 | approved, scope-down, abandon | user gate verdict | gate stages | orchestrator |
 | cleanup-first | health gate decision | health gate | orchestrator |
-| run-visual | user opted into a visual check | gate | visual-verifier |
 | safety-approved | user cleared a destructive/irreversible system action | safety-gate | system-executor's lock |
 | plan-approved | the plan cleared its approval gate, releasing both implementers' plan-gate lock | plan-challenger (code path, single-plan terminal gate); plan-arbiter (code path, multi-plan adjudication); orchestrator (system / trivial-code, where no in-route stage publishes it) | code-implementer's lock, system-executor's lock |
 

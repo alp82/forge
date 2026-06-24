@@ -817,7 +817,6 @@ _EXCLUSION_SET = {
     "test-gap",
     "test-verifier",
     "ux-reviewer",
-    "visual-verifier",
     "capture-agent",
     "reuse-scanner",
     "health-checker",
@@ -834,10 +833,9 @@ _EXCLUSION_SET = {
     "ux-prototyper",
 }
 
-# The 16 deep lenses (exclusion set minus the non-lens stages). All stay absent on a cheap
+# The 15 deep lenses (exclusion set minus the non-lens stages). All stay absent on a cheap
 # path: none of their triggering signals are live there. The UI lenses are now ui-touched-
-# gated and visual-verifier is run-visual-gated, so they need an even stronger signal than
-# the needs-tests lenses to appear.
+# gated, so they need an even stronger signal than the needs-tests lenses to appear.
 _DEEP_LENSES = {
     "acceptance-reviewer",
     "accessibility-reviewer",  # ui-touched-gated
@@ -854,16 +852,15 @@ _DEEP_LENSES = {
     "test-gap",
     "test-verifier",
     "ux-reviewer",  # ui-touched-gated
-    "visual-verifier",  # run-visual-gated (opt-in only)
 }
 
 
 # --- TC-I01 / TC-P01 ---
-def test_real_catalog_has_49_stages_no_skip_tests():
-    """Catalog has 49 stages (48 baseline + plan-arbiter) and skip-tests is absent."""
+def test_real_catalog_has_48_stages_no_skip_tests():
+    """Catalog has 48 stages and skip-tests is absent."""
     cat = _real_catalog()
     stages = cat["stages"]
-    assert len(stages) == 49, f"expected 49 stages, got {len(stages)}"
+    assert len(stages) == 48, f"expected 48 stages, got {len(stages)}"
     assert "skip-tests" not in stages, "skip-tests must NOT exist in migrated catalog"
 
 
@@ -1801,7 +1798,7 @@ def test_real_catalog_planner_runs_without_diagnosis():
 
 
 # ---------------------------------------------------------------------------
-# FIX 2: UI lenses fire on `ui-touched`, not `needs-tests`; visual-verifier is opt-in only
+# FIX 2: UI lenses fire on `ui-touched`, not `needs-tests`
 # ---------------------------------------------------------------------------
 
 
@@ -1819,7 +1816,6 @@ def test_real_catalog_ui_lenses_off_non_ui_logic_code():
         "accessibility-reviewer",
         "design-consistency-reviewer",
         "ux-reviewer",
-        "visual-verifier",
     ):
         assert lens not in route_set, f"{lens} must NOT fire without ui-touched"
     assert (
@@ -1828,8 +1824,7 @@ def test_real_catalog_ui_lenses_off_non_ui_logic_code():
 
 
 def test_real_catalog_ui_lenses_on_ui_touched():
-    """With `ui-touched` live, the three UI review lenses fire; visual-verifier still does
-    not (it is gated on `run-visual` alone now)."""
+    """With `ui-touched` live, the three UI review lenses fire."""
     cat = _real_catalog()
     res = route.compute_route(
         cat,
@@ -1843,30 +1838,54 @@ def test_real_catalog_ui_lenses_on_ui_touched():
         "ux-reviewer",
     ):
         assert lens in route_set, f"{lens} must fire when ui-touched is live"
+
+
+# ---------------------------------------------------------------------------
+# VISUAL-VERIFIER REMOVAL (TC-CAT-1, TC-SIG-2, TC-ROUTE-3, TC-UI-3)
+# ---------------------------------------------------------------------------
+
+
+# --- TC-CAT-1 ---
+def test_visual_verifier_absent_from_catalog():
+    """visual-verifier must not appear in the catalog stages after removal."""
+    stages = _real_catalog()["stages"]
     assert (
-        "visual-verifier" not in route_set
-    ), "visual-verifier must NOT fire on ui-touched - it is run-visual-gated"
+        "visual-verifier" not in stages
+    ), "visual-verifier must be absent from catalog after removal"
 
 
-def test_real_catalog_visual_verifier_opt_in_only():
-    """visual-verifier fires only on `run-visual`; `ui-touched` alone does not pull it in."""
+# --- TC-SIG-2 ---
+def test_run_visual_absent_from_seed_signals():
+    """run-visual must not appear in check_catalog.SEED_SIGNALS after removal."""
+    assert (
+        "run-visual" not in check_catalog.SEED_SIGNALS
+    ), "run-visual must be removed from SEED_SIGNALS alongside visual-verifier"
+
+
+# --- TC-ROUTE-3 ---
+def test_visual_verifier_absent_from_route_even_with_run_visual_and_ui_touched():
+    """Even with run-visual AND ui-touched live, visual-verifier must not appear in the route."""
     cat = _real_catalog()
-    opted_in = route.compute_route(
+    res = route.compute_route(
         cat,
-        {"code", "run-visual", "code-written"},
+        {"code", "run-visual", "code-written", "ui-touched"},
         available={"confirmed-intent", "diff"},
     )
     assert (
-        "visual-verifier" in opted_in["route"]
-    ), "visual-verifier must fire when run-visual is live"
-    no_opt = route.compute_route(
-        cat,
-        {"code", "needs-tests", "ui-touched", "code-written"},
-        available={"confirmed-intent", "diff"},
-    )
-    assert (
-        "visual-verifier" not in no_opt["route"]
-    ), "visual-verifier must NOT fire without run-visual"
+        "visual-verifier" not in res["route"]
+    ), "visual-verifier must be absent from route after removal (run-visual + ui-touched live)"
+
+
+# --- TC-UI-3 (publisher continuity - GREEN, must stay green) ---
+def test_ux_reviewer_still_publishes_findings_ux():
+    """ux-reviewer still publishes findings:ux after visual-verifier is removed.
+
+    Green now and must stay green - ux-reviewer is the keeper of this signal.
+    """
+    stages = _real_catalog()["stages"]
+    assert any(
+        "findings:ux" in s["signals"]["publishes"] for s in stages.values()
+    ), "at least one stage must still publish findings:ux (ux-reviewer continuity)"
 
 
 # ---------------------------------------------------------------------------
