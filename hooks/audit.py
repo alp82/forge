@@ -46,8 +46,8 @@ DOCTRINE_PHRASES = (
     ("ONE runnable check", "doctrine/code-doctrine.md"),
     ("extend it not restate", "CLAUDE.md"),
     (
-        "the AI proposes the rung, the human negotiates bandwidth",
-        "doctrine/surfacing-ladder.md",
+        "the overview comes first; the brief is details on demand, pulled never pushed.",
+        "doctrine/briefs.md",
     ),
 )
 

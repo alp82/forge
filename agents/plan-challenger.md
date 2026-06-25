@@ -106,7 +106,7 @@ CHALLENGE_QUESTIONS:
         preview: [STRENGTHS one-liner - the same content the breakdown card carries]
 ```
 
-The `See it as an interactive doc` option is terminal-mode only (critique-only mode emits no picker). It is read-only on your side: the orchestrator writes and hosts the doc from the planner's Plan Breakdown; you only offer the option and name the paste-back token (see the surfacing-ladder doctrine in your DOCTRINE block).
+The `See it as an interactive doc` option is terminal-mode only (critique-only mode emits no picker). It is read-only on your side: the orchestrator writes and hosts the doc from the planner's Plan Breakdown; you only offer the option and name the paste-back token (see the briefs doctrine in your DOCTRINE block).
 
 `approve` = ship to implementer. `revise` = planner re-spawns with the prior plan reproduced verbatim and BLOCKERS applied as corrections, version bumped (counts as a backward edge; see WORKFLOW.md ## Revision Contract). `reject` = plan is fundamentally wrong; reinterview or restart from Step 2 (counts as a backward edge).
 

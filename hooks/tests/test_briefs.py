@@ -1,6 +1,6 @@
-"""Tests for the bandwidth-ladder (surfacing-ladder) change.
+"""Tests for the briefs change.
 
-RED tests (1-6): fail until doctrine/surfacing-ladder.md and the audit.py
+RED tests (1-6): fail until doctrine/briefs.md and the audit.py
 DOCTRINE_PHRASES entry and the DOCTRINE_MAP wiring in user-context-injector.sh
 all land together.
 
@@ -20,11 +20,13 @@ import check_catalog
 
 REAL_REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# The leitwort canary phrase for the surfacing-ladder doctrine file.
-SURFACING_LEITWORT = "the AI proposes the rung, the human negotiates bandwidth"
+# The leitwort canary phrase for the briefs doctrine file.
+BRIEFS_ANCHOR = (
+    "the overview comes first; the brief is details on demand, pulled never pushed."
+)
 
-# The four agents that must receive surfacing-ladder doctrine.
-SURFACING_LADDER_AGENTS = ("discuss", "interviewer", "plan-challenger", "plan-arbiter")
+# The four agents that must receive briefs doctrine.
+BRIEFS_AGENTS = ("discuss", "interviewer", "plan-challenger", "plan-arbiter")
 
 
 # ---------------------------------------------------------------------------
@@ -32,15 +34,15 @@ SURFACING_LADDER_AGENTS = ("discuss", "interviewer", "plan-challenger", "plan-ar
 # ---------------------------------------------------------------------------
 
 
-def test_sl_r01_doctrine_phrases_contains_surfacing_ladder_entry():
-    """RED-1: audit.DOCTRINE_PHRASES contains the surfacing-ladder canary tuple.
+def test_briefs_r01_doctrine_phrases_contains_briefs_entry():
+    """RED-1: audit.DOCTRINE_PHRASES contains the briefs canary tuple.
 
     Fails until the implementer adds:
-        ("the AI proposes the rung, the human negotiates bandwidth",
-         "doctrine/surfacing-ladder.md")
+        ("the overview comes first; the brief is details on demand, pulled never pushed.",
+         "doctrine/briefs.md")
     to DOCTRINE_PHRASES in hooks/audit.py.
     """
-    target = (SURFACING_LEITWORT, "doctrine/surfacing-ladder.md")
+    target = (BRIEFS_ANCHOR, "doctrine/briefs.md")
     assert target in audit.DOCTRINE_PHRASES, (
         f"DOCTRINE_PHRASES must contain {target!r}; "
         f"current entries: {audit.DOCTRINE_PHRASES!r}"
@@ -52,16 +54,16 @@ def test_sl_r01_doctrine_phrases_contains_surfacing_ladder_entry():
 # ---------------------------------------------------------------------------
 
 
-def test_sl_r02_doctrine_phrases_length_is_five():
+def test_briefs_r02_doctrine_phrases_length_is_five():
     """RED-2: audit.DOCTRINE_PHRASES has exactly 5 entries after adding the
-    surfacing-ladder entry.
+    briefs entry.
 
     Guards against adding zero entries (stays at 4) or adding more than one.
     Fails until the single new entry is added.
     """
     assert len(audit.DOCTRINE_PHRASES) == 5, (
         f"DOCTRINE_PHRASES must have exactly 5 entries (4 existing + 1 "
-        f"surfacing-ladder); got {len(audit.DOCTRINE_PHRASES)}: "
+        f"briefs); got {len(audit.DOCTRINE_PHRASES)}: "
         f"{audit.DOCTRINE_PHRASES!r}"
     )
 
@@ -71,21 +73,20 @@ def test_sl_r02_doctrine_phrases_length_is_five():
 # ---------------------------------------------------------------------------
 
 
-def test_sl_r03_surfacing_ladder_md_exists_with_leitwort():
-    """RED-3: doctrine/surfacing-ladder.md exists in the real repo and contains
+def test_briefs_r03_briefs_md_exists_with_leitwort():
+    """RED-3: doctrine/briefs.md exists in the real repo and contains
     the leitwort substring.
 
     Fails until the implementer creates the file.
     """
-    target_file = REAL_REPO_ROOT / "doctrine" / "surfacing-ladder.md"
+    target_file = REAL_REPO_ROOT / "doctrine" / "briefs.md"
     assert target_file.is_file(), (
-        f"doctrine/surfacing-ladder.md must exist at {target_file}; "
-        f"file does not exist yet"
+        f"doctrine/briefs.md must exist at {target_file}; " f"file does not exist yet"
     )
     content = target_file.read_text(encoding="utf-8")
-    assert SURFACING_LEITWORT in content, (
-        f"doctrine/surfacing-ladder.md must contain the leitwort "
-        f"{SURFACING_LEITWORT!r}; file exists but phrase is absent"
+    assert BRIEFS_ANCHOR in content, (
+        f"doctrine/briefs.md must contain the leitwort "
+        f"{BRIEFS_ANCHOR!r}; file exists but phrase is absent"
     )
 
 
@@ -94,10 +95,10 @@ def test_sl_r03_surfacing_ladder_md_exists_with_leitwort():
 # ---------------------------------------------------------------------------
 
 
-def test_sl_r04_live_repo_doctrine_integrity_score_100():
+def test_briefs_r04_live_repo_doctrine_integrity_score_100():
     """RED-4: build_scorecard(REAL_REPO_ROOT) doctrine integrity score == 100.
 
-    Mirrors test_h19. Fails until BOTH doctrine/surfacing-ladder.md exists AND
+    Mirrors test_h19. Fails until BOTH doctrine/briefs.md exists AND
     the matching DOCTRINE_PHRASES entry is added (the canary check will fail
     otherwise).
     """
@@ -108,19 +109,19 @@ def test_sl_r04_live_repo_doctrine_integrity_score_100():
     score = result["categories"]["doctrine integrity"]["score"]
     assert score == 100, (
         f"live repo 'doctrine integrity' must score 100; got {score}. "
-        f"RED until doctrine/surfacing-ladder.md exists and its DOCTRINE_PHRASES "
+        f"RED until doctrine/briefs.md exists and its DOCTRINE_PHRASES "
         f"canary entry lands in audit.py."
     )
 
 
 # ---------------------------------------------------------------------------
-# RED 5 - DOCTRINE_MAP wires surfacing-ladder to all four target agents
+# RED 5 - DOCTRINE_MAP wires briefs to all four target agents
 # ---------------------------------------------------------------------------
 
 
-def test_sl_r05_doctrine_map_wires_surfacing_ladder_to_all_four_agents():
+def test_briefs_r05_doctrine_map_wires_briefs_to_all_four_agents():
     """RED-5: hooks/user-context-injector.sh DOCTRINE_MAP block contains
-    'surfacing-ladder' in the entry for each of discuss, interviewer,
+    'briefs' in the entry for each of discuss, interviewer,
     plan-challenger, and plan-arbiter.
 
     Currently discuss and interviewer have no DOCTRINE_MAP entry; plan-challenger
@@ -139,14 +140,14 @@ def test_sl_r05_doctrine_map_wires_surfacing_ladder_to_all_four_agents():
     for m in re.finditer(r'^\s*\[([^\]]+)\]="([^"]*)"', content, re.MULTILINE):
         map_entries[m.group(1)] = m.group(2)
 
-    for agent in SURFACING_LADDER_AGENTS:
+    for agent in BRIEFS_AGENTS:
         assert agent in map_entries, (
             f"DOCTRINE_MAP in user-context-injector.sh has no entry for '{agent}'; "
             f"current keys include: {sorted(map_entries.keys())!r}"
         )
         tokens = map_entries[agent].split()
-        assert "surfacing-ladder" in tokens, (
-            f"DOCTRINE_MAP['{agent}'] must include 'surfacing-ladder'; "
+        assert "briefs" in tokens, (
+            f"DOCTRINE_MAP['{agent}'] must include 'briefs'; "
             f"current value: {map_entries[agent]!r}"
         )
 
@@ -156,10 +157,10 @@ def test_sl_r05_doctrine_map_wires_surfacing_ladder_to_all_four_agents():
 # ---------------------------------------------------------------------------
 
 
-def test_sl_r06_leitwort_appears_in_exactly_one_file():
+def test_briefs_r06_leitwort_appears_in_exactly_one_file():
     """RED-6: the leitwort substring appears in exactly one file across
     agents/*.md + doctrine/*.md + WORKFLOW.md, and that file is
-    doctrine/surfacing-ladder.md (WORKFLOW.md only cross-references it).
+    doctrine/briefs.md (WORKFLOW.md only cross-references it).
 
     Fails now because the leitwort appears in zero files (the doctrine file
     does not exist yet). After implementation, exactly one file must contain it.
@@ -176,20 +177,20 @@ def test_sl_r06_leitwort_appears_in_exactly_one_file():
             text = path.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
-        if SURFACING_LEITWORT in text:
+        if BRIEFS_ANCHOR in text:
             files_containing_leitwort.append(path)
 
     assert len(files_containing_leitwort) == 1, (
-        f"The leitwort {SURFACING_LEITWORT!r} must appear in exactly ONE file "
-        f"(doctrine/surfacing-ladder.md); "
+        f"The leitwort {BRIEFS_ANCHOR!r} must appear in exactly ONE file "
+        f"(doctrine/briefs.md); "
         f"found in {len(files_containing_leitwort)} file(s): "
         f"{[str(p) for p in files_containing_leitwort]!r}"
     )
 
     sole_file = files_containing_leitwort[0]
-    expected = REAL_REPO_ROOT / "doctrine" / "surfacing-ladder.md"
+    expected = REAL_REPO_ROOT / "doctrine" / "briefs.md"
     assert sole_file == expected, (
-        f"The leitwort must live exclusively in doctrine/surfacing-ladder.md; "
+        f"The leitwort must live exclusively in doctrine/briefs.md; "
         f"found instead in {sole_file}"
     )
 
@@ -199,18 +200,18 @@ def test_sl_r06_leitwort_appears_in_exactly_one_file():
         workflow_text = workflow_path.read_text(encoding="utf-8", errors="replace")
     except OSError:
         workflow_text = ""
-    assert SURFACING_LEITWORT not in workflow_text, (
+    assert BRIEFS_ANCHOR not in workflow_text, (
         f"WORKFLOW.md must NOT contain the leitwort verbatim (it may only "
-        f"cross-reference surfacing-ladder.md); leitwort found in WORKFLOW.md"
+        f"cross-reference briefs.md); leitwort found in WORKFLOW.md"
     )
 
 
 # ---------------------------------------------------------------------------
-# GREEN 7 - Surfacing-ladder target agents do not have Write in tools
+# GREEN 7 - Briefs target agents do not have Write in tools
 # ---------------------------------------------------------------------------
 
 
-def test_sl_g07_surfacing_ladder_agents_have_no_write_tool():
+def test_briefs_g07_briefs_agents_have_no_write_tool():
     """GREEN-7 (regression guard): discuss, interviewer, plan-challenger, and
     plan-arbiter do not have 'Write' in their YAML frontmatter tools: line.
 
@@ -219,7 +220,7 @@ def test_sl_g07_surfacing_ladder_agents_have_no_write_tool():
     """
     import re
 
-    for agent_name in SURFACING_LADDER_AGENTS:
+    for agent_name in BRIEFS_AGENTS:
         agent_file = REAL_REPO_ROOT / "agents" / f"{agent_name}.md"
         assert (
             agent_file.is_file()
@@ -242,7 +243,7 @@ def test_sl_g07_surfacing_ladder_agents_have_no_write_tool():
         tools = [t.strip() for t in after_colon.split(",")]
         assert "Write" not in tools, (
             f"agents/{agent_name}.md must NOT have 'Write' in its tools list; "
-            f"got tools line: {tools_line!r}. The orchestrator writes .scratchpad/ "
+            f"got tools line: {tools_line!r}. The orchestrator writes .briefs/ "
             f"docs, not these doctrine-only agents."
         )
 
@@ -252,7 +253,7 @@ def test_sl_g07_surfacing_ladder_agents_have_no_write_tool():
 # ---------------------------------------------------------------------------
 
 
-def test_sl_g08_catalog_valid_and_stage_count_unchanged():
+def test_briefs_g08_catalog_valid_and_stage_count_unchanged():
     """GREEN-8 (regression guard): generated/catalog.json has no orphaned signals
     and the stage count equals the pinned value at test-write time (48).
 

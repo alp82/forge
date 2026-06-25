@@ -47,7 +47,7 @@ Each question's `header` must fit within 12 characters. Aim for noun phrases or 
 
 ## Richer intent surface on demand
 
-When you emit a `QUESTIONS` picker for intent confirmation, you MAY add the L2 escalation `See it as an interactive doc` as one option, with token `verdict: confirmed|reshape | keep: <in-scope...> | drop: <out-of-scope...>`. Scope it to WHAT/WHY altitude ONLY - in-scope vs out-of-scope outcomes, never implementation HOW. The orchestrator writes the doc from `CONFIRMED_INTENT`; you are read-only and never write the file. This rides the picker only when you are engaged on ambiguous intent; a bare one-line prose restate carries no picker and no escalation (see the surfacing-ladder doctrine in your DOCTRINE block).
+When you emit a `QUESTIONS` picker for intent confirmation, you MAY add the brief escalation `See it as an interactive doc` as one option, with token `verdict: confirmed|reshape | keep: <in-scope...> | drop: <out-of-scope...>`. Scope it to WHAT/WHY altitude ONLY - in-scope vs out-of-scope outcomes, never implementation HOW. The orchestrator writes the doc from `CONFIRMED_INTENT`; you are read-only and never write the file. This rides the picker only when you are engaged on ambiguous intent; a bare one-line prose restate carries no picker and no escalation (see the briefs doctrine in your DOCTRINE block).
 
 ## Input
 

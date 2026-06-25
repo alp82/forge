@@ -257,11 +257,11 @@ the next round's `<PRIOR_ROUNDS>`.
 Revise (rerun planner with `BLOCKERS`) / Reshape (back to intent). `SCOPE_MISMATCH` surfaces
 inline alongside `BLOCKERS` and in the Reshape option's `preview`.
 
-**L2 render-only escalation**: above the inline card sits an optional richer rung - a render-only
-`.scratchpad/` page the user pulls by picking `See it as an interactive doc` (the one consistent
-label across every touchpoint) at an L1 picker. A pulled L2 closed without a paste-back leaves the
-gate PENDING: the L1 picker stays the open gate until a verdict token arrives, so the gate state
-never leaves L1. See `doctrine/surfacing-ladder.md` for the three rungs, the per-surface tokens, and
+**Brief escalation (render-only)**: above the inline card sits an optional brief - a render-only
+`.briefs/` page the user pulls by picking `See it as an interactive doc` (the one consistent
+label across every touchpoint) at a picker. A pulled brief closed without a paste-back leaves the
+gate PENDING: the picker stays the open gate until a verdict token arrives, so the gate
+never leaves the picker. See `doctrine/briefs.md` for the three surfaces, the per-surface tokens, and
 the lazy-build rule.
 
 ## Convergence
@@ -343,11 +343,11 @@ Both implementers also carry a second, **unconditional** `{while:#plan-ready, un
 
 Each one-tap confirm renders the planner's Plan Breakdown in its card, and the gate's concrete example rides in that card breakdown, not in the option descriptions (which stay fixed-process example-exempt).
 
-**L2 escalation, handled inline.**
+**Brief escalation, handled inline.**
 - **Option, not a signal.** The `See it as an interactive doc` option is handled the same orchestrator-inline way as the trivial-code Hold: read off the pick, never a routing signal (same pattern as the trivial-code Hold escalation above).
-- **Orchestrator writes, then waits.** On reading the pick, the ORCHESTRATOR performs the Write INLINE - before awaiting the paste-back - calling its own Write tool to produce `.scratchpad/<touchpoint>-<slug>.html`, then waits for the paste-back token. Surfacing agents stay read-only.
+- **Orchestrator writes, then waits.** On reading the pick, the ORCHESTRATOR performs the Write INLINE - before awaiting the paste-back - calling its own Write tool to produce `.briefs/<touchpoint>-<slug>.html`, then waits for the paste-back token. Surfacing agents stay read-only.
 
-See `doctrine/surfacing-ladder.md` for the artifact list, the gate-stays-at-L1 rule, the `safety-gate` special case, and the slug reduction rule.
+See `doctrine/briefs.md` for the artifact list, the gate-stays-at-the-picker rule, the `safety-gate` special case, and the slug reduction rule.
 
 On the `code` path proper (`#significant-build` live), `plan-challenger` runs in-route and publishes `#plan-approved` on Approve, so the orchestrator does not emit it there. On a multi-plan code run the per-plan challengers are critique-only and `plan-arbiter` is the sole in-route publisher of `#plan-approved` (its Adopt verdict); Hybrid and Revise-first re-spawn the planner and publish nothing (`doctrine/multi-plan.md`).
 
@@ -408,7 +408,7 @@ Each agent fills these three roles with its own speaking-named slots; there is n
 
 **Not a revision (phases).** Sequential phases - `design-prototyper` (`confirm-params` then `built`), `ux-prototyper` (`confirm-flow-params` then `built`), `capture-agent` (`PROPOSAL` then `WRITE`) - each emit a different artifact and carry forward the user's picks or approvals. The guard does not apply.
 
-The orchestrator-written L2 docs (`doctrine/surfacing-ladder.md`) are render artifacts and are never folded into any revision package.
+The orchestrator-written briefs (`doctrine/briefs.md`) are render artifacts and are never folded into any revision package.
 
 After compaction, a revision in flight is reconstructed from the canonical run state plus the prior artifact (`## Compaction`).
 
@@ -420,8 +420,8 @@ and `<PREMISES>`. The router recomputes the route from those, so resumption is
 deterministic. Preserve manually only what is not in those blocks: the stage currently
 mid-run and any gate awaiting the user. A pending plan-approval confirm (system or
 trivial-code, waiting on the orchestrator-emitted `#plan-approved`) is one such gate
-awaiting the user, preserved by that same rule. An L2 pull in flight (`doctrine/surfacing-ladder.md`)
-is the same case folded in: the gate state never leaves L1, so preserving the gate awaiting the user
+awaiting the user, preserved by that same rule. A brief pull in flight (`doctrine/briefs.md`)
+is the same case folded in: the gate never leaves the picker, so preserving the gate awaiting the user
 carries the pending paste-back too.
 
 ## Code Doctrine

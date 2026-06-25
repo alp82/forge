@@ -929,11 +929,11 @@ def _make_doctrine_root(
     workflow_content=None,
     code_doctrine_content=None,
     claude_md_content=None,
-    surfacing_ladder_content=None,
+    briefs_content=None,
     include_workflow=True,
     include_code_doctrine=True,
     include_claude_md=True,
-    include_surfacing_ladder=True,
+    include_briefs=True,
 ):
     """Build a minimal repo root in tmp_path with controlled doctrine files.
 
@@ -967,16 +967,14 @@ def _make_doctrine_root(
             # If no CLAUDE.md entry exists yet, write a placeholder (will fail
             # phrase checks, which is correct for a not-yet-implemented test).
             claude_md_content = "# CLAUDE.md\n(placeholder - no canary phrase found)\n"
-    if surfacing_ladder_content is None:
-        # Build content that includes the surfacing-ladder leitwort dynamically,
+    if briefs_content is None:
+        # Build content that includes the briefs leitwort dynamically,
         # mirroring the claude_md default so a green-path root scores 100.
-        leitwort = _get_phrase_for("doctrine/surfacing-ladder.md")
+        leitwort = _get_phrase_for("doctrine/briefs.md")
         if leitwort is not None:
-            surfacing_ladder_content = f"# Surfacing Ladder\n{leitwort}\n"
+            briefs_content = f"# Briefs\n{leitwort}\n"
         else:
-            surfacing_ladder_content = (
-                "# surfacing-ladder\n(placeholder - no leitwort phrase found)\n"
-            )
+            briefs_content = "# briefs\n(placeholder - no leitwort phrase found)\n"
 
     if include_workflow:
         (tmp_path / "WORKFLOW.md").write_text(workflow_content, encoding="utf-8")
@@ -987,10 +985,8 @@ def _make_doctrine_root(
         (doctrine_dir / "code-doctrine.md").write_text(
             code_doctrine_content, encoding="utf-8"
         )
-    if include_surfacing_ladder:
-        (doctrine_dir / "surfacing-ladder.md").write_text(
-            surfacing_ladder_content, encoding="utf-8"
-        )
+    if include_briefs:
+        (doctrine_dir / "briefs.md").write_text(briefs_content, encoding="utf-8")
 
     if include_claude_md:
         (tmp_path / "CLAUDE.md").write_text(claude_md_content, encoding="utf-8")
@@ -1092,7 +1088,7 @@ def test_h12_all_phrases_absent_exactly_five_fixes(tmp_path):
         workflow_content="# WORKFLOW\nno relevant phrases here\n",
         code_doctrine_content="# code-doctrine\nno relevant phrases here\n",
         claude_md_content="# CLAUDE.md\nno relevant phrases here\n",
-        surfacing_ladder_content="# surfacing-ladder\nno relevant phrases here\n",
+        briefs_content="# briefs\nno relevant phrases here\n",
     )
     _, fixes = audit._score_doctrine_integrity(root)
     assert len(fixes) == len(audit.DOCTRINE_PHRASES), (
@@ -1350,10 +1346,10 @@ def test_h21_subprocess_scorecard_json_has_doctrine_integrity():
 
 
 def test_phrases_length_is_five():
-    """PHRASES-01: audit.DOCTRINE_PHRASES has exactly 5 entries (4 prior + surfacing-ladder)."""
+    """PHRASES-01: audit.DOCTRINE_PHRASES has exactly 5 entries (4 prior + briefs)."""
     assert len(audit.DOCTRINE_PHRASES) == 5, (
         f"DOCTRINE_PHRASES must have exactly 5 entries "
-        f"(3 originals + CLAUDE.md + surfacing-ladder); "
+        f"(3 originals + CLAUDE.md + briefs); "
         f"got {len(audit.DOCTRINE_PHRASES)}: {audit.DOCTRINE_PHRASES!r}"
     )
 
