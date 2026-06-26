@@ -42,4 +42,13 @@ Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/
 
 ## Output (strict)
 
-Each finding's description names the a11y violation, the WCAG criterion when applicable, and the impact on users.
+Each finding's description names the a11y violation, the WCAG criterion when applicable, and the impact on users. Follows the Reviewer Contract Base output format; the `SIGNALS_PUBLISHED:` line is the last line inside the fence.
+
+```
+VERDICT: [pass | fail | warn]
+FINDINGS:
+- [likely|unsure] [file_path:line] - [a11y violation, WCAG criterion, user impact]
+(empty if pass, max 5 issues, [likely] findings first)
+ACTION_NEEDED: [specific fix instructions, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:a11y]
+```

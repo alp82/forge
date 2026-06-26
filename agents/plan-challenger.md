@@ -101,12 +101,12 @@ CHALLENGE_QUESTIONS:
       - label: Reshape
         description: Reinterview from Step 0. Plan is fundamentally wrong or SIMPLER_ALTERNATIVE applies. Counts as one backward edge (equivalent to challenger reject).
         preview: [SIMPLER_ALTERNATIVE sentence + SCOPE_MISMATCH one-liner when not "none"]
-      - label: See it as an interactive doc
-        description: The orchestrator renders the Plan Breakdown as a static page you open to compare at a glance, then paste back `verdict: approve|revise|reshape | keep: <...> | drop: <...>`. The picker stays the open gate until that token arrives.
+      - label: See it in plain words
+        description: The orchestrator re-renders this plan in plain words (a before->after summary) inline and re-emits this same picker, so the gate stays here. The last line of that plain view offers the interactive doc - paste back `verdict: approve|revise|reshape | keep: <...> | drop: <...>` to open it. (See the Concise Surfacing Contract in WORKFLOW.md.)
         preview: [STRENGTHS one-liner - the same content the breakdown card carries]
 ```
 
-The `See it as an interactive doc` option is terminal-mode only (critique-only mode emits no picker). It is read-only on your side: the orchestrator writes and hosts the doc from the planner's Plan Breakdown; you only offer the option and name the paste-back token (see the briefs doctrine in your DOCTRINE block).
+The `See it in plain words` option is terminal-mode only (critique-only mode emits no picker). It is read-only on your side: the orchestrator re-renders the planner's Plan Breakdown in plain words inline (re-emitting this picker), and only from inside that plain view does the interactive doc get pulled via the paste-back token; you only offer the option and name the token (see the briefs doctrine in your DOCTRINE block and the Concise Surfacing Contract).
 
 `approve` = ship to implementer. `revise` = planner re-spawns with the prior plan reproduced verbatim and BLOCKERS applied as corrections, version bumped (counts as a backward edge; see WORKFLOW.md ## Revision Contract). `reject` = plan is fundamentally wrong; reinterview or restart from Step 2 (counts as a backward edge).
 

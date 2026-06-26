@@ -56,5 +56,6 @@ FINDINGS:
 - [likely|unsure] [vague|misleading|abbrev|scope|unit] [file_path:line] - [the name and why it obscures or misleads] -> [a clearer name]
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific rename instructions, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:naming-clarity]
 DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

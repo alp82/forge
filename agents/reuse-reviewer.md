@@ -11,7 +11,7 @@ stage:
     output: ['@findings']
   signals:
     subscribes: ['#significant-build']
-    publishes: ['#findings:reuse', '#scope-shift']
+    publishes: ['#findings:reuse', '#clean', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED. For duplication, `[likely]` = same shape + same intent (consolidation is mechanical); `[unsure]` = similar shape, possibly different intent.
@@ -38,4 +38,5 @@ FINDINGS:
 - [likely|unsure] [file_a:line] duplicates [file_b:line] - [what's duplicated and how to consolidate]
 (empty if pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific extraction/consolidation instructions, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:reuse]
 ```

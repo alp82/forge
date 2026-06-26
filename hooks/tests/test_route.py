@@ -2051,7 +2051,7 @@ _gen_catalog_spec.loader.exec_module(_gen_catalog)
 # --- RC3-A01 ---
 def test_extract_input_template_happy_path():
     """extract_input_template returns the inner fence text for a well-formed ## Input section."""
-    fn = getattr(_gen_catalog, "extract_input_template")
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Input")
     text = "## Input\n\n```\n<FOO>bar</FOO>\n```\n"
     assert (
         fn(text) == "<FOO>bar</FOO>\n"
@@ -2061,7 +2061,7 @@ def test_extract_input_template_happy_path():
 # --- RC3-A02 ---
 def test_extract_input_template_no_heading():
     """extract_input_template returns '' when no ## Input section exists."""
-    fn = getattr(_gen_catalog, "extract_input_template")
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Input")
     text = "## Output\n\n```\nfoo\n```\n"
     assert fn(text) == "", f"expected empty string, got {fn(text)!r}"
 
@@ -2069,7 +2069,7 @@ def test_extract_input_template_no_heading():
 # --- RC3-A03 ---
 def test_extract_input_template_heading_no_fence():
     """extract_input_template returns '' when ## Input has no fence before the next ## heading."""
-    fn = getattr(_gen_catalog, "extract_input_template")
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Input")
     text = "## Input\n\nSome prose without a fence.\n\n## Output\n\n```\nfoo\n```\n"
     assert (
         fn(text) == ""
@@ -2079,7 +2079,7 @@ def test_extract_input_template_heading_no_fence():
 # --- RC3-A04 ---
 def test_extract_input_template_stops_at_next_heading():
     """The fence under a later ## Output section is NOT captured when ## Input has no fence."""
-    fn = getattr(_gen_catalog, "extract_input_template")
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Input")
     # ## Input has no fence; ## Output has one - must not bleed through
     text = "## Input\n\nNo fence here.\n\n## Output\n\n```\ncaptured-wrongly\n```\n"
     result = fn(text)
@@ -2093,7 +2093,7 @@ def test_extract_input_template_stops_at_next_heading():
 # --- RC3-A05 ---
 def test_extract_input_template_empty_fence():
     """extract_input_template returns '' for an empty fence (open immediately closed)."""
-    fn = getattr(_gen_catalog, "extract_input_template")
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Input")
     text = "## Input\n\n```\n```\n"
     assert fn(text) == "", f"expected empty string for empty fence, got {fn(text)!r}"
 
@@ -2101,7 +2101,7 @@ def test_extract_input_template_empty_fence():
 # --- RC3-A06 ---
 def test_extract_input_template_two_headings_first_wins():
     """Two ## Input headings - only the first match's block is returned."""
-    fn = getattr(_gen_catalog, "extract_input_template")
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Input")
     text = (
         "## Input\n\n```\nfirst-block\n```\n\n" "## Input\n\n```\nsecond-block\n```\n"
     )
@@ -2714,6 +2714,587 @@ def test_injected_psychology_block_carries_anchor_and_vocalize_directive():
     assert (
         "restate your Anchor above in your own voice" in ctx
     ), "the vocalize directive must ship once in the psychology block"
+
+
+# ---------------------------------------------------------------------------
+# RC4: _extract_fenced_block (## Output (strict)), catalog.output_template, check_catalog canary
+# ---------------------------------------------------------------------------
+# These exercise _gen_catalog._extract_fenced_block bound to the "## Output (strict)"
+# heading - the shared fenced-block extractor that lands SIGNALS_PUBLISHED in output_template.
+
+
+# --- RC4-A01 ---
+def test_extract_output_template_happy_path():
+    """extract_output_template returns inner fence text for a well-formed ## Output (strict) section."""
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Output (strict)")
+    text = "## Output (strict)\n\n```\nSIGNALS_PUBLISHED: #clean\n```\n"
+    result = fn(text)
+    assert (
+        result == "SIGNALS_PUBLISHED: #clean\n"
+    ), f"expected inner fence text, got {result!r}"
+
+
+# --- RC4-A02 ---
+def test_extract_output_template_no_heading():
+    """extract_output_template returns '' when no ## Output (strict) section exists."""
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Output (strict)")
+    text = "## Input\n\n```\n<FOO>bar</FOO>\n```\n"
+    assert fn(text) == "", f"expected empty string, got {fn(text)!r}"
+
+
+# --- RC4-A03 ---
+def test_extract_output_template_heading_no_fence():
+    """extract_output_template returns '' when ## Output (strict) has no fence before the next ## heading."""
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Output (strict)")
+    text = "## Output (strict)\n\nSome prose, no fence.\n\n## Next Section\n\n```\nfoo\n```\n"
+    assert (
+        fn(text) == ""
+    ), f"expected empty string (no fence under ## Output (strict)), got {fn(text)!r}"
+
+
+# --- RC4-A04 ---
+def test_extract_output_template_stops_at_next_heading():
+    """A fence under a later section does NOT bleed into the return value."""
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Output (strict)")
+    text = "## Output (strict)\n\nNo fence here.\n\n## Later\n\n```\ncaptured-wrongly\n```\n"
+    result = fn(text)
+    assert "captured-wrongly" not in result, (
+        "fence under a later ## heading must not bleed into ## Output (strict) extraction, "
+        f"got {result!r}"
+    )
+    assert result == "", f"expected '', got {result!r}"
+
+
+# --- RC4-A05 ---
+def test_extract_output_template_empty_fence():
+    """extract_output_template returns '' for an empty fence (open immediately closed)."""
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Output (strict)")
+    text = "## Output (strict)\n\n```\n```\n"
+    assert fn(text) == "", f"expected empty string for empty fence, got {fn(text)!r}"
+
+
+# --- RC4-A06 ---
+def test_extract_output_template_two_headings_first_wins():
+    """Two ## Output (strict) headings: only the first match's fence is returned."""
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Output (strict)")
+    text = (
+        "## Output (strict)\n\n```\nfirst-block\n```\n\n"
+        "## Output (strict)\n\n```\nsecond-block\n```\n"
+    )
+    result = fn(text)
+    assert result == "first-block\n", f"expected first block only, got {result!r}"
+    assert (
+        "second-block" not in result
+    ), "second ## Output (strict) block must not appear"
+
+
+# --- RC4-A07 ---
+def test_extract_output_template_exact_opener_guard():
+    """The opener matches the EXACT string '## Output (strict)', not startswith.
+
+    A file whose only Output-ish heading is '## Output discipline' (prose, no fence,
+    as in simplicity-reviewer) must yield ''. Same for bare '## Output' (discuss-style).
+    """
+    fn = lambda text: _gen_catalog._extract_fenced_block(text, "## Output (strict)")
+
+    # simplicity-reviewer pattern: ## Output discipline - prose heading, no fence
+    discipline_text = (
+        "## Output discipline\n\nName the replacement, show the shorter form.\n\n"
+        "## Floor\n\nDo not flag the floor.\n"
+    )
+    result_discipline = fn(discipline_text)
+    assert result_discipline == "", (
+        "'## Output discipline' must not match the exact '## Output (strict)' opener; "
+        f"got {result_discipline!r}"
+    )
+
+    # discuss-style: bare ## Output
+    bare_text = "## Output\n\n```\nsome content\n```\n"
+    result_bare = fn(bare_text)
+    assert result_bare == "", (
+        "'## Output' bare must not match '## Output (strict)'; " f"got {result_bare!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# RC4-B: catalog output_template field - real catalog assertions
+# ---------------------------------------------------------------------------
+
+
+# --- RC4-B01 ---
+def test_real_catalog_every_stage_has_output_template():
+    """Every stage entry in the regenerated catalog has an 'output_template' key of type str."""
+    cat = _real_catalog()
+    for name, stage in cat["stages"].items():
+        assert "output_template" in stage, f"{name}: missing 'output_template' field"
+        assert isinstance(
+            stage["output_template"], str
+        ), f"{name}: output_template must be str, got {type(stage['output_template'])}"
+
+
+# --- RC4-B02 ---
+def test_real_catalog_reviewer_stages_have_nonempty_output_template():
+    """The five core reviewer stages have non-empty output_template after RC4."""
+    cat = _real_catalog()
+    reviewer_stages = (
+        "correctness-reviewer",
+        "security-reviewer",
+        "acceptance-reviewer",
+        "reuse-reviewer",
+        "plan-adherence-reviewer",
+    )
+    for name in reviewer_stages:
+        tmpl = cat["stages"][name]["output_template"]
+        assert tmpl.strip(), f"{name}: output_template must be non-empty after RC4"
+
+
+# --- RC4-B03 ---
+def test_real_catalog_reviewer_output_template_contains_signals_published():
+    """Every reviewer's output_template contains the substring 'SIGNALS_PUBLISHED:'."""
+    cat = _real_catalog()
+    reviewer_stages = (
+        "correctness-reviewer",
+        "security-reviewer",
+        "acceptance-reviewer",
+        "reuse-reviewer",
+        "plan-adherence-reviewer",
+    )
+    for name in reviewer_stages:
+        tmpl = cat["stages"][name]["output_template"]
+        assert (
+            "SIGNALS_PUBLISHED:" in tmpl
+        ), f"{name}: output_template must contain 'SIGNALS_PUBLISHED:', got {tmpl!r}"
+
+
+# --- RC4-B04 ---
+def test_real_catalog_triage_output_template_empty():
+    """triage has no ## Output (strict) section - its output_template must be ''."""
+    cat = _real_catalog()
+    triage = cat["stages"]["triage"]
+    assert (
+        triage.get("output_template", "") == ""
+    ), f"triage output_template must be '', got {triage.get('output_template', '')!r}"
+
+
+# ---------------------------------------------------------------------------
+# RC4-C: check_catalog reviewer-signal canary (SIGNALS_PUBLISHED line)
+# ---------------------------------------------------------------------------
+
+# Helper: a reviewer-shaped stage for check_catalog canary tests.
+_REVIEWER_ROUTES = ["code", "sketch"]
+_REVIEWER_SUBS = ["code-written"]
+_REVIEWER_PUB_CLEAN = ["clean", "findings:correctness", "scope-shift"]
+_REVIEWER_PUB_FINDINGS = ["findings:correctness", "scope-shift"]
+
+
+def _reviewer_stage(pub=None, output_template=""):
+    """Build a synthetic reviewer stage (publishes 'findings:*' family, scope-shift)."""
+    if pub is None:
+        pub = list(_REVIEWER_PUB_CLEAN)
+    s = S(
+        _REVIEWER_ROUTES,
+        req=["diff"],
+        out=["findings"],
+        sub=_REVIEWER_SUBS,
+        pub=pub,
+    )
+    s["input_template"] = "<TOUCHED_FILES>stub</TOUCHED_FILES>\n"
+    s["output_template"] = output_template
+    return s
+
+
+# --- RC4-C01 ---
+def test_check_catalog_flags_reviewer_without_signals_published_in_output_template():
+    """A synthetic reviewer with pub=['clean','scope-shift'] and output_template=''
+    is flagged with a problem naming the stage and output_template/SIGNALS_PUBLISHED."""
+    stage = _reviewer_stage(pub=["clean", "scope-shift"], output_template="")
+    synthetic = {"stages": {"test-reviewer": stage}}
+    problems = check_catalog.check(synthetic)
+    matched = [
+        p
+        for p in problems
+        if "test-reviewer" in p and ("output_template" in p or "SIGNALS_PUBLISHED" in p)
+    ]
+    assert matched, (
+        f"check() must flag a reviewer with empty output_template; "
+        f"problems={problems}"
+    )
+
+
+# --- RC4-C02 ---
+def test_check_catalog_reviewer_with_clean_in_signals_published_not_flagged():
+    """A reviewer whose output_template contains a SIGNALS_PUBLISHED: line with #clean
+    is NOT flagged for the reviewer-signal canary."""
+    tmpl = "VERDICT: [pass | fail]\nSIGNALS_PUBLISHED: #clean\n"
+    stage = _reviewer_stage(pub=["clean", "scope-shift"], output_template=tmpl)
+    synthetic = {"stages": {"test-reviewer": stage}}
+    problems = check_catalog.check(synthetic)
+    canary_problems = [
+        p
+        for p in problems
+        if "test-reviewer" in p and ("output_template" in p or "SIGNALS_PUBLISHED" in p)
+    ]
+    assert not canary_problems, (
+        f"check() must NOT flag a reviewer with #clean in SIGNALS_PUBLISHED; "
+        f"problems={canary_problems}"
+    )
+
+
+# --- RC4-C03 ---
+def test_check_catalog_reviewer_missing_clean_in_signals_published_flagged():
+    """A reviewer declaring clean (pub contains 'clean') but whose SIGNALS_PUBLISHED line
+    lacks #clean is flagged."""
+    tmpl = "VERDICT: [pass | fail]\nSIGNALS_PUBLISHED: #findings:x\n"
+    stage = _reviewer_stage(pub=["clean", "scope-shift"], output_template=tmpl)
+    synthetic = {"stages": {"test-reviewer": stage}}
+    problems = check_catalog.check(synthetic)
+    matched = [
+        p
+        for p in problems
+        if "test-reviewer" in p
+        and ("output_template" in p or "SIGNALS_PUBLISHED" in p or "clean" in p)
+    ]
+    assert matched, (
+        f"check() must flag a reviewer whose SIGNALS_PUBLISHED line lacks #clean "
+        f"but pub declares clean; problems={problems}"
+    )
+
+
+# --- RC4-C04 ---
+def test_check_catalog_non_reviewer_not_flagged_for_signals_published():
+    """A non-reviewer stage (pub contains code-written, scope-shift, no findings:*)
+    with empty output_template is NOT flagged by the reviewer-signal canary."""
+    stage = S(
+        ["code"],
+        req=["plan"],
+        out=["diff"],
+        sub=["plan-ready"],
+        pub=["code-written", "scope-shift"],
+    )
+    stage["input_template"] = "<PLAN>stub</PLAN>\n"
+    stage["output_template"] = ""
+    synthetic = {"stages": {"code-implementer": stage}}
+    problems = check_catalog.check(synthetic)
+    canary_problems = [
+        p
+        for p in problems
+        if "code-implementer" in p
+        and ("output_template" in p or "SIGNALS_PUBLISHED" in p)
+    ]
+    assert not canary_problems, (
+        f"non-reviewer stage must NOT be flagged by reviewer-signal canary; "
+        f"problems={canary_problems}"
+    )
+
+
+# --- RC4-C05 ---
+def test_check_catalog_reviewer_signals_published_outside_fence_flagged():
+    """A reviewer whose SIGNALS_PUBLISHED line is in the file body but NOT inside the
+    captured output_template (fence) is still flagged as missing the line in the template.
+    """
+    # output_template is empty (the ## Output (strict) fence was absent or empty),
+    # so the canary sees no SIGNALS_PUBLISHED: in the captured template.
+    stage = _reviewer_stage(pub=["clean", "scope-shift"], output_template="")
+    synthetic = {"stages": {"test-reviewer": stage}}
+    problems = check_catalog.check(synthetic)
+    matched = [
+        p
+        for p in problems
+        if "test-reviewer" in p and ("output_template" in p or "SIGNALS_PUBLISHED" in p)
+    ]
+    assert matched, (
+        "SIGNALS_PUBLISHED outside the fence (empty output_template) must be flagged; "
+        f"problems={problems}"
+    )
+
+
+# --- RC4-C06 ---
+def test_check_catalog_reviewer_family_findings_signal():
+    """Family-aware canary: a reviewer publishing findings:acceptance whose SIGNALS_PUBLISHED
+    line lacks #findings is flagged; one with #findings is not flagged."""
+    # Missing #findings in SIGNALS_PUBLISHED -> flagged
+    tmpl_bad = "VERDICT: [pass | fail]\nSIGNALS_PUBLISHED: #scope-shift\n"
+    stage_bad = _reviewer_stage(
+        pub=["findings:acceptance", "scope-shift"], output_template=tmpl_bad
+    )
+    synthetic_bad = {"stages": {"acceptance-reviewer": stage_bad}}
+    problems_bad = check_catalog.check(synthetic_bad)
+    matched = [
+        p
+        for p in problems_bad
+        if "acceptance-reviewer" in p
+        and ("output_template" in p or "SIGNALS_PUBLISHED" in p or "findings" in p)
+    ]
+    assert matched, (
+        "check() must flag acceptance-reviewer whose SIGNALS_PUBLISHED lacks #findings; "
+        f"problems={problems_bad}"
+    )
+
+    # Has #findings in SIGNALS_PUBLISHED -> not flagged for canary
+    tmpl_good = "VERDICT: [pass | fail]\nSIGNALS_PUBLISHED: #findings\n"
+    stage_good = _reviewer_stage(
+        pub=["findings:acceptance", "scope-shift"], output_template=tmpl_good
+    )
+    synthetic_good = {"stages": {"acceptance-reviewer": stage_good}}
+    problems_good = check_catalog.check(synthetic_good)
+    canary_problems = [
+        p
+        for p in problems_good
+        if "acceptance-reviewer" in p
+        and ("output_template" in p or "SIGNALS_PUBLISHED" in p)
+    ]
+    assert not canary_problems, (
+        "check() must NOT flag acceptance-reviewer with #findings in SIGNALS_PUBLISHED; "
+        f"problems={canary_problems}"
+    )
+
+
+# --- RC4-C07 ---
+def test_check_catalog_non_reviewer_publishing_findings_lens_not_flagged():
+    """Discriminator narrowing: a stage that publishes a findings:* signal but whose data
+    output is NOT bare `findings` (a non-reviewer like plan-challenger/researcher/adr-drafter)
+    is NOT flagged by the SIGNALS_PUBLISHED canary, even with an empty output_template.
+    """
+    stage = S(
+        ["code"],
+        req=["plan"],
+        out=["plan-challenge"],
+        sub=["plan-ready"],
+        pub=["findings:challenge", "scope-shift"],
+    )
+    stage["input_template"] = "<PLAN>stub</PLAN>\n"
+    stage["output_template"] = ""
+    synthetic = {"stages": {"plan-challenger": stage}}
+    problems = check_catalog.check(synthetic)
+    canary_problems = [
+        p
+        for p in problems
+        if "plan-challenger" in p
+        and ("output_template" in p or "SIGNALS_PUBLISHED" in p)
+    ]
+    assert not canary_problems, (
+        "a stage publishing findings:* but emitting a non-findings artifact is not a "
+        f"reviewer and must not trip the SIGNALS_PUBLISHED canary; problems={canary_problems}"
+    )
+
+
+# --- RC4-C08 ---
+def test_check_catalog_reviewer_findings_lens_mismatch_flagged():
+    """Tightened lens-match: a reviewer publishing findings:right whose SIGNALS_PUBLISHED line
+    names #findings:wrong IS flagged; one whose line names #findings:right is NOT."""
+    tmpl_bad = (
+        "VERDICT: [pass | fail]\nSIGNALS_PUBLISHED: [#clean OR #findings:wrong]\n"
+    )
+    stage_bad = _reviewer_stage(
+        pub=["findings:right", "clean", "scope-shift"], output_template=tmpl_bad
+    )
+    synthetic_bad = {"stages": {"test-reviewer": stage_bad}}
+    problems_bad = check_catalog.check(synthetic_bad)
+    matched = [p for p in problems_bad if "test-reviewer" in p and "findings" in p]
+    assert matched, (
+        "a reviewer whose SIGNALS_PUBLISHED lens does not match a published findings lens "
+        f"must be flagged; problems={problems_bad}"
+    )
+
+    tmpl_good = (
+        "VERDICT: [pass | fail]\nSIGNALS_PUBLISHED: [#clean OR #findings:right]\n"
+    )
+    stage_good = _reviewer_stage(
+        pub=["findings:right", "clean", "scope-shift"], output_template=tmpl_good
+    )
+    synthetic_good = {"stages": {"test-reviewer": stage_good}}
+    problems_good = check_catalog.check(synthetic_good)
+    canary_problems = [
+        p
+        for p in problems_good
+        if "test-reviewer" in p
+        and ("output_template" in p or "SIGNALS_PUBLISHED" in p or "findings" in p)
+    ]
+    assert not canary_problems, (
+        "a reviewer whose SIGNALS_PUBLISHED lens matches its published findings lens must "
+        f"NOT be flagged; problems={canary_problems}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# RC4-D: four reviewers gain #clean in frontmatter (real catalog)
+# ---------------------------------------------------------------------------
+
+
+# --- RC4-D01 ---
+def test_real_catalog_acceptance_reviewer_publishes_clean():
+    """acceptance-reviewer has 'clean' in signals.publishes after RC4."""
+    cat = _real_catalog()
+    pubs = cat["stages"]["acceptance-reviewer"]["signals"]["publishes"]
+    assert "clean" in pubs, f"acceptance-reviewer must publish 'clean', got {pubs}"
+
+
+# --- RC4-D02 ---
+def test_real_catalog_reuse_reviewer_publishes_clean():
+    """reuse-reviewer has 'clean' in signals.publishes after RC4."""
+    cat = _real_catalog()
+    pubs = cat["stages"]["reuse-reviewer"]["signals"]["publishes"]
+    assert "clean" in pubs, f"reuse-reviewer must publish 'clean', got {pubs}"
+
+
+# --- RC4-D03 ---
+def test_real_catalog_plan_adherence_reviewer_publishes_clean():
+    """plan-adherence-reviewer has 'clean' in signals.publishes after RC4."""
+    cat = _real_catalog()
+    pubs = cat["stages"]["plan-adherence-reviewer"]["signals"]["publishes"]
+    assert "clean" in pubs, f"plan-adherence-reviewer must publish 'clean', got {pubs}"
+
+
+# --- RC4-D04 ---
+def test_real_catalog_security_reviewer_publishes_clean():
+    """security-reviewer has 'clean' in signals.publishes after RC4."""
+    cat = _real_catalog()
+    pubs = cat["stages"]["security-reviewer"]["signals"]["publishes"]
+    assert "clean" in pubs, f"security-reviewer must publish 'clean', got {pubs}"
+
+
+# --- RC4-D05 ---
+def test_check_catalog_no_orphan_clean_error_after_rc4():
+    """check_catalog.check(real_catalog) has no 'no publisher for clean' orphan error
+    after the four reviewers gain #clean in frontmatter."""
+    problems = check_catalog.check(_real_catalog())
+    clean_orphan = [p for p in problems if "clean" in p and "no publisher" in p]
+    assert (
+        not clean_orphan
+    ), f"no orphan-publisher error for 'clean' expected after RC4; got {clean_orphan}"
+
+
+# ---------------------------------------------------------------------------
+# RC4-E: release version bump to 1.2.18
+# ---------------------------------------------------------------------------
+
+
+# --- RC4-E01 ---
+def test_plugin_json_version_1_2_18():
+    """plugin.json version must be '1.2.18' after RC4."""
+    plugin_path = Path(__file__).resolve().parents[2] / ".claude-plugin" / "plugin.json"
+    data = json.loads(plugin_path.read_text(encoding="utf-8"))
+    assert (
+        data["version"] == "1.2.18"
+    ), f"plugin.json version must be '1.2.18', got {data['version']!r}"
+
+
+# --- RC4-E02 ---
+def test_marketplace_json_version_1_2_18_matches_plugin():
+    """marketplace.json version must be '1.2.18' and equal plugin.json."""
+    base = Path(__file__).resolve().parents[2] / ".claude-plugin"
+    plugin_ver = json.loads((base / "plugin.json").read_text(encoding="utf-8"))[
+        "version"
+    ]
+    market_ver = json.loads((base / "marketplace.json").read_text(encoding="utf-8"))[
+        "metadata"
+    ]["version"]
+    assert (
+        market_ver == "1.2.18"
+    ), f"marketplace.json version must be '1.2.18', got {market_ver!r}"
+    assert (
+        market_ver == plugin_ver
+    ), f"marketplace.json version {market_ver!r} must equal plugin.json {plugin_ver!r}"
+
+
+# --- RC4-E03 ---
+def test_changelog_contains_1_2_18():
+    """CHANGELOG.md must contain '## 1.2.18' after RC4."""
+    changelog_path = Path(__file__).resolve().parents[2] / "CHANGELOG.md"
+    content = changelog_path.read_text(encoding="utf-8")
+    assert (
+        "## 1.2.18" in content
+    ), "CHANGELOG.md must contain '## 1.2.18' after the RC4 version bump"
+
+
+# ---------------------------------------------------------------------------
+# RC4-F: idempotency + no-drift (extends RC3-D)
+# ---------------------------------------------------------------------------
+
+
+# --- RC4-F01 ---
+def test_build_catalog_idempotent_with_output_template():
+    """build_catalog() twice yields byte-identical JSON (sort_keys) with output_template populated."""
+    first = json.dumps(_gen_catalog.build_catalog(), sort_keys=True)
+    second = json.dumps(_gen_catalog.build_catalog(), sort_keys=True)
+    assert first == second, "build_catalog() must be idempotent"
+    # Verify output_template is present so the idempotency check is meaningful
+    cat = _gen_catalog.build_catalog()
+    for name, stage in cat["stages"].items():
+        assert (
+            "output_template" in stage
+        ), f"{name}: output_template missing from build_catalog() output"
+
+
+# --- RC4-F02 ---
+def test_catalog_no_drift_from_committed_with_output_template():
+    """committed generated/catalog.json == build_catalog() output byte-for-byte,
+    including the output_template field (must be regenerated+committed after RC4)."""
+    committed_path = Path(__file__).resolve().parents[2] / "generated" / "catalog.json"
+    committed = json.loads(committed_path.read_text(encoding="utf-8"))
+    live = _gen_catalog.build_catalog()
+    assert json.dumps(live, sort_keys=True) == json.dumps(
+        committed, sort_keys=True
+    ), "build_catalog() output differs from committed catalog.json - regenerate after RC4"
+
+
+# ---------------------------------------------------------------------------
+# RC4-G: doctrine prose anchors (observable)
+# ---------------------------------------------------------------------------
+
+
+# --- RC4-G01 ---
+def test_workflow_convergence_region_references_signals_published():
+    """WORKFLOW.md convergence region references SIGNALS_PUBLISHED as the token
+    the orchestrator reads for convergence."""
+    workflow_path = Path(__file__).resolve().parents[2] / "WORKFLOW.md"
+    text = workflow_path.read_text(encoding="utf-8")
+    # Find the paragraph containing the convergence clause
+    assert (
+        "came back `clean`" in text
+    ), "WORKFLOW.md must contain the convergence phrase 'came back `clean`'"
+    # The SIGNALS_PUBLISHED token must appear near enough to the convergence directive
+    # to be the referenced mechanism (present anywhere in WORKFLOW.md is the minimal bar)
+    assert "SIGNALS_PUBLISHED" in text, (
+        "WORKFLOW.md must reference 'SIGNALS_PUBLISHED' as the convergence token "
+        "the orchestrator reads"
+    )
+
+
+# --- RC4-G02 ---
+def test_reviewer_contract_base_output_format_contains_signals_published():
+    """doctrine/reviewer-contract.md Base output format block contains 'SIGNALS_PUBLISHED:'."""
+    contract_path = (
+        Path(__file__).resolve().parents[2] / "doctrine" / "reviewer-contract.md"
+    )
+    text = contract_path.read_text(encoding="utf-8")
+    assert "SIGNALS_PUBLISHED:" in text, (
+        "doctrine/reviewer-contract.md Base output format block must contain "
+        "'SIGNALS_PUBLISHED:'"
+    )
+
+
+# --- RC4-G03 ---
+def test_reviewer_contract_has_published_signal_mapping_subsection():
+    """doctrine/reviewer-contract.md contains the published-signal-mapping subsection
+    describing pass/warn -> #clean, fail -> #findings:<lens>, partial -> #findings:acceptance.
+    """
+    contract_path = (
+        Path(__file__).resolve().parents[2] / "doctrine" / "reviewer-contract.md"
+    )
+    text = contract_path.read_text(encoding="utf-8")
+    # pass/warn maps to #clean
+    assert (
+        "#clean" in text
+    ), "reviewer-contract.md must document #clean signal in the signal-mapping subsection"
+    # fail maps to #findings:<lens>
+    assert (
+        "#findings:" in text
+    ), "reviewer-contract.md must document #findings:<lens> in the signal-mapping subsection"
+    # partial maps to #findings:acceptance
+    assert (
+        "#findings:acceptance" in text
+    ), "reviewer-contract.md must document #findings:acceptance in the signal-mapping subsection"
 
 
 if __name__ == "__main__":

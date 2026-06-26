@@ -115,9 +115,9 @@ Each turn (the loop is **card-only**: the render card carries the why, mechanism
      - **Per-milestone (only when the milestone loop ran)** = above the group breakdown, one line per milestone `milestone k of N - <time>`, summing the `duration_ms` of the stages dispatched within that milestone. Omit this block entirely on a single-pass build.
      - Format durations human-readable: `<m>m <ss>s` at/above a minute, `<s>s` below (e.g. `4m 12s`, `41s`).
 3. **Run** the next not-yet-run stage in route order. Held stages are NOT in `route` - a lock keeps a held stage out of the dispatch list until its `until` signal fires (see `## Locks`). Silently spawn the running stage's agent (the `model` lives in the agent's frontmatter) and silently read its input contract; hand it the artifacts its `input` names, plus the `premises`. Pass each input as the **verbatim output** of the stage that produced it, never paraphrased, stubbed, or hand-written (Input Template Contract); if an `input` does not exist yet its producer has not run, so run the producer - **never fabricate a predecessor's artifact** to start a dependent stage early, which only forces the downstream stage to redo the missing work and degrades its output. When several stages each produce the same artifact (the three domain prototypers all emit `@prototypes`), concatenate each firing producer's verbatim output into that one SCOUT `<prototypes>` slot - never pick one and drop the rest. Stages that share inputs but feed none of each other - the Review wave over `@diff` is the canonical case - may run in one parallel batch; a stage whose `input` is another stage's `output` waits for that producer to return. Parallelism is for independent stages only; the `input`/`output` precedence graph is the one rule never bent (`doctrine/CATALOG.md`). Spawn each stage at the cheapest model its frontmatter allows, and expect a **structured return, not a transcript** (Context Discipline) - the agent's wrapped output block is the artifact; its reasoning and reads stay behind it. Do not paste a subagent's full output into the conversation; surface only the line(s) the render, the next stage, or a gate actually needs. **Hang-prone stages run in the background.** Stages that do network I/O or hold a tool budget - the researcher, the investigators, web-using reviewers like security-reviewer, and every parallel review wave (one hung member otherwise freezes the batch) - are hang-prone, and so are the side-effecting stages (`code-implementer`, `fixer`, `test-author`, `system-executor`): a stage that edits the tree can stall mid-write, and backgrounding it is safe because the working tree it leaves behind is exactly the durable record `## Recovery` reconciles from. The orchestrator dispatches each with background Agent dispatch (`Agent(run_in_background: true)`), keeps its task handle, and watches it two ways: a completion push (the task's own finish notification) is the normal end, and a watchdog catches the stage that never pushes - it `stat`s the agent's transcript for an mtime freeze (no size or mtime change for ~120s; it never reads the transcript content, only its file metadata) and also holds an absolute wall-clock deadline as the hard ceiling. Whichever fires first, it stops the task (`TaskStop(task_id)`) and treats it as a missing output. Cheap deterministic stages (triage, the router call) run in the foreground as before. **This is the one case where a stage spans turns:** a backgrounded stage does not complete in the turn it is dispatched. The orchestrator dispatches it, keeps cranking the loop - render and recompose per steps 1-2 - while it runs, and reaps it when its completion notification lands or its deadline fires; the watchdog reap *is* that deadline check. Reconcile with "run the next not-yet-run stage" above: a backgrounded stage is dispatched-and-awaited across turns, not run-to-return inside one turn. On a breach - mtime freeze or absolute deadline - `TaskStop` it and treat it exactly as a missing output, recovered per `## Recovery`: a read-only stage re-dispatches (bounded one retry, then surface), and a side-effecting stage reconciles from the working tree it left behind rather than re-running blind. That read-only re-dispatch is the same stage re-run, not a scope-shift, so it is not a backward edge and is bounded like the oscillation guard - one retry, then surface. A background stage in flight must also survive compaction or be recoverable: `hooks/reinject-canonical-state.sh` does not persist a live task handle, so a handle lost to compaction is a missing output - recovered by the same `## Recovery` branch for the mid-run stage (`## Compaction` already flags the mid-run stage for manual preservation). Where a runtime lacks background Agent dispatch, run the stage in the foreground and lean on the agent's OWN tool budget as the sole cap - the partial-return rule each web-using hang-prone agent carries. A synchronous foreground subagent holds the orchestrator until it returns, so the cap lives inside the agent and the missing-output rule catches an empty or explicitly-partial RETURN. Foreground is the degraded fallback: the cap rides inside the agent rather than in a mid-run watchdog.
-4. **Update.** Silently add the stage's `output` artifacts to `available`, its published `#signals` to `live` (each carries a one-line message = the why), and record it in `ran`. The two are different keys, never conflated: `triage`'s artifact `@confirmed-intent` lands in `available`, while its signal `#intent-confirmed` lands in `live`. A published `scope-shift` logs a broken premise. These updates are the state the next turn's step 1 recomposes from.
+4. **Update.** Silently add the stage's `output` artifacts to `available`, its published `#signals` to `live` (each carries a one-line message = the why), and record it in `ran`. The two are different keys, never conflated: `triage`'s artifact `@confirmed-intent` lands in `available`, while its signal `#intent-confirmed` lands in `live`. A published `scope-shift` logs a broken premise. For a reviewer, the published signal is read from the explicit `SIGNALS_PUBLISHED:` token inside its output (see `doctrine/reviewer-contract.md` ### Published-signal line), not inferred from VERDICT prose. These updates are the state the next turn's step 1 recomposes from.
 
-Repeat until **convergence**: the router returns an empty route AND an empty `held` map (no live signal triggers an unrun stage, no stage is waiting on an unmet `until`) and every Review lens that ran came back `clean`. A non-empty `held` map is never convergence - it is either a pending plan-approval the orchestrator owes (emit/surface it, see `## Convergence` > Stall guard) or, on `#abandon`, a dropped stage.
+Repeat until **convergence**: the router returns an empty route AND an empty `held` map (no live signal triggers an unrun stage, no stage is waiting on an unmet `until`) and every Review lens that ran came back `clean`. A lens "came back `clean`" is read from its explicit `SIGNALS_PUBLISHED:` token (`doctrine/reviewer-contract.md` ### Published-signal line), NOT inferred from VERDICT prose. A non-empty `held` map is never convergence - it is either a pending plan-approval the orchestrator owes (emit/surface it, see `## Convergence` > Stall guard) or, on `#abandon`, a dropped stage.
 
 ### Seed and path
 
@@ -227,7 +227,9 @@ diagnosis or a plan, Document's per-item approvals).
 
 **Description vs. preview**: `description` carries the essence plus, for any non-trivial
 decision (one that sets a value, data shape, behavior, or UI result), one concrete example
-of what the choice produces (e.g. `wrapped -> {users:[...]}` vs `bare -> [...]`). The
+of what the choice produces (e.g. `wrapped -> {users:[...]}` vs `bare -> [...]`). This is
+the DEFAULT shape for every surfaced explanation at a decision point: plain words first,
+then a concrete before->after (or input->output) example, jargon cut. The
 example is load-bearing - lead with it, cut hedges to make room. Bare yes/no and fixed
 process gates (Continue/Stop, Approve/Revise/Reshape) are exempt. `preview` is best-effort
 enrichment; never put load-bearing content there. The CLI supplies the "Other" escape -
@@ -239,7 +241,8 @@ renders the producer's Plan Breakdown verbatim inside the Full (A) render card s
 that gate, as native-markdown prose within the card (rendered, not fenced). It is a render-card surface, not inline prose and not `preview`: it carries the
 load-bearing plain-language summary that the card-only rule and the non-load-bearing
 `preview` rule both keep out of the wrong place. It is short and flows naturally - a plain
-summary with a concrete example and a small visual woven in - and is authored plain by the
+summary with a concrete example and a small visual woven in, where that example is the same
+before->after / input->output shape in plain words (the default above) - and is authored plain by the
 producer; the orchestrator relays it, it does not synthesize. This reconciles the exemption
 above: the fixed-process gates (Continue/Stop, Approve/Revise/Reshape) stay example-exempt
 in their option descriptions because the gate's required concrete example lives in the
@@ -257,12 +260,18 @@ the next round's `<PRIOR_ROUNDS>`.
 Revise (rerun planner with `BLOCKERS`) / Reshape (back to intent). `SCOPE_MISMATCH` surfaces
 inline alongside `BLOCKERS` and in the Reshape option's `preview`.
 
-**Brief escalation (render-only)**: above the inline card sits an optional brief - a render-only
-`.briefs/` page the user pulls by picking `See it as an interactive doc` (the one consistent
-label across every touchpoint) at a picker. A pulled brief closed without a paste-back leaves the
-gate PENDING: the picker stays the open gate until a verdict token arrives, so the gate
-never leaves the picker. See `doctrine/briefs.md` for the three surfaces, the per-surface tokens, and
-the lazy-build rule.
+**Brief escalation (render-only)**: this is the canonical home for the matched label pair and the
+coexistence mechanic. Four dense pickers (plan-challenger, plan-arbiter, interviewer intent-confirm,
+requirements-clarifier direction/confirm) carry ONE escape option, `See it in plain words` - an
+inline plain re-render that rides the picker as a single option (the question budget stays 4).
+Picking it makes the orchestrator re-render the SAME decision inline in plain before->after form (the
+Description-vs-preview default above) AND re-emit the SAME picker, so the gate STAYS at the picker -
+read off the pick, NOT a routing signal (cross-ref `## Locks`, Brief escalation, handled inline). The
+final line of that plain re-render offers the deeper `See it as an interactive doc` (the render-only
+`.briefs/` HTML page) via the EXISTING per-surface paste-back token - no new token, no second option slot.
+A pulled brief closed without a paste-back leaves the gate PENDING: the picker stays the open gate until a
+verdict token arrives, so the gate never leaves the picker. Escape-bearing stages reference this block.
+See `doctrine/briefs.md` for the three surfaces, the per-surface tokens, and the lazy-build rule.
 
 ## Convergence
 
@@ -346,7 +355,7 @@ Both implementers also carry a second, **unconditional** `{while:#plan-ready, un
 Each one-tap confirm renders the planner's Plan Breakdown in its card, and the gate's concrete example rides in that card breakdown, not in the option descriptions (which stay fixed-process example-exempt).
 
 **Brief escalation, handled inline.**
-- **Option, not a signal.** The `See it as an interactive doc` option is handled the same orchestrator-inline way as the trivial-code Hold: read off the pick, never a routing signal (same pattern as the trivial-code Hold escalation above).
+- **Option, not a signal.** Both `See it in plain words` (the inline plain re-render that rides the picker on the four dense pickers) and `See it as an interactive doc` (the `.briefs/` HTML page, pulled from inside that plain re-render) are handled the same orchestrator-inline way as the trivial-code Hold: read off the pick, never a routing signal (same pattern as the trivial-code Hold escalation above).
 - **Orchestrator writes, then waits.** On reading the pick, the ORCHESTRATOR performs the Write INLINE - before awaiting the paste-back - calling its own Write tool to produce `.briefs/<touchpoint>-<slug>.html`, then waits for the paste-back token. Surfacing agents stay read-only.
 
 See `doctrine/briefs.md` for the artifact list, the gate-stays-at-the-picker rule, the `safety-gate` special case, and the slug reduction rule.

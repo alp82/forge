@@ -62,5 +62,6 @@ FINDINGS:
 - [likely|unsure] [file_path:line] - [performance issue] - [expected impact] - [measurement approach]
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific fix instructions, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:perf]
 DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

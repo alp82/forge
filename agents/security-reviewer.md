@@ -12,7 +12,7 @@ stage:
     output: ['@findings']
   signals:
     subscribes: ['#auth-surface', '#secrets', '#perms-change']
-    publishes: ['#findings:security', '#scope-shift']
+    publishes: ['#findings:security', '#clean', '#scope-shift']
   guard: sticky
 ---
 
@@ -66,5 +66,6 @@ FINDINGS:
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific fix instructions, or "none"]
 NOTE: [a CVE/advisory source that would not load or a lookup left undone, and what is consequently unchecked - or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:security]
 DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

@@ -59,5 +59,6 @@ FINDINGS:
 - [likely|unsure] [input|contract|environment|ordering|cardinality] [file_path:line] - [the unstated premise and what breaks if it fails] -> [guard it | document it as a precondition | encode it in the type]
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific guard/document/type instructions, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:assumptions]
 DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

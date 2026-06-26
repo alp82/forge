@@ -2,6 +2,12 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.2.18 - 2026-06-26
+
+- At the points where the assistant asks you to settle direction, confirm intent, or sign off on a plan, you can now pick "See it in plain words" to have the same decision re-stated inline in plain language with a before/after example - and pull up the full interactive page from there if you want more.
+- Explanations at those decision points now lead with plain words and a concrete before/after (or input/output) example by default, with jargon trimmed.
+- Reviews now finish more reliably: each review reports its own clean-or-issues result explicitly, so the run no longer has to guess from the wording whether a check passed.
+
 ## 1.2.17 - 2026-06-25
 
 - When you ask to ship the work from a session, the run now offers to commit it, push the branch, and open a draft pull request for you - only after you confirm, and only when you ask.

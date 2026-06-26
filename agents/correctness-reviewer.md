@@ -64,5 +64,6 @@ FINDINGS:
 - [likely|unsure] [file_path:line] - [description of issue and why it matters]
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific fix instructions, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:correctness]
 DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

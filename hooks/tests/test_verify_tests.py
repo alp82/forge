@@ -26,6 +26,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import uuid
 from pathlib import Path
 
 # Path to the script under test (does not exist yet - tests are red by design)
@@ -78,7 +79,7 @@ def test_no_test_command_is_silent_pass():
 
     The script must exit 0 and emit nothing to stdout.
     """
-    session_id = "test-vt-1"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-test-verify-{session_id}")
     bare_dir = tempfile.mkdtemp()
     try:
@@ -111,7 +112,7 @@ def test_failing_tests_with_special_chars_emits_valid_json_block():
     Pins jq-injection safety and the mandatory block emission on failure.
     """
     assert shutil.which("npm"), "npm required to drive test output"
-    session_id = "test-vt-2"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-test-verify-{session_id}")
     test_dir = _make_failing_tests_dir()
     try:
@@ -165,7 +166,7 @@ def test_npm_default_placeholder_test_script_is_silent_pass():
         (r'echo "Error: no test specified" && exit 1', "npm-default-full"),
         (r'echo "Error"', "echo-Error-short"),
     ]:
-        session_id = f"test-vt-npm-{label}"
+        session_id = str(uuid.uuid4())
         marker = Path(f"/tmp/.claude-test-verify-{session_id}")
         test_dir = tempfile.mkdtemp()
         try:
@@ -210,7 +211,7 @@ def test_cargo_absent_from_path_is_silent_pass():
     cargo test, receives rc 127 (command not found), and silently skips via the
     rc-127 arm - a different path to the same silent outcome.
     """
-    session_id = "test-vt-asym"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-test-verify-{session_id}")
     test_dir = tempfile.mkdtemp()
     # A fake-bin dir that has python3 (symlinked) but no cargo, so the hook
@@ -255,7 +256,7 @@ def test_garbage_marker_does_not_short_circuit():
     must proceed to run the tests, find them failing, and emit a block decision.
     """
     assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = "test-vt-marker"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-test-verify-{session_id}")
     test_dir = _make_failing_tests_dir()
     try:
@@ -300,7 +301,7 @@ def test_retry_cap_second_call_is_not_blocked():
       4. Marker must be absent after the retry-cap exit so the gate re-arms.
     """
     assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = "test-vt-3"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-test-verify-{session_id}")
     test_dir = _make_failing_tests_dir()
     try:
@@ -349,7 +350,7 @@ def test_stop_hook_active_true_is_immediate_pass():
     The adversarial setup reuses the failing-tests dir so that a missed guard
     would produce a block and fail this test.
     """
-    session_id = "test-vt-4"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-test-verify-{session_id}")
     test_dir = _make_failing_tests_dir()
     try:
@@ -382,7 +383,7 @@ def test_passing_tests_is_silent_pass_and_leaves_no_marker():
     a marker behind.
     """
     assert shutil.which("npm"), "npm required to run the test script"
-    session_id = "test-vt-5"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-test-verify-{session_id}")
     test_dir = tempfile.mkdtemp()
     try:
@@ -425,7 +426,7 @@ def test_test_runner_rc127_is_silent_pass():
     Exercises the rc-127 arm without requiring a timeout.
     """
     assert shutil.which("npm"), "npm required to run the test script"
-    session_id = "test-vt-rc127"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-test-verify-{session_id}")
     test_dir = tempfile.mkdtemp()
     try:

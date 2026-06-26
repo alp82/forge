@@ -14,12 +14,14 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output - holds acceptance criteria}</CLARIFY_OUTPUT>\n<APPROVED_PLAN>{current APPROVED_PLAN block - includes Out of Scope}</APPROVED_PLAN>\n<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
       "name": "acceptance-reviewer",
+      "output_template": "VERDICT: [pass | partial | fail]\n\nREQUIREMENTS:\n- [likely|unsure] [fulfilled | partial | missing] [requirement text] - [file_path:line or \"not found\"]\n(one line per requirement from the intent/plan)\n\nACCEPTANCE_CRITERIA:\n- [likely|unsure] [met | unmet | unverified-manual] VALIDATION: [test|manual|observable] - [criterion] - [evidence: test file:line, observable location, or \"not found\" - for unverified-manual, the manual-check description from the plan]\n(one line per criterion from the plan's `## Acceptance`; skip when plan says `n/a - no acceptance criteria from clarifier`)\n\nSCOPE_DRIFT:\n- [likely|unsure] [added-beyond-scope | out-of-scope-implemented] [file_path:line] - [what and why it's drift]\n(empty if none)\n\nPARTIAL_OR_STUBBED:\n- [likely|unsure] [file_path:line] - [what's incomplete]\n(empty if none)\n\nACTION_NEEDED: [specific gaps to close, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:acceptance]\n",
       "routes": [
         "code"
       ],
       "signals": {
         "publishes": [
           "findings:acceptance",
+          "clean",
           "scope-shift"
         ],
         "subscribes": [
@@ -41,6 +43,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
       "name": "accessibility-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [a11y violation, WCAG criterion, user impact]\n(empty if pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:a11y]\n",
       "routes": [
         "code"
       ],
@@ -69,6 +72,7 @@
       },
       "input_template": "<DECISION_TITLE>{short title for the ADR, e.g. \"Use HTTP-only session cookies for auth\"}</DECISION_TITLE>\n<DECISION_SUMMARY>{1-3 sentences capturing the choice and the constraint it locks in}</DECISION_SUMMARY>\n<SOURCE>{free-text origin - e.g. \"manual /alp-river:adr entry by user on 2026-05-16\"}</SOURCE>\n<EXTRA_CONTEXT>{optional - additional context the user wants reflected in the Context section, or \"none\"}</EXTRA_CONTEXT>\n",
       "name": "adr-drafter",
+      "output_template": "VERDICT: drafted\n\nPROPOSED_FILENAME: NNNN-{kebab-title}.md\n(NNNN is \"next-free\" - the orchestrator computes the actual sequence; you propose the kebab-title slug only. Use \"NNNN\" as the literal placeholder.)\n\nDRAFT:\n---\nstatus: proposed\ndate: {today YYYY-MM-DD}\n---\n\n# NNNN - {Title}\n\n## Summary\n\n{1-3 sentences - the choice and the constraint it locks in}\n\n## Context\n\n{Forces at play - constraints from INTENT.md / STACK.md, prior commitments, what bounded the choice. Cite source files when you lift text. Include EXTRA_CONTEXT verbatim when present.}\n\n## Decision\n\nWe will {state the choice as a directive}. {Explain why. List alternatives that lost and why, or note \"no credible alternative considered\" when that's the truth.}\n\n## Consequences\n\n{What this forces on future work. Both sides - what becomes possible / cheap, what becomes hard / locked in.}\n\nSOURCE_RECORDED: {echo of <SOURCE> input - the orchestrator may add this to the file's tail or commit message}\n",
       "routes": [
         "code",
         "talk"
@@ -97,6 +101,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
       "name": "architecture-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nMODULES_ASSESSED: [module names or file paths reviewed, comma-separated]\nFINDINGS:\n- [likely|unsure] [depth|seam|interface|locality|hidden-state] [file_path:line] - [module name] - [failure mode] \u2192 [specific fix: inline / collapse / extract / re-scope]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions naming modules and call sites, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:architecture]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -125,6 +130,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
       "name": "assumptions",
+      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [input|contract|environment|ordering|cardinality] [file_path:line] - [the unstated premise and what breaks if it fails] -> [guard it | document it as a precondition | encode it in the type]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific guard/document/type instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:assumptions]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -153,6 +159,7 @@
       },
       "input_template": "<PHASE>{1 | 2}</PHASE>\n<AGGREGATED_DISCOVERIES>\n{concatenation of every non-empty DISCOVERIES block emitted by upstream agents this run, with source agent name on each block; \"none\" if every block was empty}\n</AGGREGATED_DISCOVERIES>\n<APPROVALS>\n{Phase 2 only - the user's per-item decisions; \"n/a\" on Phase 1}\n\nPer-bucket verb sets:\n- glossary: \"BUCKET.INDEX: accept | edit: <new text> | reject\"\n- stack_drift, intent_drift: \"BUCKET.INDEX: accept-as-drift | edit: <new text> | reject\"\n</APPROVALS>\n",
       "name": "capture-agent",
+      "output_template": "",
       "routes": [
         "code"
       ],
@@ -189,6 +196,7 @@
         }
       ],
       "name": "code-implementer",
+      "output_template": "VERDICT: [complete | partial | blocked]\nFILES_MODIFIED:\n- [file_path] - [what was changed]\nFILES_CREATED:\n- [file_path] - [what it does]\nBUILD_STATUS: [pass | fail | no-build-command | description of issues]\nNOTES: [any minor deviations resolved by reading nearby code, or \"none\"]\nEVIDENCE_RECEIPT:\n- [plan item] - [file_path:line] - reused: [the existing pattern/helper/convention you leveraged, or \"new - none applied\"]\n(one line per plan item, in plan order; each carries the file:line where that item landed plus the existing pattern it reused. This is the canonical receipt the plan-adherence-reviewer traces against - keep one entry per item so every plan item maps to concrete evidence.)\nKICKBACK:\n  TIER: [plan-patch | replan | reinterview | none]\n  STEP_OR_FILE: [specific plan step N or file_path that triggered kickback - \"none\" if TIER is none]\n  REASON: [what about the plan can't be executed as written - \"none\" if TIER is none]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -218,6 +226,7 @@
       },
       "input_template": "<BUG_REPORT>{user's description of the bug, symptoms, environment}</BUG_REPORT>\n<FRAMING>{main agent's one-sentence restate + any missing info the user supplied}</FRAMING>\n",
       "name": "code-investigator",
+      "output_template": "VERDICT: [root-cause-found | hypothesis-only | cannot-diagnose]\nSEVERITY: [low | medium | high | critical]\nCOMPLEXITY: [S | M | L | XL]\n\nSYMPTOMS:\n- [Observed] - [evidence: error message, log line, test output]\n- [Expected] - [why]\n\nREPRO:\nTrigger: [chosen rung + one-line justification, or \"not attempted (low severity)\"]\n[exact steps or script that triggers the bug, or \"attempted, failed: <reason>\"]\n\nHYPOTHESES CONSIDERED:\n- [likely|unsure] [H1]\n  Prediction: [what would prove this right or wrong]\n  Result: [dismissed/confirmed, with evidence; include source URL if web-derived]\n- [likely|unsure] [H2]\n  Prediction: [what would prove this right or wrong]\n  Result: [dismissed/confirmed, with evidence]\n\nROOT CAUSE:\n[likely|unsure] [file_path:line] - [what's wrong and why it produces the symptom]\n(or \"unknown - see MISSING_INFO\")\n\nRECOMMENDED FIX:\n[Minimal change, file:line, what to change to what. One paragraph max.]\n\nMISSING_INFO:\n[What the user needs to provide to finish the diagnosis, or \"none\"]\n\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code",
         "talk"
@@ -258,6 +267,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<LOCKED_DESIGN_SPEC>{labeled key-value spec the user pasted back from the design-prototyper's picker page, OR \"none\" when the design loop didn't run}</LOCKED_DESIGN_SPEC>\n<DESIGN_CLEANUP>{design-prototyper's CLEANUP_NEEDED list - only when HOST_DECISION was \"real-page\" so the planner removes picker artifacts before shipping; \"none\" otherwise}</DESIGN_CLEANUP>\n<LOCKED_UX_SPEC>{labeled key-value flow spec the user pasted back from the ux-prototyper's wireflow page, OR \"none\" when the user-flow loop didn't run}</LOCKED_UX_SPEC>\n<UX_CLEANUP>{ux-prototyper's CLEANUP_NEEDED list - only when HOST_DECISION was \"real-page\" so the planner removes wireflow artifacts before shipping; \"none\" otherwise}</UX_CLEANUP>\n<DIAGNOSIS>{investigator root-cause report OR \"none\"}</DIAGNOSIS>\n<PLANNING_LENS>{optional lens directive the orchestrator injects on a multi-plan run (e.g. smallest-shippable, risk-first, dead-simple, reuse-first) - bias the plan toward it while keeping every requirement intact; absent on a single-plan run}</PLANNING_LENS>\n<PRIOR_PLAN>{previous APPROVED_PLAN block - only on replan/plan-patch, otherwise absent; reproduce it verbatim except where REPLAN_REASON applies (## Revision modes)}</PRIOR_PLAN>\n<REPLAN_REASON>{challenger BLOCKERS or implementer kickback reason - only on replan/plan-patch; the exact corrections to apply, nothing else changes}</REPLAN_REASON>\n",
       "name": "code-planner",
+      "output_template": "<APPROVED_PLAN version=\"N\">\n\n## Approach\n[2-3 sentences + ASCII diagram showing architecture/flow]\n\n## Plan Breakdown\n[A short, plain-language take on `## Approach` - same facts, everyday words, no agent or signal names. Weave a plain summary of what the change does for the user together with one concrete example and a small visual (reuse or trim the `## Approach` ASCII flow, or a one-line arrow flow). Keep it tight and let the example and the visual flow into the prose - this is a transform of `## Approach`, not a re-authoring, so do not introduce facts it does not have. Close with an ordered, advisory milestone list - the smallest sequence of independently shippable increments (a single line per milestone, e.g. `1. ...` / `2. ...`); state the single milestone when the change is indivisible.]\n\n## Files to Modify\n- [file_path] - [what changes and why]\n\n## Files to Create\n- [file_path] - [purpose and key contents]\n\n## Implementation Steps\n1. [Step with specific details - which file, which function, what it does]\n2. [Step...]\n(ordered by dependency - build foundations first)\n\n## Reuse\n- [file_path:line] - [how it's used in this plan]\n\n## Prototypes\n- [.prototypes/filename] - [how findings inform this plan]\n(\"none\" if no prototypes were built)\n\n## Research\n- [topic] - [how the finding shapes this plan] - [source URL]\n(\"none\" if no research was needed or none was load-bearing)\n\n## Out of Scope\n- [Thing that might seem related but belongs in its own task, and why]\n\n## Acceptance\n- VALIDATION: [test|manual|observable] - [criterion text] - [where: test file path, manual-check description, or observable location like file:line]\n(one line per acceptance criterion from `<CLARIFY_OUTPUT>`; or the literal line `n/a - no acceptance criteria from clarifier` when none surfaced)\n\n## Testing\n- [How to verify the implementation works overall - complements per-criterion validation above]\n\n</APPROVED_PLAN>\n",
       "routes": [
         "code"
       ],
@@ -286,6 +296,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<PROTOTYPE_TARGETS>{prototype-identifier's TARGETS + ALTERNATIVE_SHAPES blocks - what needs validation and which targets need two shapes}</PROTOTYPE_TARGETS>\n",
       "name": "code-prototyper",
+      "output_template": "PROTOTYPES:\n- [.prototypes/filename] - [what it validates, what was learned] - SHAPE: [shape name from ALTERNATIVE_SHAPES, or \"single\" for low/med novelty targets]\nCOMPARISON:\n- [target reference] - [shape A vs shape B] - [evidence-based winner with one-sentence reason, or \"both viable - planner picks based on <factor>\"]\n(one entry per NOVELTY: high target; omit section when no high-novelty targets ran)\nVERIFIED: [yes - all prototypes ran successfully | partial - details | no - details]\nKEY_FINDINGS:\n- [likely] [observed API quirk / gotcha - what happened and in which prototype]\n- [unsure] [inferred behavior - not directly exercised; planner should verify if load-bearing]\n(omit section if no findings)\n",
       "routes": [
         "code"
       ],
@@ -312,6 +323,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
       "name": "consistency-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nEXAMPLES_COMPARED: [file paths of existing code used as reference]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [divergence] - [the established pattern it diverges from]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:consistency]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -341,6 +353,7 @@
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
       "milestone-scope": "local",
       "name": "correctness-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nOBSOLETE_CODE: [files or functions that should be deleted, or \"none\"]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [description of issue and why it matters]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:correctness]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code",
         "sketch"
@@ -372,6 +385,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<PROTOTYPE_TARGETS>{prototype-identifier's TARGETS + ALTERNATIVE_SHAPES blocks - what needs validation and which targets need two shapes}</PROTOTYPE_TARGETS>\n",
       "name": "data-prototyper",
+      "output_template": "PROTOTYPES:\n- [.prototypes/filename] - [what it validates, what was learned] - SHAPE: [shape name from ALTERNATIVE_SHAPES, or \"single\" for low/med novelty targets]\nCOMPARISON:\n- [target reference] - [shape A vs shape B] - [evidence-based winner with one-sentence reason, or \"both viable - planner picks based on <factor>\"]\n(one entry per NOVELTY: high target; omit section when no high-novelty targets ran)\nVERIFIED: [yes - all prototypes ran successfully | partial - details | no - details]\nKEY_FINDINGS:\n- [likely] [observed modeling quirk / gotcha - what happened and in which prototype]\n- [unsure] [inferred behavior - not directly exercised; planner should verify if load-bearing]\n(omit section if no findings)\n",
       "routes": [
         "code"
       ],
@@ -398,6 +412,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
       "name": "design-consistency-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nDESIGN_REFERENCES: [existing components/files used as visual baseline]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [inconsistency] - [the established pattern it diverges from]\n(empty if pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:consistency]\n",
       "routes": [
         "code"
       ],
@@ -426,6 +441,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output - includes DESIGN_PARAMS_PROPOSED}</CLARIFY_OUTPUT>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<USER_PARAM_PICKS>{user's selections from PARAMS_TO_CONFIRM, OR \"none\" on the first invocation}</USER_PARAM_PICKS>\n",
       "name": "design-prototyper",
+      "output_template": "PHASE: confirm-params\n\nLOOKUPS_PERFORMED:\n- [path/glob/grep/url - what you checked and what it told you, one line each]\n(empty when clarifier and Scout already covered the needed recon)\n\nPARAMS_TO_CONFIRM:\n  (structured per Concise Surfacing Contract; max 4 entries; each picks which value set / range to expose for one parameter)\n  - question: [pick a value set for this parameter]\n    header: [max 12 chars - parameter name]\n    multiSelect: [true | false]\n    options:\n      - label: [short]\n        description: [what choosing this value set means + one concrete example of the result, e.g. \"compact -> 8px gaps, denser rows\"]\n        preview: [optional best-effort enrichment]\n      - ...\n(empty only if the clarifier's params list is so settled that no follow-up is needed - rare; usually at least one needs picking)\n\nDEFERRED_PARAMS:\n  (overflow items beyond the 4-cap; same shape)\n(empty when total <= 4)\n\nDISCOVERIES:\n  glossary:\n    - [term] - [one-sentence definition] - [why novel]\n    (or \"(none)\")\n  stack_drift:\n    (none)\n  intent_drift:\n    (none)\n",
       "routes": [
         "code",
         "sketch",
@@ -455,6 +471,7 @@
       },
       "input_template": "<TRIAGE_READ>{triage's framing of the request}</TRIAGE_READ>\n<CONFIRMED_INTENT>{interviewer or Level 1 restate, or \"none\" when intent was not clarified}</CONFIRMED_INTENT>\n",
       "name": "discuss",
+      "output_template": "",
       "routes": [
         "talk"
       ],
@@ -481,6 +498,7 @@
       },
       "input_template": "<FINDINGS>\n  {aggregated reviewer outputs - each with source agent name, VERDICT, FINDINGS, ACTION_NEEDED}\n</FINDINGS>\n<TOUCHED_FILES>{file paths the implementer or main agent modified or created - sourced from implementer's FILES_MODIFIED + FILES_CREATED, or main-agent session edits on S/M tasks}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M flows that skip planning}</APPROVED_PLAN>\n<ROUND>{1 | 2 | 3+}</ROUND>\n",
       "name": "fixer",
+      "output_template": "FIXED:\n- [file_path:line] - [what was fixed] - [source reviewer]\n(empty list if none)\nBUILD_STATUS: [pass | fail | no-build-command]\nRE_RUN_SET:\n- [gate name] - [reason: \"fixed finding\" | \"domain touched\"]\n(every gate to re-run, no duplicates)\nREMAINING:\n- [file_path:line] - [finding not fixed and why]\n(or \"none\")\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code",
         "sketch"
@@ -508,6 +526,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<TARGET_AREA>{file paths / module names to score - main agent's best guess from intent}</TARGET_AREA>\n",
       "name": "health-checker",
+      "output_template": "HEALTH_SCORE: [1-10]\nFILES_SCANNED: [count]\nISSUES:\n- [likely] [file_path] - [mechanical issue, e.g., \"412 lines, should be split\"]\n- [unsure] [file_path] - [judgment issue, e.g., \"naming feels inconsistent with <area>\"]\n(max 5, most impactful first)\nRECOMMENDATION: [proceed | proceed-with-cleanup | cleanup-first]\nCLEANUP_TARGETS: [specific files/functions to clean up, or \"none\"]\n",
       "routes": [
         "code",
         "talk"
@@ -538,6 +557,7 @@
       },
       "input_template": "<RAW_REQUEST>{user's original message or /alp-river:go argument}</RAW_REQUEST>\n<L1_CONFIRMATION>{user's answer to the main agent's one-sentence restate}</L1_CONFIRMATION>\n<PRIOR_ROUNDS>{compressed log of prior rounds, one line per Q&A: \"R1.Q1: ... | A: ...\"; \"none\" on first run}</PRIOR_ROUNDS>\n",
       "name": "interviewer",
+      "output_template": "VERDICT: [confirmed | needs-answers]\n\nLOOKUPS_PERFORMED:\n- [path/glob/grep/url - what you checked and what it told you, one line each]\n(empty if no recon needed; \"none\" if request is purely about user-facing behavior with no code/docs to consult)\n\nNEW_ASPECTS_FOUND: [yes | no]\n(yes = the latest user answer or your fresh research surfaced something not present in PRIOR_ROUNDS, so the loop should continue. no = inputs are stable; safe to exit if VERDICT is confirmed.)\n\nCONFIRMED_INTENT:\n## Primary outcome\n[1-2 sentences - what is true when this ships]\n\n## Audience\n[who this is for]\n\n## In-scope\n- [specific capability]\n- [specific capability]\n\n## Out-of-scope\n- [adjacent thing explicitly NOT being done]\n\n## Priority trade-offs\n- [what wins when X and Y conflict]\n\nQUESTIONS:\n  (max 4 entries; structured for AskUserQuestion rendering per WORKFLOW.md Concise Surfacing Contract)\n  - question: [direction question text]\n    header: [max 12 chars - see HEADER_GUIDANCE below]\n    multiSelect: [true | false]\n    options:\n      - label: [short]\n        description: [what choosing this means + one concrete example of the result for non-trivial decisions, e.g. \"internal only -> trusted callers, no auth layer\"]\n        preview: [optional best-effort enrichment]\n      - ...\n    (2-4 options per question; CLI handles \"Other\" - do not synthesize one)\n(empty if VERDICT confirmed AND NEW_ASPECTS_FOUND: no)\n\nDEFERRED_QUESTIONS:\n  (overflow items beyond the 4-cap, same shape as above; preserves agent's emit order)\n(empty when total picker-eligible items <= 4; never \"none\" on a real surfacing run)\n\nEXTERNAL_DEPS_FLAG: [yes | no]\n(yes means the task depends on external APIs/SDKs/services - downstream researcher should run; no means researcher can skip)\n",
       "routes": [
         "code",
         "talk",
@@ -568,6 +588,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
       "name": "naming-clarity",
+      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [vague|misleading|abbrev|scope|unit] [file_path:line] - [the name and why it obscures or misleads] -> [a clearer name]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific rename instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:naming-clarity]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -596,6 +617,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<PROTOTYPE_TARGETS>{prototype-identifier's TARGETS + ALTERNATIVE_SHAPES blocks - what needs validation and which targets need two shapes}</PROTOTYPE_TARGETS>\n",
       "name": "performance-prototyper",
+      "output_template": "PROTOTYPES:\n- [.prototypes/filename] - [what it validates, what was learned] - SHAPE: [shape name from ALTERNATIVE_SHAPES, or \"single\" for low/med novelty targets]\nCOMPARISON:\n- [target reference] - [shape A vs shape B] - [evidence-based winner with one-sentence reason, or \"both viable - planner picks based on <factor>\"]\n(one entry per NOVELTY: high target; omit section when no high-novelty targets ran)\nVERIFIED: [yes - all prototypes ran successfully | partial - details | no - details]\nKEY_FINDINGS:\n- [likely] [observed timing/scale behavior - what happened and in which prototype]\n- [unsure] [inferred behavior - not directly exercised; planner should verify if load-bearing]\n(omit section if no findings)\n",
       "routes": [
         "code"
       ],
@@ -622,6 +644,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
       "name": "performance-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [performance issue] - [expected impact] - [measurement approach]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:perf]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -650,12 +673,14 @@
       },
       "input_template": "<APPROVED_PLAN>{planner output, the version referenced in implementer's spawn}</APPROVED_PLAN>\n<TOUCHED_FILES>{file paths the implementer modified or created - sourced from implementer's FILES_MODIFIED + FILES_CREATED}</TOUCHED_FILES>\n<IMPLEMENTER_NOTES>{implementer output NOTES section - deviations the implementer declared}</IMPLEMENTER_NOTES>\n",
       "name": "plan-adherence-reviewer",
+      "output_template": "VERDICT: [pass | partial | fail]\n\nFILES:\n- [likely|unsure] [present | missing | mismatched] [plan path] - [evidence file_path:line or \"not found\"]\n(one per file listed in plan)\n\nFUNCTIONS:\n- [likely|unsure] [present | signature-diverged | missing] [plan function name + signature] - [evidence]\n(one per function named in plan)\n\nSTEP_ORDERING:\n- [likely|unsure] [respected | violated] [step N \u2192 step M] - [why]\n(only when a violation is observable in the touched files)\n\nSILENT_DEVIATIONS:\n- [likely|unsure] [file_path:line] - [what diverged without being declared in NOTES]\n(empty if none)\n\nACTION_NEEDED: [specific gaps to close, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:adherence]\n",
       "routes": [
         "code"
       ],
       "signals": {
         "publishes": [
           "findings:adherence",
+          "clean",
           "scope-shift"
         ],
         "subscribes": [
@@ -678,6 +703,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>\n<COMPETING_PLANS>{the N APPROVED_PLAN blocks, each tagged with the lens its planner ran under}</COMPETING_PLANS>\n<PLAN_CRITIQUES>{the N critique blocks - one critique-only plan-challenger run per competing plan}</PLAN_CRITIQUES>\n",
       "name": "plan-arbiter",
+      "output_template": "DECISION_MEMO:\n- [per plan: the lens it ran under + its steelman one-liner - what its strongest case is]\n- COMPLEMENTARY_STRENGTHS: [the seam(s) where two plans each win a different part of the intent, or \"none\"]\n- TIE_BREAK: [which ordering rung decided it: correctness/request-fit > grounding > simpler-first > validation/rollback > token/time cost - name the rung that broke the tie]\n- SELECTION: [which plan (or graft) wins and why, in 2-3 sentences referencing the ordering above]\n\nVERDICT: [Adopt | Hybrid | Revise-first]\n\nLOOKUPS_PERFORMED:\n- [file path read OR web URL fetched - one line each, what you checked and what it told you]\n(empty if the plans + critiques + intent were sufficient)\n\nARBITER_DECISION:\n  - question: How do you want to proceed with the winning plan?\n    header: [max 12 chars - \"Plan call\" is a fine default]\n    multiSelect: false\n    options:\n      - label: Adopt\n        description: Ship the selected plan as-is to the implementer. Publishes the plan approval.\n        preview: [SELECTION one-liner + the winning lens]\n      - label: Hybrid\n        description: Graft the named complementary strengths into one plan. The planner re-spawns with the prior plan reproduced verbatim and the graft applied as the correction, version bumped. Counts as one backward edge; re-earns approval.\n        preview: [COMPLEMENTARY_STRENGTHS seam(s) - one per line - so the user sees what gets grafted]\n      - label: Revise-first\n        description: No plan is shippable as-is. The planner re-spawns with the prior plan reproduced verbatim and the blocking critiques applied as corrections, version bumped. Counts as one backward edge; re-earns approval.\n        preview: [the blocking critiques driving the revision - one per line]\n      - label: See it in plain words\n        description: The orchestrator re-renders the winning plan in plain words (a before->after summary) inline and re-emits this same picker, so the gate stays here. The last line of that plain view offers the interactive doc - paste back `verdict: adopt|hybrid|revise-first | keep: <...> | graft: <...>` to open it. (See the Concise Surfacing Contract in WORKFLOW.md.)\n        preview: [SELECTION one-liner + COMPLEMENTARY_STRENGTHS seam(s)]\n",
       "routes": [
         "code"
       ],
@@ -707,6 +733,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>\n<CRITIQUE_ONLY>{set on a multi-plan run - emit BLOCKERS/CONCERNS/STRENGTHS but omit the picker and never publish #plan-approved; absent on a single-plan run (terminal mode)}</CRITIQUE_ONLY>\n<APPROVED_PLAN>{planner's APPROVED_PLAN block for the plan you are reviewing}</APPROVED_PLAN>\n",
       "name": "plan-challenger",
+      "output_template": "VERDICT: [approve | revise | reject]\n\nLOOKUPS_PERFORMED:\n- [file path read OR web URL fetched - one line each, what you checked and what it told you]\n(empty if the plan + intent + clarify alone were sufficient; captures both files Read and URLs via WebSearch/WebFetch)\n\nBLOCKERS:\n- [must-fix issue - file/step reference + why; URL + [likely]/[unsure] if web-derived]\n(empty if none)\n\nCONCERNS:\n- [correctness|scope|ordering|coupling|risk|shape|doctrine|external] [issue - file/step reference + why + mitigation]\n(max 6, severity-ordered)\n\nSIMPLER_ALTERNATIVE: [brief sketch if one exists that materially beats the plan, else \"none\"]\n\nSCOPE_MISMATCH: [one-liner of the form \"drop X to land Y\" if the plan over-reaches the intent, else \"none\"]\n\nSTRENGTHS: [1-2 sentences on what the plan gets right]\n\nCHALLENGE_QUESTIONS:\n  - question: How do you want to proceed with this plan?\n    header: [max 12 chars - \"Plan call\" is a fine default]\n    multiSelect: false\n    options:\n      - label: Approve\n        description: Proceed with implementation. Outstanding CONCERNS become known risks.\n        preview: [STRENGTHS one-liner + top CONCERNS as one line each, best-effort]\n      - label: Revise\n        description: Planner re-spawns with the prior plan reproduced verbatim, BLOCKERS applied as corrections, version bumped. Counts as one backward edge.\n        preview: [BLOCKERS list - one per line - so user sees what gets fixed]\n      - label: Reshape\n        description: Reinterview from Step 0. Plan is fundamentally wrong or SIMPLER_ALTERNATIVE applies. Counts as one backward edge (equivalent to challenger reject).\n        preview: [SIMPLER_ALTERNATIVE sentence + SCOPE_MISMATCH one-liner when not \"none\"]\n      - label: See it in plain words\n        description: The orchestrator re-renders this plan in plain words (a before->after summary) inline and re-emits this same picker, so the gate stays here. The last line of that plain view offers the interactive doc - paste back `verdict: approve|revise|reshape | keep: <...> | drop: <...>` to open it. (See the Concise Surfacing Contract in WORKFLOW.md.)\n        preview: [STRENGTHS one-liner - the same content the breakdown card carries]\n",
       "routes": [
         "code"
       ],
@@ -737,6 +764,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<TARGET_AREA>{file paths / module names - main agent's best guess from intent}</TARGET_AREA>\n",
       "name": "prototype-identifier",
+      "output_template": "PROTOTYPES_NEEDED: [yes | no]\nTARGETS:\n- [likely] NOVELTY: [low|med|high] DOMAIN: [integration|data|performance] - [description of what needs prototyping and why]\n- [unsure] NOVELTY: [low|med|high] DOMAIN: [integration|data|performance] - [description - planner should check if precedent already exists]\n(max 5 items. \"none\" if no prototyping needed)\nALTERNATIVE_SHAPES:\n- [target reference] - shape A: [one-sentence shape] | shape B: [one-sentence shape]\n(one entry per NOVELTY: high target; \"(none)\" when no high-novelty targets)\nRECOMMENDATION: [1-2 sentences on what each prototype should validate]\n",
       "routes": [
         "code"
       ],
@@ -766,6 +794,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
       "name": "quality-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nDEPS_INSPECTED: [package manifests + key imports you read, comma-separated]\nFINDINGS:\n- [likely|unsure] [approach|bloat|altitude|elegance] [file_path:line] - [what was done] \u2192 [the cleaner path that was available, named specifically]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions naming the API/import to switch to, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:quality]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -796,6 +825,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer output OR main agent's Level 1 restate}</CONFIRMED_INTENT>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<PRIOR_ROUNDS>{compressed log of prior rounds, one line per Q&A: \"R1.Q1: ... | A: ...\"; \"none\" on first run}</PRIOR_ROUNDS>\n",
       "name": "requirements-clarifier",
+      "output_template": "<CLARIFY_OUTPUT>\nCLARITY: [clear | needs-answers | blocked]\n\nLOOKUPS_PERFORMED:\n- [path/glob/grep/url - what you checked and what it told you, one line each]\n(empty if Scout already covered all needed recon; never \"none\" on a real ambiguity-surfacing run)\n\nNEW_ASPECTS_FOUND: [yes | no]\n(yes = the latest user answers or your fresh research surfaced something not in PRIOR_ROUNDS, so the loop should continue. no = inputs are stable; safe to exit if CLARITY is clear.)\n\nQUESTIONS:\n  (structured per Concise Surfacing Contract; max 4 entries)\n  - question: [question text - state both/all plausible interpretations so the user picks]\n    header: [max 12 chars - see HEADER_GUIDANCE below]\n    multiSelect: [true | false]\n    options:\n      - label: [short]\n        description: [what choosing this means + one concrete example of the result for non-trivial decisions, e.g. \"wrapped -> {users:[...]}\" vs \"bare -> [...]\"]\n        preview: [optional best-effort enrichment]\n      - ...\n    (2-4 options per question; CLI handles \"Other\" - do not synthesize one)\n(empty when CLARITY clear AND NEW_ASPECTS_FOUND: no)\n\nDEFERRED_QUESTIONS:\n  (overflow items beyond the 4-cap; same shape; empty when total <= 4)\n\nACCEPTANCE_CRITERIA_PROPOSED:\n- [likely] [criterion strongly implied by the request or project context]\n- [unsure] [criterion that's a reasonable guess - confirm or replace]\nASSUMPTIONS_TO_CONFIRM:\n- [likely] [assumption the request implicitly makes - user can veto]\n- [unsure] [assumption on shakier ground - explicit confirmation recommended]\nSCOPE_SHIFT: [none | up | down]\n\nDESIGN_LOOP_NEEDED: [yes | no]\nDESIGN_PARAMS_PROPOSED:\n- [param name] - [why it has multiple legitimate values for this task] - [candidate values, when obvious]\n(one bullet per visual parameter the design-prototyper should let the user toggle; empty list when DESIGN_LOOP_NEEDED: no)\n\nUSER_FLOW_NEEDED: [yes | no]\nUSER_FLOW_PROPOSED:\n- [flow parameter name] - [why it has multiple legitimate sequences for this task] - [candidate states/transitions, when obvious]\n(one bullet per flow parameter the ux-prototyper should let the user walk; empty list when USER_FLOW_NEEDED: no)\n\nWRITES_PROPOSED:\n  glossary:\n    - [term] - [one-sentence definition] - [why this clarification surfaced it]\n    (or \"(none)\")\n</CLARIFY_OUTPUT>\n",
       "routes": [
         "code"
       ],
@@ -827,6 +857,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<TARGET_AREA>{file paths / module names - main agent's best guess from intent}</TARGET_AREA>\n<EXTERNAL_DEPS_FLAG>{yes | no - from interviewer; if no, return TOPICS_RESEARCHED: none and stop}</EXTERNAL_DEPS_FLAG>\n",
       "name": "researcher",
+      "output_template": "TOPICS_RESEARCHED:\n- [topic]\n(or \"none\" if the task is fully internal)\n\nFINDINGS:\n- [likely] [topic] - [key fact] - [source URL] [date or \"undated\"]\n- [unsure] [topic] - [key fact] - [source URL] [date or \"undated\"]\n(max 10 items, ordered by relevance to the task)\n\nNEEDS_DEEPER_RESEARCH:\n- [topic] - [what else to investigate if this becomes load-bearing]\n(or \"none\")\n\nRECOMMENDATION: [1-3 sentences on how findings should shape the plan and which items the planner should verify]\nNOTE: [budget ceiling hit or a source that would not load, and what is consequently unverified - or \"none\"]\n",
       "routes": [
         "code",
         "talk"
@@ -856,12 +887,14 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
       "name": "reuse-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [file_a:line] duplicates [file_b:line] - [what's duplicated and how to consolidate]\n(empty if pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific extraction/consolidation instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:reuse]\n",
       "routes": [
         "code"
       ],
       "signals": {
         "publishes": [
           "findings:reuse",
+          "clean",
           "scope-shift"
         ],
         "subscribes": [
@@ -883,6 +916,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<TARGET_AREA>{file paths / module names the scan should focus on - main agent's best guess from intent}</TARGET_AREA>\n",
       "name": "reuse-scanner",
+      "output_template": "REUSE:\n- [likely] [file_path:line] - description of what's reusable and how\n- [unsure] [file_path:line] - possibly reusable, verify the signature/semantics\n(max 10 items, ordered by relevance. \"none\" if nothing found)\n\nQUICK_WINS:\n- [likely] [file_path:line] - what to clean up and why\n- [unsure] [file_path:line] - likely cleanup; confirm before touching\n(max 5 items. \"none\" if nothing found)\n\nRECOMMENDATION: [1-3 sentences on how the implementation should leverage reuse findings and whether quick wins should be done first]\n",
       "routes": [
         "code",
         "talk"
@@ -916,6 +950,7 @@
       "guard": "sticky",
       "input_template": "<SYSTEM_PLAN>{system-planner output, or \"none\"}</SYSTEM_PLAN>\n<APPROVED_PLAN>{code-planner output when a code build armed the gate, or \"none\"}</APPROVED_PLAN>\n",
       "name": "safety-gate",
+      "output_template": "SAFETY_DECISION:\n  question: [what the user is clearing, named concretely]\n  header: [max 12 chars - e.g. \"Destructive\"]\n  options:\n    - label: Proceed\n      description: [what runs and what is lost / recoverable]\n    - label: Skip step\n      description: [which step is dropped, what the rest still does]\n    - label: Abort\n      description: [stop the run; nothing further changes]\nDANGER:\n- [the destructive/irreversible step] - DESTROYS: [what] - RECOVERY: [backup/rollback, or \"none - unrecoverable\"]\n",
       "routes": [
         "system",
         "code"
@@ -948,6 +983,7 @@
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
       "milestone-scope": "local",
       "name": "security-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [vulnerability type] - [attack vector] - [impact] - [CVE/source URL when web-derived]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nNOTE: [a CVE/advisory source that would not load or a lookup left undone, and what is consequently unchecked - or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:security]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code",
         "sketch",
@@ -956,6 +992,7 @@
       "signals": {
         "publishes": [
           "findings:security",
+          "clean",
           "scope-shift"
         ],
         "subscribes": [
@@ -985,6 +1022,7 @@
         }
       ],
       "name": "ship-executor",
+      "output_template": "EXEC_LOG:\n1. [step] - RAN: [command] - RESULT: [exit code / output summary]\n2. ...\nSTATUS: [complete | stopped-at-step-N - reason]\nPR_URL: [the draft PR url, or \"none - stopped before PR\"]\nRECOVERY: [how to undo what shipped - delete the remote branch / close the draft PR, or \"none - nothing pushed\"]\n",
       "routes": [
         "code"
       ],
@@ -1013,6 +1051,7 @@
       "guard": "sticky",
       "input_template": "<DIFF>{the session diff - working-tree summary, or \"none\" to read live}</DIFF>\n<CONFIRMED_INTENT>{triage or interviewer read of the request}</CONFIRMED_INTENT>\n",
       "name": "ship-gate",
+      "output_template": "SHIP_DECISION:\n  question: [what the user is clearing, named concretely]\n  header: [max 12 chars - e.g. \"Ship\"]\n  options:\n    - label: Proceed\n      description: [commits, pushes <current-branch>, opens a draft PR against <default-branch>]\n    - label: Hold\n      description: [nothing ships now; the work stays local]\n    - label: Abort\n      description: [call off the ship; nothing further changes]\nSHIP_PLAN:\n- COMMIT: git add -A && git commit - RECOVERY: amend or reset the local commit\n- PUSH: git push -u origin <current-branch> - RECOVERY: git push origin --delete <current-branch>\n- PR: gh pr create --draft --head <current-branch> --base <default-branch> - RECOVERY: gh pr close <current-branch>\nBASE_BRANCH_CHECK: [ok - on a feature branch | DANGER - HEAD is the base branch, opening a PR from the base against itself]\n",
       "routes": [
         "code"
       ],
@@ -1041,6 +1080,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
       "name": "simplicity-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [delete:|stdlib:|native:|yagni:|shrink:] [file_path:line] - [what] -> [replacement / shorter form]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\n- net: -N lines possible | Lean already. Ship.\nACTION_NEEDED: [specific fix instructions naming the cut, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:simplicity]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -1069,6 +1109,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate - what the sketch is meant to prove}</CONFIRMED_INTENT>\n",
       "name": "sketch-build",
+      "output_template": "SKETCH:\n- [.prototypes/filename] - [what it proves, and what running it showed]\nVERIFIED: [yes - ran successfully | partial - details | no - details]\nKEY_FINDINGS:\n- [likely] [observed behavior / API quirk / gotcha - what happened, in which file]\n- [unsure] [inferred behavior not directly exercised - flag if load-bearing]\nGRADUATION: [what a code/system route would keep vs throw away, or \"throwaway - nothing to keep\"]\n",
       "routes": [
         "sketch"
       ],
@@ -1097,6 +1138,7 @@
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
       "milestone-scope": "local",
       "name": "structure-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [structural issue] \u2192 [specific decomposition]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:structure]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -1136,6 +1178,7 @@
         }
       ],
       "name": "system-executor",
+      "output_template": "EXEC_LOG:\n1. [step] - RAN: [file edited or command] - RESULT: [exit code / output summary] - CHANGED: [what changed on disk or in system state]\n2. ...\nSTATUS: [complete | stopped-at-step-N - reason]\nCONFIG_FILES_TOUCHED: [tracked config paths edited, or \"none\"]\nROLLBACK_AVAILABLE: [yes - how | partial - details]\n",
       "routes": [
         "system"
       ],
@@ -1165,6 +1208,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate - what is broken and what \"working\" looks like}</CONFIRMED_INTENT>\n",
       "name": "system-investigator",
+      "output_template": "DIAGNOSIS:\n- SEVERITY: [critical | high | medium | low] - [one line on blast radius]\n- COMPLEXITY: [trivial | small | medium | large] - [one line on fix effort]\n- FIX_RISK: [reversible | destructive | irreversible] - [does the likely fix need a backup or a safety gate]\n- NOTE: [a source that would not load or a lookup left undone, and what is consequently unverified - or \"none\"]\nROOT_CAUSE:\n- [unit / config key:line / permission / package] - [the actual cause, traced and evidenced]\nSYMPTOM_VS_CAUSE:\n- symptom: [what was observed]\n- cause: [why it happens]\nEVIDENCE:\n- [command run -> what it showed, one line each]\nCONFIDENCE: [high | medium | low] - [what would raise it, if not high]\n",
       "routes": [
         "system",
         "talk"
@@ -1198,6 +1242,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate - the desired end state}</CONFIRMED_INTENT>\n<DIAGNOSIS>{system-investigator output when a fault was diagnosed, or \"none\"}</DIAGNOSIS>\n<CLARIFY_OUTPUT>{requirements-clarifier output, or \"none\"}</CLARIFY_OUTPUT>\n",
       "name": "system-planner",
+      "output_template": "SYSTEM_PLAN:\n- target: [the machine state being changed, one line]\n- preconditions: [what must already be true; how to check]\n- sources: [each externally-verified fact -> [likely]/[unsure] + source URL, or \"none - no external facts pinned\"]\nSTEPS:\n1. [action] - FILE/CMD: [exact config path or command] - BACKUP: [how to back up first] - ROLLBACK: [how to undo] - RISK: [reversible | destructive | irreversible]\n2. ...\nVERIFY:\n- [the observable post-condition the system-verifier checks]\nDANGER:\n- [each destructive/irreversible step and why, or \"none - all steps reversible\"]\nPLAN_BREAKDOWN:\n[A short, plain-language take on the plan - everyday words, no internal names. Weave a plain summary of what changes on the machine together with one concrete example and a small visual: the visual is a compact ordered digest of the STEPS with any DANGER step marked, and the concrete example renders one real result - the VERIFY post-condition stated concretely (e.g. `systemctl is-active nginx` -> active) or one representative FILE/CMD line - so the gate's example has real content. Keep it tight and let the example and the visual flow into the prose.]\n",
       "routes": [
         "system"
       ],
@@ -1231,6 +1276,7 @@
       },
       "input_template": "<SYSTEM_PLAN>{system-planner output - includes the VERIFY condition}</SYSTEM_PLAN>\n<EXEC_LOG>{system-executor output, or \"none\"}</EXEC_LOG>\n",
       "name": "system-verifier",
+      "output_template": "VERIFY_REPORT:\n- VERDICT: [verified | drift]\nCHECKS:\n- [check run -> expected vs actual, one line each]\nDRIFT:\n- [each gap between intended and actual state, or \"none\"]\nROLLBACK_RECOMMENDED: [no | yes - why]\n",
       "routes": [
         "system"
       ],
@@ -1260,6 +1306,7 @@
       },
       "input_template": "<TEST_CASES>{test-plan output - the cases to write tests for}</TEST_CASES>\n<TEST_CORRECTIONS>{on a re-spawn from #tests-misaligned (test-review) or #tests-missing (test-gap): the exact misalignment or missing-coverage report; \"none\" on the first pass}</TEST_CORRECTIONS>\n",
       "name": "test-author",
+      "output_template": "",
       "routes": [
         "code"
       ],
@@ -1289,6 +1336,7 @@
       },
       "input_template": "<DIFF>{code-implementer output - the diff to measure coverage against}</DIFF>\n",
       "name": "test-gap",
+      "output_template": "VERDICT: [pass | fail]\nGAPS:\n- [criterion] - [behavior added/changed but not covered] -> tests-missing:<criterion>\n(empty if every changed behavior is covered)\nACTION_NEEDED: [criteria the test-author must cover, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:test-gap]\n",
       "routes": [
         "code"
       ],
@@ -1318,6 +1366,7 @@
       },
       "input_template": "<APPROVED_PLAN>{code-planner output - the plan whose acceptance criteria become test cases}</APPROVED_PLAN>\n",
       "name": "test-plan",
+      "output_template": "",
       "routes": [
         "code"
       ],
@@ -1345,6 +1394,7 @@
       },
       "input_template": "<TESTS>{test-author output - the red tests on disk to validate}</TESTS>\n<CONFIRMED_INTENT>{triage/interviewer output - intent to check tests against}</CONFIRMED_INTENT>\n<APPROVED_PLAN>{code-planner output - plan whose criteria the tests must cover}</APPROVED_PLAN>\n",
       "name": "test-review",
+      "output_template": "",
       "routes": [
         "code"
       ],
@@ -1374,6 +1424,7 @@
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
       "milestone-scope": "both",
       "name": "test-verifier",
+      "output_template": "VERDICT: [pass | fail | warn]\nTEST_COMMAND: [the command that was run]\nRESULTS: [pass count / fail count / skip count]\nFINDINGS:\n- [likely|unsure] [description of failure or missing coverage]\n(empty if VERDICT is pass)\nACTION_NEEDED: [what needs to be fixed or tested, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:test]\n",
       "routes": [
         "code"
       ],
@@ -1403,6 +1454,7 @@
       },
       "input_template": "",
       "name": "triage",
+      "output_template": "",
       "routes": [
         "talk",
         "sketch",
@@ -1450,6 +1502,7 @@
       },
       "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output - includes USER_FLOW_PROPOSED}</CLARIFY_OUTPUT>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<USER_FLOW_PICKS>{user's selections from FLOW_TO_CONFIRM, OR \"none\" on the first invocation}</USER_FLOW_PICKS>\n",
       "name": "ux-prototyper",
+      "output_template": "PHASE: confirm-flow-params\n\nLOOKUPS_PERFORMED:\n- [path/glob/grep/url - what you checked and what it told you, one line each]\n(empty when clarifier and Scout already covered the needed recon)\n\nFLOW_TO_CONFIRM:\n  (structured per Concise Surfacing Contract; max 4 entries; each picks which states/transitions to expose for one flow parameter)\n  - question: [pick a value set for this flow parameter]\n    header: [max 12 chars - flow parameter name]\n    multiSelect: [true | false]\n    options:\n      - label: [short]\n        description: [what choosing this means + one concrete example of the result, e.g. \"linear -> cart then address then pay, no skipping\"]\n        preview: [optional best-effort enrichment]\n      - ...\n(empty only if the clarifier's flow list is so settled that no follow-up is needed - rare; usually at least one needs picking)\n\nDEFERRED_FLOW:\n  (overflow items beyond the 4-cap; same shape)\n(empty when total <= 4)\n\nDISCOVERIES:\n  glossary:\n    - [term] - [one-sentence definition] - [why novel]\n    (or \"(none)\")\n  stack_drift:\n    (none)\n  intent_drift:\n    (none)\n",
       "routes": [
         "code",
         "sketch",
@@ -1479,6 +1532,7 @@
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
       "name": "ux-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [UX issue, what the user experiences, suggested improvement]\n(empty if pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:ux]\n",
       "routes": [
         "code"
       ],

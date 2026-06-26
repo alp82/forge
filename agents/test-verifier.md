@@ -42,4 +42,5 @@ FINDINGS:
 - [likely|unsure] [description of failure or missing coverage]
 (empty if VERDICT is pass)
 ACTION_NEEDED: [what needs to be fixed or tested, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:test]
 ```

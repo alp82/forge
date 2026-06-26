@@ -49,6 +49,8 @@ DOCTRINE_PHRASES = (
         "the overview comes first; the brief is details on demand, pulled never pushed.",
         "doctrine/briefs.md",
     ),
+    ("See it in plain words", "doctrine/briefs.md"),
+    ("See it as an interactive doc", "doctrine/briefs.md"),
 )
 
 # Catalog stages that mark a present quality gate (test chain + review lenses).

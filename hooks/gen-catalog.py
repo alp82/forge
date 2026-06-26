@@ -16,7 +16,10 @@ never a sigil. Every stage MUST declare a `routes` list (a subset of code/sketch
 the generator errors loudly if one is missing or names an unknown path.
 
 Each stage also carries the verbatim fenced block under its `## Input` heading as
-`input_template` (empty string when the agent has no `## Input` section).
+`input_template` (empty string when the agent has no `## Input` section) and, the same way,
+the fenced block under its `## Output (strict)` heading as `output_template` (empty string
+when the agent has no `## Output (strict)` section) - the reviewer SIGNALS_PUBLISHED line
+lands here.
 """
 
 import json
@@ -113,16 +116,17 @@ def _split_inputs(items):
     return required, optional
 
 
-def extract_input_template(text):
-    """Return the verbatim inner text of the fenced block under the first `## Input` heading.
+def _extract_fenced_block(text, heading):
+    """Return the verbatim inner text of the fenced block under the first `heading` line.
 
-    First `## Input` wins. From the line after it, scan for an opening ``` fence and collect
-    lines until the closing ``` fence, returning the inner text (no heading, no fence lines).
-    The opening-fence search stops at the next `## ` heading, so a later `## Output` fence is
-    never captured. No `## Input`, or no fence before the next `## `, returns "".
+    First exact-match `heading` wins. From the line after it, scan for an opening ``` fence and
+    collect lines until the closing ``` fence, returning the inner text (no heading, no fence
+    lines). The opening-fence search stops at the next `## ` heading, so a later section's fence
+    is never captured. No `heading`, or no fence before the next `## `, returns "". The opener is
+    an EXACT match, so e.g. `## Output discipline` / bare `## Output` never qualify `## Output (strict)`.
     """
     lines = text.splitlines()
-    start = next((i for i, ln in enumerate(lines) if ln == "## Input"), None)
+    start = next((i for i, ln in enumerate(lines) if ln == heading), None)
     if start is None:
         return ""
     i = start + 1
@@ -140,7 +144,7 @@ def extract_input_template(text):
     return "\n".join(inner) + "\n" if inner else ""
 
 
-def normalize_stage(name, stage, input_template=""):
+def normalize_stage(name, stage, input_template="", output_template=""):
     data, signals = stage.get("data") or {}, stage.get("signals") or {}
     req_in, opt_in = _split_inputs(_list(data, "input"))
     entry = {
@@ -156,6 +160,7 @@ def normalize_stage(name, stage, input_template=""):
         },
     }
     entry["input_template"] = input_template
+    entry["output_template"] = output_template
     if stage.get("guard"):
         entry["guard"] = stage["guard"]
     if stage.get("lock"):
@@ -183,7 +188,12 @@ def build_catalog():
                 f"{name}: unknown route(s) {unknown} (allowed: {list(PATHS)})"
             )
             continue
-        stages[name] = normalize_stage(name, fm["stage"], extract_input_template(text))
+        stages[name] = normalize_stage(
+            name,
+            fm["stage"],
+            _extract_fenced_block(text, "## Input"),
+            _extract_fenced_block(text, "## Output (strict)"),
+        )
     if errors:
         raise SystemExit("gen-catalog: ERROR - " + "; ".join(errors))
     return {"stages": stages}

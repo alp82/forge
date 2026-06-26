@@ -78,12 +78,12 @@ ARBITER_DECISION:
       - label: Revise-first
         description: No plan is shippable as-is. The planner re-spawns with the prior plan reproduced verbatim and the blocking critiques applied as corrections, version bumped. Counts as one backward edge; re-earns approval.
         preview: [the blocking critiques driving the revision - one per line]
-      - label: See it as an interactive doc
-        description: The orchestrator renders the competing-plans side-by-side table as a static page you open to compare at a glance, then paste back `verdict: adopt|hybrid|revise-first | keep: <...> | graft: <...>`. The picker stays the open gate until that token arrives.
+      - label: See it in plain words
+        description: The orchestrator re-renders the winning plan in plain words (a before->after summary) inline and re-emits this same picker, so the gate stays here. The last line of that plain view offers the interactive doc - paste back `verdict: adopt|hybrid|revise-first | keep: <...> | graft: <...>` to open it. (See the Concise Surfacing Contract in WORKFLOW.md.)
         preview: [SELECTION one-liner + COMPLEMENTARY_STRENGTHS seam(s)]
 ```
 
-The `See it as an interactive doc` option is read-only on your side: the orchestrator writes and hosts the doc from the competing-plans side-by-side table (the marquee multi-plan view); you only offer the option and name the paste-back token (see the briefs doctrine in your DOCTRINE block).
+The `See it in plain words` option is read-only on your side: the orchestrator re-renders the winning plan in plain words inline (re-emitting this picker), and only from inside that plain view does the interactive doc - the competing-plans side-by-side table - get pulled via the paste-back token; you only offer the option and name the token (see the briefs doctrine in your DOCTRINE block and the Concise Surfacing Contract).
 
 `Adopt` = ship the selected plan to the implementer - this is the ONLY verdict that publishes `#plan-approved`, releasing both implementers' plan-gate lock so the code path can proceed. `Hybrid` = graft the complementary strengths into one plan; the planner re-spawns with the prior plan reproduced verbatim and the graft applied as the correction, version bumped (a backward edge; see WORKFLOW.md ## Revision Contract). `Revise-first` = no plan ships as-is; the planner re-spawns with the prior plan reproduced verbatim and the blocking critiques applied as corrections, version bumped (a backward edge).
 

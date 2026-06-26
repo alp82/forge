@@ -25,3 +25,16 @@ If every changed behavior is covered, publish `clean` and nothing else. This len
 ```
 
 First step: parse required slots. On a missing required slot, emit `INPUT_ERROR: missing <slot>` and stop.
+
+## Output (strict)
+
+```
+VERDICT: [pass | fail]
+GAPS:
+- [criterion] - [behavior added/changed but not covered] -> tests-missing:<criterion>
+(empty if every changed behavior is covered)
+ACTION_NEEDED: [criteria the test-author must cover, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:test-gap]
+```
+
+`SIGNALS_PUBLISHED`: every changed behavior covered -> `#clean`; any gap -> `#findings:test-gap` (plus the `tests-missing:<criterion>` signals that pull test-author back).

@@ -11,7 +11,7 @@ stage:
     output: ['@findings']
   signals:
     subscribes: ['#significant-build']
-    publishes: ['#findings:acceptance', '#scope-shift']
+    publishes: ['#findings:acceptance', '#clean', '#scope-shift']
 ---
 
 Follows the Reviewer Contract in your DOCTRINE block. Specialization: intent fulfillment instead of code quality - replaces `FINDINGS` with `REQUIREMENTS`/`ACCEPTANCE_CRITERIA`/`SCOPE_DRIFT`/`PARTIAL_OR_STUBBED`, uses `VERDICT: pass | partial | fail`.
@@ -75,6 +75,9 @@ PARTIAL_OR_STUBBED:
 (empty if none)
 
 ACTION_NEEDED: [specific gaps to close, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:acceptance]
 ```
+
+`SIGNALS_PUBLISHED`: your three-valued VERDICT maps per the `### Published-signal line` in the Reviewer Contract (in your DOCTRINE block), which states the acceptance case canonically.
 
 `pass` = all requirements fulfilled, every criterion `met` or `unverified-manual` (manual flagged in ACTION_NEEDED), no drift. `partial` = some requirements partial/missing, criteria `unmet`, or minor drift. `fail` = core requirement missing or significant drift.

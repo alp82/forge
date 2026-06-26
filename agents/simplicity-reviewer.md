@@ -76,5 +76,6 @@ FINDINGS:
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 - net: -N lines possible | Lean already. Ship.
 ACTION_NEEDED: [specific fix instructions naming the cut, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:simplicity]
 DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

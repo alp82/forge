@@ -11,7 +11,7 @@ stage:
     output: ['@findings']
   signals:
     subscribes: ['#significant-build']
-    publishes: ['#findings:adherence', '#scope-shift']
+    publishes: ['#findings:adherence', '#clean', '#scope-shift']
 ---
 
 You check whether the implementer followed the approved plan as a blueprint. Acceptance-reviewer covers user intent; you cover planner intent.
@@ -67,6 +67,9 @@ SILENT_DEVIATIONS:
 (empty if none)
 
 ACTION_NEEDED: [specific gaps to close, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:adherence]
 ```
+
+`SIGNALS_PUBLISHED`: `pass` -> `#clean`; `partial` or `fail` -> `#findings:adherence` (a partial adherence is an unmet plan item - it blocks convergence and pulls the fixer). The canonical mapping lives in `doctrine/reviewer-contract.md` ### Published-signal line; this file states it inline because plan-adherence-reviewer does not receive the contract injection.
 
 `pass` = every plan item present and faithful. `partial` = minor divergences or items declared in NOTES but not re-approved. `fail` = missing file, missing function, or silent deviation on a load-bearing plan item.

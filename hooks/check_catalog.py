@@ -9,6 +9,10 @@ Verifies the invariants a composed route relies on:
   4. `routes` is present, non-empty, and a subset of code/sketch/talk/system on every stage
   5. every `lock` while/until signal has a publisher (family-aware) or is an external seed
   6. every stage with a required input carries a non-empty `input_template` (except `triage`)
+  7. every reviewer (publishes `clean` or a `findings:*` lens) carries a `SIGNALS_PUBLISHED:`
+     line INSIDE its `output_template` whose tokens agree with its frontmatter signals: `#clean`
+     iff it publishes `clean`, `#findings` present when it publishes any `findings:*`, and a
+     `#findings:<lens>` token's lens is one the stage actually publishes (family-aware)
 
 Runnable standalone (`python3 hooks/check_catalog.py`, exits 1 on any problem) and imported
 by the router tests. External seeds are values that enter a route from outside any stage -
@@ -53,6 +57,9 @@ SEED_ARTIFACTS = {
 # Stages exempt from the template-presence invariant - `triage` consumes the raw request
 # directly and has no `## Input` template.
 TEMPLATE_EXEMPT = {"triage"}
+# Token a reviewer's `output_template` must carry, on its own line, so the orchestrator reads
+# convergence from an explicit signal rather than inferring it from VERDICT prose.
+SIGNALS_PUBLISHED_TOKEN = "SIGNALS_PUBLISHED:"
 
 
 def _family_match(sub, published):
@@ -62,6 +69,70 @@ def _family_match(sub, published):
         p == sub or p.startswith(sub + ":") or sub.startswith(p + ":")
         for p in published
     )
+
+
+def _check_reviewer_signals(name, s, pubs):
+    """Invariant 7: a reviewer's SIGNALS_PUBLISHED line agrees with its frontmatter signals.
+
+    Returns a list of problem strings (empty when the reviewer's line is well-formed). Checks,
+    in both directions where applicable:
+      - the `SIGNALS_PUBLISHED:` line exists inside `output_template` (the captured fence);
+      - `#clean` <-> publishing `clean` (each implies the other);
+      - `#findings` present whenever the stage publishes any `findings:*` family member;
+      - the `#findings:<lens>` token's lens is one of the stage's published `findings:*` lenses
+        (family-aware) - catches a token naming a lens the frontmatter does not publish.
+    """
+    problems = []
+    signal_line = next(
+        (
+            ln
+            for ln in s.get("output_template", "").splitlines()
+            if ln.strip().startswith(SIGNALS_PUBLISHED_TOKEN)
+        ),
+        None,
+    )
+    if signal_line is None:
+        problems.append(
+            f"{name}: reviewer missing `{SIGNALS_PUBLISHED_TOKEN}` line inside output_template"
+        )
+        return problems
+    publishes_findings = _family_match("findings", pubs)
+    if "clean" in pubs and "#clean" not in signal_line:
+        problems.append(
+            f"{name}: publishes `clean` but {SIGNALS_PUBLISHED_TOKEN} line lacks `#clean`"
+        )
+    if publishes_findings and "#findings" not in signal_line:
+        problems.append(
+            f"{name}: publishes `findings:*` but {SIGNALS_PUBLISHED_TOKEN} line lacks `#findings`"
+        )
+    if "#clean" in signal_line and "clean" not in pubs:
+        problems.append(
+            f"{name}: {SIGNALS_PUBLISHED_TOKEN} line names `#clean` but frontmatter does not publish `clean`"
+        )
+    # Lens-match: a `#findings:<lens>` token must name a published findings lens. Parse the
+    # token's lens and require `findings:<lens>` to be a member of the stage's findings family.
+    token_lens = _findings_token_lens(signal_line)
+    if token_lens is not None and not _family_match("findings:" + token_lens, pubs):
+        problems.append(
+            f"{name}: {SIGNALS_PUBLISHED_TOKEN} line names `#findings:{token_lens}` "
+            f"but frontmatter does not publish that findings lens"
+        )
+    return problems
+
+
+def _findings_token_lens(signal_line):
+    """Return the `<lens>` from a `#findings:<lens>` token in the line, or None if absent.
+
+    Scans whitespace/punctuation-delimited tokens for one starting `#findings:` and returns the
+    lens after the colon (trailing `]`/`)`/`,`/`.` stripped). A bare `#findings` yields None - no
+    lens to match."""
+    for raw in signal_line.replace("[", " ").replace("]", " ").split():
+        tok = raw.strip(",.;)|")
+        if tok.startswith("#findings:"):
+            lens = tok[len("#findings:") :]
+            if lens:
+                return lens
+    return None
 
 
 def check(catalog):
@@ -94,6 +165,15 @@ def check(catalog):
             and not s.get("input_template", "").strip()
         ):
             problems.append(f"{name}: has required input but empty input_template")
+        pubs = s["signals"]["publishes"]
+        # A reviewer emits a bare `findings` data output AND reports via clean/findings:* - the
+        # Reviewer Contract shape. Stages that publish a findings:* signal but emit a different
+        # artifact (researcher, plan-challenger, system-verifier, adr-drafter) are not reviewers.
+        is_reviewer = "findings" in s["data"]["output"] and (
+            "clean" in pubs or _family_match("findings", pubs)
+        )
+        if is_reviewer:
+            problems.extend(_check_reviewer_signals(name, s, pubs))
         for lk in s.get("lock", []):
             for sig in (lk["while"], lk["until"]):
                 if sig not in SEED_SIGNALS and not _family_match(sig, published):

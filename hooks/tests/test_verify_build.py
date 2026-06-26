@@ -27,6 +27,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import uuid
 from pathlib import Path
 
 # Path to the script under test (does not exist yet - tests are red by design)
@@ -84,7 +85,7 @@ def test_no_build_command_is_silent_pass():
     Cargo.toml / go.mod / pyproject.toml, so no build command is detected.
     The script must exit 0 and emit nothing to stdout.
     """
-    session_id = "test-vb-1"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-build-verify-{session_id}")
     bare_dir = tempfile.mkdtemp()
     try:
@@ -126,7 +127,7 @@ def test_failing_build_with_special_chars_emits_valid_json_block():
     assert shutil.which(
         "npm"
     ), "npm required to drive build output through the jq reason path"
-    session_id = "test-vb-2"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-build-verify-{session_id}")
     build_dir = _make_failing_build_dir()
     try:
@@ -177,7 +178,7 @@ def test_retry_cap_second_call_is_not_blocked():
     assert shutil.which(
         "npm"
     ), "npm required to drive build output through the jq reason path"
-    session_id = "test-vb-3"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-build-verify-{session_id}")
     build_dir = _make_failing_build_dir()
     try:
@@ -234,7 +235,7 @@ def test_stop_hook_active_true_is_immediate_pass():
     ignored the build fires, the block JSON appears on stdout, and the test
     fails - proving the guard is load-bearing.
     """
-    session_id = "test-vb-4"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-build-verify-{session_id}")
     build_dir = _make_failing_build_dir()
     try:
@@ -268,7 +269,7 @@ def test_passing_build_is_silent_pass_and_leaves_no_marker():
     successful build run.
     """
     assert shutil.which("npm"), "npm required to run the build script"
-    session_id = "test-vb-5"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-build-verify-{session_id}")
     build_dir = tempfile.mkdtemp()
     try:
@@ -312,7 +313,7 @@ def test_garbage_marker_does_not_short_circuit():
     must proceed to run the build, find it failing, and emit a block decision.
     """
     assert shutil.which("npm"), "npm required to drive the failing build"
-    session_id = "test-vb-marker"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-build-verify-{session_id}")
     build_dir = _make_failing_build_dir()
     try:
@@ -356,7 +357,7 @@ def test_cargo_absent_from_path_is_silent_pass():
     verify-build.py gates the Rust build on cargo being present; when the
     tool is absent it must silently skip rather than error.
     """
-    session_id = "test-vb-asym"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-build-verify-{session_id}")
     build_dir = tempfile.mkdtemp()
     # A fake-bin dir that has python3 (symlinked) but no cargo, so the hook
@@ -401,7 +402,7 @@ def test_build_command_rc127_is_silent_pass():
     This exercises the rc-127 arm without requiring a 150-second timeout.
     """
     assert shutil.which("npm"), "npm required to run the build script"
-    session_id = "test-vb-rc127"
+    session_id = str(uuid.uuid4())
     marker = Path(f"/tmp/.claude-build-verify-{session_id}")
     build_dir = tempfile.mkdtemp()
     try:

@@ -57,6 +57,10 @@ Each question's `header` must fit within 12 characters. Aim for noun phrases des
 - "Confirm: returns the bare array, not a wrapped object?" -> `Return shape`
 - "What's the timeout policy for the downstream call?" -> `Timeout`
 
+## Plain-words escape on demand
+
+On the direction/confirm `QUESTIONS` picker you MAY attach the escape `See it in plain words` as ONE option (the QUESTION budget stays 4; one option slot). Picking it makes the orchestrator re-render the open clarify decision inline in plain before->after form and re-emit this picker, so the gate stays here; the last line of that plain view offers the interactive doc via the surface's brief token. Scope this escape to the direction/confirm question only - a question already at 4 substantive options cannot also carry it. You are read-only and never write the file (see the briefs doctrine in your DOCTRINE block and the Concise Surfacing Contract).
+
 ## Input
 
 ```

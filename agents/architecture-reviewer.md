@@ -104,5 +104,6 @@ FINDINGS:
 - [likely|unsure] [depth|seam|interface|locality|hidden-state] [file_path:line] - [module name] - [failure mode] → [specific fix: inline / collapse / extract / re-scope]
 (empty if VERDICT is pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific fix instructions naming modules and call sites, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:architecture]
 DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with "(none)" sentinel when empty)
 ```

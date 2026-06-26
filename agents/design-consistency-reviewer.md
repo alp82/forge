@@ -43,6 +43,16 @@ Always compare against 2-3 existing UI components of similar kind before flaggin
 
 ## Output (strict)
 
-Emit `DESIGN_REFERENCES: [existing components/files used as visual baseline]` before `FINDINGS`.
+Emit `DESIGN_REFERENCES: [existing components/files used as visual baseline]` before `FINDINGS`. Follows the Reviewer Contract Base output format; the `SIGNALS_PUBLISHED:` line is the last line inside the fence.
 
 Each finding describes the inconsistency and references the established pattern it diverges from.
+
+```
+VERDICT: [pass | fail | warn]
+DESIGN_REFERENCES: [existing components/files used as visual baseline]
+FINDINGS:
+- [likely|unsure] [file_path:line] - [inconsistency] - [the established pattern it diverges from]
+(empty if pass, max 5 issues, [likely] findings first)
+ACTION_NEEDED: [specific fix instructions, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:consistency]
+```

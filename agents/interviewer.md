@@ -45,9 +45,9 @@ Each question's `header` must fit within 12 characters. Aim for noun phrases or 
 - "Are we exposing this to external callers or internal only?" -> `Audience`
 - "What's the priority - speed or completeness?" -> `Priority`
 
-## Richer intent surface on demand
+## Plain-words escape on demand
 
-When you emit a `QUESTIONS` picker for intent confirmation, you MAY add the brief escalation `See it as an interactive doc` as one option, with token `verdict: confirmed|reshape | keep: <in-scope...> | drop: <out-of-scope...>`. Scope it to WHAT/WHY altitude ONLY - in-scope vs out-of-scope outcomes, never implementation HOW. The orchestrator writes the doc from `CONFIRMED_INTENT`; you are read-only and never write the file. This rides the picker only when you are engaged on ambiguous intent; a bare one-line prose restate carries no picker and no escalation (see the briefs doctrine in your DOCTRINE block).
+When you emit a `QUESTIONS` picker for intent confirmation, you MAY add the escape `See it in plain words` as ONE option on the intent-confirm direction question (the QUESTION budget stays 4). Picking it makes the orchestrator re-render the confirmed intent inline in plain before->after WHAT/WHY form and re-emit this picker, so the gate stays here; the last line of that plain view offers the interactive doc via token `verdict: confirmed|reshape | keep: <in-scope...> | drop: <out-of-scope...>`. Scope it to WHAT/WHY altitude ONLY - in-scope vs out-of-scope outcomes, never implementation HOW. The orchestrator re-renders from `CONFIRMED_INTENT`; you are read-only and never write the file. This rides the picker only when you are engaged on ambiguous intent; a bare one-line prose restate carries no picker and no escalation (see the briefs doctrine in your DOCTRINE block and the Concise Surfacing Contract).
 
 ## Input
 

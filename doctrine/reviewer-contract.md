@@ -41,7 +41,21 @@ FINDINGS:
 - [likely|unsure] [file_path:line] - [issue and why it matters]
 (empty if pass, max 5 issues, [likely] findings first)
 ACTION_NEEDED: [specific fixes, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:<lens> - see Published-signal line below]
 ```
+
+The `SIGNALS_PUBLISHED:` line is the LAST line inside the `## Output (strict)` fence, before DISCOVERIES when present. The orchestrator reads it for convergence (`WORKFLOW.md` ## Convergence) instead of inferring `clean` from VERDICT prose.
+
+**Reviewer discriminator (load-bearing precondition):** check_catalog identifies a stage as a reviewer - and thus subject to the SIGNALS_PUBLISHED canary - when its data output is the bare artifact `findings` AND it publishes `clean` or a `findings:*` lens. A stage publishing a `findings:*` signal but emitting a different artifact (researcher, plan-challenger, system-verifier, adr-drafter) is not a reviewer and carries no SIGNALS_PUBLISHED line.
+
+### Published-signal line
+
+The mapping, stated once:
+
+- `pass` or `warn` -> `#clean`
+- `fail` -> `#findings:<lens>` (the reviewer's own lens, e.g. `#findings:correctness`, `#findings:security`)
+
+acceptance-reviewer is three-valued (`pass | partial | fail`): `pass` -> `#clean`; `partial` or `fail` -> `#findings:acceptance`. A partial acceptance is an unmet requirement - it blocks convergence and pulls the fixer, so it maps to `#findings`, never `#clean`.
 
 A reviewer MAY:
 - Add specialized fields before FINDINGS (e.g. `DESIGN_REFERENCES`, `EXAMPLES_COMPARED`).
@@ -69,6 +83,7 @@ FINDINGS:
 - [likely] src/features/items/controller.ts:22 - returns `{ data, meta }` but every other controller returns the bare array. Align with reports/users.
 - [likely] src/features/items/service.ts:8 - `get_item` (snake_case) diverges from camelCase used elsewhere in the module.
 ACTION_NEEDED: Change return shape to bare array; rename `get_item` to `getItem`.
+SIGNALS_PUBLISHED: #findings:consistency
 DISCOVERIES:
   glossary:
     (none)

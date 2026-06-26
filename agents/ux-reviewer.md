@@ -41,4 +41,13 @@ Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/
 
 ## Output (strict)
 
-Each finding describes the UX issue, what the user would experience, and a suggested improvement.
+Each finding describes the UX issue, what the user would experience, and a suggested improvement. Follows the Reviewer Contract Base output format; the `SIGNALS_PUBLISHED:` line is the last line inside the fence.
+
+```
+VERDICT: [pass | fail | warn]
+FINDINGS:
+- [likely|unsure] [file_path:line] - [UX issue, what the user experiences, suggested improvement]
+(empty if pass, max 5 issues, [likely] findings first)
+ACTION_NEEDED: [specific fix instructions, or "none"]
+SIGNALS_PUBLISHED: [#clean OR #findings:ux]
+```
