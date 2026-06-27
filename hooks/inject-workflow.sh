@@ -8,13 +8,18 @@
 
 set -euo pipefail
 
+# Self-locate so the dev-tree hook always gets the dev-tree helper, regardless of
+# what CLAUDE_PLUGIN_ROOT points at in a session (mirrors recover-run-state.sh).
+hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CLAUDE_PLUGIN_ROOT:="$(cd "${hook_dir}/.." && pwd)"}"
+
 workflow_file="${CLAUDE_PLUGIN_ROOT}/WORKFLOW.md"
 
 if [[ ! -f "$workflow_file" ]]; then
   exit 0
 fi
 
-helper="${CLAUDE_PLUGIN_ROOT}/hooks/workflow-anchor.sh"
+helper="${hook_dir}/workflow-anchor.sh"
 [ -f "$helper" ] || exit 0
 source "$helper"
 

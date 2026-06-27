@@ -958,11 +958,16 @@ def _make_doctrine_root(
     token choice.
     """
     if workflow_content is None:
-        workflow_content = (
-            "# WORKFLOW\n"
-            "trivial code: only when est-size > S blah blah\n"
-            "auto-publish iff the plan touches <=1 file AND est-size <= S\n"
-        )
+        # Build content that includes ALL WORKFLOW.md canary phrases dynamically,
+        # so the green-path root scores 100 regardless of how many phrases
+        # DOCTRINE_PHRASES pins to WORKFLOW.md.
+        workflow_phrases = _get_all_phrases_for("WORKFLOW.md")
+        if workflow_phrases:
+            workflow_content = "# WORKFLOW\n" + "".join(
+                f"{p}\n" for p in workflow_phrases
+            )
+        else:
+            workflow_content = "# WORKFLOW\n(placeholder - no canary phrase found)\n"
     if code_doctrine_content is None:
         code_doctrine_content = (
             "# code-doctrine\n"
@@ -1449,11 +1454,13 @@ def test_h21_subprocess_scorecard_json_has_doctrine_integrity():
 
 
 def test_doctrine_phrases_length_pinned():
-    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 7 entries
-    (3 originals + CLAUDE.md + briefs overview + the two RC4 briefs labels)."""
-    assert len(audit.DOCTRINE_PHRASES) == 7, (
-        f"DOCTRINE_PHRASES must have exactly 7 entries "
-        f"(3 originals + CLAUDE.md + briefs overview + the two RC4 briefs labels); "
+    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 8 entries
+    (3 originals + CLAUDE.md + briefs overview + the two RC4 briefs labels +
+    the artifact-handles canary)."""
+    assert len(audit.DOCTRINE_PHRASES) == 8, (
+        f"DOCTRINE_PHRASES must have exactly 8 entries "
+        f"(3 originals + CLAUDE.md + briefs overview + the two RC4 briefs labels "
+        f"+ the artifact-handles canary); "
         f"got {len(audit.DOCTRINE_PHRASES)}: {audit.DOCTRINE_PHRASES!r}"
     )
 

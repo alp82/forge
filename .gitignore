@@ -1,5 +1,6 @@
 .prototypes/
 .briefs/
+.alp-river/
 .pytest_cache/
 __pycache__/
 .claude/

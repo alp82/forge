@@ -27,24 +27,25 @@
 
 The last three updates:
 
+**1.3.0**
+
+This release makes an interrupted session recoverable: when a run is cut off before it finishes, you can pick up where it left off instead of starting over.
+
+- A run cut off mid-task - the process killed, the terminal closed, the machine lost - no longer loses your place; reopening the project offers to resume where it stopped after you confirm.
+- Recovering your place after a long conversation is automatically condensed now works reliably.
+- Large plans now use much less of the session's working memory throughout a run, with no change to what gets done.
+
+**1.2.18**
+
+- At the points where the assistant asks you to settle direction, confirm intent, or sign off on a plan, you can now pick "See it in plain words" to have the same decision re-stated inline in plain language with a before/after example - and pull up the full interactive page from there if you want more.
+- Explanations at those decision points now lead with plain words and a concrete before/after (or input/output) example by default, with jargon trimmed.
+- Reviews now finish more reliably: each review reports its own clean-or-issues result explicitly, so the run no longer has to guess from the wording whether a check passed.
+
 **1.2.17**
 
 - When you ask to ship the work from a session, the run now offers to commit it, push the branch, and open a draft pull request for you - only after you confirm, and only when you ask.
 - Before it runs, you see exactly which commands will touch the remote and how to undo each one.
 - Routine local git work (add, commit, push) now runs without interruption; only destructive git operations (force-push, reset, rebase, branch or remote delete) remain blocked as user-only.
-
-**1.2.16**
-
-- At the moments where the assistant asks you to confirm direction, settle intent, or sign off on a plan, you can now pull up a richer side-by-side view as a single page you open, compare at a glance, and answer from - or stay with the quick inline choice.
-- The richer view is built only when you ask for it, and closing it without answering changes nothing - the original question stays open until you decide.
-
-**1.2.15**
-
-- A finished run now ends with a timing summary: total time, time per phase, and time per milestone when the work was built in milestones.
-
-**1.2.14**
-
-- Removed the opt-in screenshot-based visual check because they were unreliable.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -71,6 +72,8 @@ To pull updates later:
 ```
 
 The pointer resolves to the plugin's installed path. If your setup restricts file reads, allow the agent to read the plugin's doctrine - on a standard install add `Read(~/.claude/plugins/cache/alperortac/alp-river/**)` to your `.claude/settings.json` allowlist.
+
+The workflow persists its run state to disk every turn so a run survives compaction. To keep these writes prompt-free, add `Write(.alp-river/**)` to your `.claude/settings.json` allowlist - a one-time per-session grant you approve once (like the per-turn router Bash call), not a per-turn cost. The plugin ships no consumer permissions, so this is documented, not auto-granted.
 
 ## How it works
 
@@ -407,7 +410,7 @@ alp-river/
 ├── WORKFLOW.md             <- the full router-loop doctrine
 ├── doctrine/               <- CATALOG.md (stage schema), SIGNALS.md (signal vocabulary), ...
 ├── generated/catalog.json  <- compiled stage catalog (50 stages; tracked; the router reads it)
-├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, reinject-state)
+├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, recover-state)
 ├── agents/                 <- 50 stage definitions + setup-agent
 ├── commands/               <- 6 slash commands
 ├── psychology/             <- per-agent voice / persona overrides

@@ -63,6 +63,8 @@ During a milestone-loop build you implement one milestone at a time. When implem
 <BACKWARD_EDGES_USED>{integer - main agent's running count}</BACKWARD_EDGES_USED>
 ```
 
+When an `<APPROVED_PLAN>` slot holds a handle line rather than the block, Read the file at that path and treat its bytes as the verbatim plan (`WORKFLOW.md` ## Input Template Contract).
+
 ## Output (strict)
 
 ```
