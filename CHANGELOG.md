@@ -2,6 +2,12 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.1 - 2026-06-28
+
+- The live progress card now groups each step under its stage of the work - intent, scouting, planning, tests, build, review - in the order the run actually runs them, so what you read always matches what happens next.
+- Every progress card now reads in plain words throughout; the internal codes that used to trail a line are gone from what you see.
+- The published stage list is now complete, listing two checks that were missing before.
+
 ## 1.3.0 - 2026-06-27
 
 This release makes an interrupted session recoverable: when a run is cut off before it finishes, you can pick up where it left off instead of starting over.

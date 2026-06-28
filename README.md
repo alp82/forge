@@ -8,6 +8,7 @@
 
 ![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)
 ![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)
+![Version](https://shieldcn.dev/badge/version-1.3.1-D97757.svg?variant=outline&size=lg)
 
 <br>
 
@@ -23,41 +24,25 @@
 
 </div>
 
-## Latest updates
+---
+
+## 📰 Latest updates
 
 The last three updates:
 
-**1.3.0**
+**1.3.1** - The live progress card now groups every step under its phase in run order, reads in plain words throughout, and the published stage list is complete.
 
-This release makes an interrupted session recoverable: when a run is cut off before it finishes, you can pick up where it left off instead of starting over.
+**1.3.0** - An interrupted run is now recoverable: reopen the project and resume where it stopped instead of starting over.
 
-- A run cut off mid-task - the process killed, the terminal closed, the machine lost - no longer loses your place; reopening the project offers to resume where it stopped after you confirm.
-- Recovering your place after a long conversation is automatically condensed now works reliably.
-- Large plans now use much less of the session's working memory throughout a run, with no change to what gets done.
-
-**1.2.18**
-
-- At the points where the assistant asks you to settle direction, confirm intent, or sign off on a plan, you can now pick "See it in plain words" to have the same decision re-stated inline in plain language with a before/after example - and pull up the full interactive page from there if you want more.
-- Explanations at those decision points now lead with plain words and a concrete before/after (or input/output) example by default, with jargon trimmed.
-- Reviews now finish more reliably: each review reports its own clean-or-issues result explicitly, so the run no longer has to guess from the wording whether a check passed.
-
-**1.2.17**
-
-- When you ask to ship the work from a session, the run now offers to commit it, push the branch, and open a draft pull request for you - only after you confirm, and only when you ask.
-- Before it runs, you see exactly which commands will touch the remote and how to undo each one.
-- Routine local git work (add, commit, push) now runs without interruption; only destructive git operations (force-push, reset, rebase, branch or remote delete) remain blocked as user-only.
+**1.2.18** - At the points where the assistant asks you to settle direction, confirm intent, or sign off on a plan, you can now pick "See it in plain words" to have the same decision re-stated inline in plain language.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
-## Getting Started
+---
 
-1. Set your main Claude Code session model (the orchestrator that runs the routing loop) to a top-tier model like **Opus at high effort** - the orchestrator drives every routing decision, so a weaker main model degrades the whole pipeline.
-2. Install the plugin (see **[Install](#install)** below).
-3. Describe what you want in plain English (or use `/alp-river:go`), then respond only at the decision points.
+## ⚡ Quick start
 
-## Install
-
-In Claude Code:
+Install in Claude Code:
 
 ```
 /plugin marketplace add alp82/alp-river
@@ -66,20 +51,42 @@ In Claude Code:
 ```
 
 To pull updates later:
+
 ```
 /plugin marketplace update alperortac
 /reload-plugins
 ```
 
-The pointer resolves to the plugin's installed path. If your setup restricts file reads, allow the agent to read the plugin's doctrine - on a standard install add `Read(~/.claude/plugins/cache/alperortac/alp-river/**)` to your `.claude/settings.json` allowlist.
+Then:
 
-The workflow persists its run state to disk every turn so a run survives compaction. To keep these writes prompt-free, add `Write(.alp-river/**)` to your `.claude/settings.json` allowlist - a one-time per-session grant you approve once (like the per-turn router Bash call), not a per-turn cost. The plugin ships no consumer permissions, so this is documented, not auto-granted.
+1. Set your main session model to **Opus at high effort** (see the tip below).
+2. Describe what you want in plain English, or run `/alp-river:go` - then respond only at the decision points.
 
-## How it works
+> [!TIP]
+> Run the main session on a top-tier model like Opus at high effort. The orchestrator drives every routing decision, so a weaker main model degrades the whole pipeline.
 
-No commands required. Describe what you want in plain text - or use `/alp-river:go` for a discoverable trigger. Both run the same workflow.
+> [!NOTE]
+> Two one-time allowlist grants keep a run prompt-free. Add `Read(~/.claude/plugins/cache/alperortac/alp-river/**)` so the agent can read the plugin's doctrine, and `Write(.alp-river/**)` so it can persist run state to disk every turn (this is what lets a run survive compaction). The plugin ships no consumer permissions, so these are documented, not auto-granted.
 
-Triage reads your request and picks one of four conversation types. A deterministic router then runs only the stages that type needs, and pulls in more only when the work reveals it needs them - discover no email infra and a research stage joins; a plan that signs tokens pulls in a security lens. Size (XS-XXL) is just how many stages the route ended up with.
+---
+
+## 🌊 How it works
+
+No commands required - describe what you want in plain text, or use `/alp-river:go`. Both run the same workflow.
+
+Think of it as a packing list that fills itself:
+
+1. **Triage picks the lane** - it reads your request and picks one of four conversation types.
+2. **Stages subscribe to signals** - a stage joins the route the moment one of its flags fires.
+3. **More flags pull in more stages** - the route grows as the work reveals itself: no email infra found pulls in research; a plan that signs tokens pulls in a security lens.
+4. **Size (XS-XXL) is the final head-count** - a readout of how many stages the route ended up with, never a dial you set.
+
+A worked example:
+
+> *"Add rate limiting to the login endpoint"*
+> → `code · needs-tests · significant-build · auth-surface`
+> → each flag pulls its stages: red tests, a challenged plan, a security review
+> → `code · L · 12 stages` → all clean → done.
 
 ```mermaid
 flowchart TD
@@ -90,153 +97,147 @@ flowchart TD
     t -->|system| D[plan → safety-gate<br/>→ execute → verify]
 ```
 
-| Path | You're... | What it leaves behind |
-|------|-----------|------------------------|
-| **talk** | thinking out loud, asking, weighing options | nothing - answers, worked examples, tradeoffs. Reads freely; only expensive moves (a web search, a diagram) ask first. |
-| **sketch** | trying an idea fast | a throwaway artifact in `.prototypes/` - code, a diagram, or a UI mockup. Relaxed ceremony; correctness and security still apply. |
-| **code** | changing the codebase | a reviewed, tested change in your repo. The full route: clarify, plan, challenge, red tests, implement, review fan-out, self-heal. A large change proceeds as verified milestones - each built, reviewed, and confirmed before the next. |
-| **system** | changing the machine (configs, troubleshooting, CLI tooling) | a verified change, with a safety check before anything destructive or irreversible. |
+The spine of a code route, in the order it runs:
+
+`🔎 Intent → 🧭 Scout → 📐 Blueprint → 🧪 Tests → 🔨 Build → 🔬 Review → 📓 Document`
 
 ### Where you stay in the loop
 
 You're pulled in only at decisions that could change the outcome:
 
-- **Intent** - a clear ask gets a one-line read and proceeds; you correct it in your next message. A genuinely ambiguous ask sends the interviewer to loop with you until intent settles.
-- **Clarifier questions** - researches the codebase first, then asks only what's still open.
+- **Intent** - a clear ask gets a one-line read and proceeds; an ambiguous one loops with the interviewer until intent settles.
+- **Clarifier** - researches the codebase first, then asks only what's still open.
 - **Design picker** - for UI with multiple legitimate shapes, builds an interactive page; you paste back the chosen spec.
 - **Cost / plan / safety gates** - fire only when the route turns expensive, a plan is ready, or a destructive step is queued. Never as fixed ceremony.
 
-Everything else runs to convergence: done when no signal triggers an unrun stage and every review lens is clean. Reviewer findings feed the fixer automatically.
+---
 
-## Examples
+## 🎬 Examples
 
 ### "Rename a variable across the module"
 
-Trivial code change - plan, write, check, done.
+Trivial change - no Scout, no Tests.
 
-```text
-code · S · 4 stages
-  triage
-  code-planner
-  code-implementer
-  correctness-reviewer  ✓
-```
+`code · S · 4 stages`
+
+- 🔎 **Intent**
+  - ✓ triage
+- 📐 **Blueprint**
+  - ✓ code-planner
+- 🔨 **Build**
+  - ✓ code-implementer
+- 🔬 **Review**
+  - ✓ correctness
 
 ### "Fix this off-by-one in pagination"
 
 A bug is a code task carrying a bug signal - it gets a root-cause hunt before the fix.
 
-```text
-code + bug · M · ~9 stages
-  triage               tags the bug
-  code-investigator    finds the root cause
-  code-planner
-  code-implementer
-  Review
-    correctness
-    regression + reuse lenses
-  fixer  ✓
-```
+`code + bug · M · ~11 stages`
 
-### "Set up nginx as a reverse proxy"
-
-System work - ordered, reversible steps, with a safety check before the destructive one.
-
-```text
-system · M · 5 stages
-  triage
-  system-planner    ordered steps + rollback
-  safety-gate       ← holds the destructive step
-  system-executor
-  system-verifier  ✓
-```
-
-### "What's the cleanest way to structure this module?"
-
-Pure discussion - options and tradeoffs, nothing written.
-
-```text
-talk · XS · 2 stages
-  triage
-  discuss    options + tradeoffs, no code
-```
+- 🔎 **Intent**
+  - ✓ triage - tags the bug
+- 🧭 **Scout**
+  - ✓ code-investigator - finds the root cause
+- 📐 **Blueprint**
+  - ✓ code-planner
+- 🧪 **Tests**
+  - ✓ test-plan
+  - ✓ test-author
+  - ✓ test-review
+- 🔨 **Build**
+  - ✓ code-implementer
+- 🔬 **Review**
+  - ✓ correctness
+  - ✓ simplicity
+  - ✓ test-verifier
+  - ✓ fixer - heals the findings
 
 ### "Add OAuth login"
 
-A big code change - the full route, grouped by stage. This is what XXL looks like.
+A big code change - the full route, grouped by phase. This is what XXL looks like.
 
-```text
-code · XXL · 18 stages
-  Intent
-    triage
-    interviewer
-    requirements-clarifier
-  Scout
-    reuse-scanner
-    health-checker
-    researcher
-  Blueprint
-    code-planner
-    plan-challenger
-  Tests (red first)
-    test-plan
-    test-author
-    test-review
-  Build
-    code-implementer
-  Review (parallel fan-out)
-    correctness · quality · architecture · …
-    security-reviewer   ← auth surface
-  Heal
-    fixer  ✓
-```
+`code · XXL · ~18 stages`
 
-## Stages
+- 🔎 **Intent**
+  - ✓ triage
+  - ✓ interviewer
+  - ✓ requirements-clarifier
+- 🧭 **Scout**
+  - ✓ reuse-scanner
+  - ✓ health-checker
+  - ✓ researcher
+- 📐 **Blueprint**
+  - ✓ code-planner
+  - ✓ plan-challenger
+- 🧪 **Tests**
+  - ✓ test-plan
+  - ✓ test-author
+  - ✓ test-review
+- 🔨 **Build**
+  - ✓ code-implementer
+- 🔬 **Review**
+  - ✓ correctness
+  - ✓ security - auth surface
+  - ✓ … +15 more lenses
+  - ✓ fixer - heals the findings
 
-50 composable stages plus a command-only setup agent. Each declares its routes and data/signal contract in frontmatter (see `doctrine/CATALOG.md`, `doctrine/SIGNALS.md`). Below they are grouped by conversation path; a stage that runs in several paths appears under each.
+---
 
-### Code
+## 🔎 Intent
 
-```text
-🔎 Intent
-🧭 Scout
-📐 Blueprint
-🧪 Tests
-🔨 Build
-🔬 Review
-📓 Document
-```
+Reads the request, settles what you actually want, and frames the work.
 
-🔎 **Intent** - reads the request, settles what you actually want, and frames the work.
+*An ambiguous "make login better" loops with the interviewer until the goal is concrete.*
 
 | Stage | Model | Role |
 |-------|-------|------|
-| triage | haiku | Always-on. Reads your request, picks the path, sniffs early risk and bug-framing. |
-| interviewer | opus | When the ask is ambiguous, probes scope and success criteria, looping until intent settles. |
-| requirements-clarifier | opus | Researches the area, then surfaces edge cases and proposed acceptance criteria before planning. |
+| triage | haiku | Always-on. Reads your request, picks the path, flags early risk and bug-framing. |
+| interviewer | opus | When the ask is ambiguous, probes scope and success criteria until intent settles. |
+| requirements-clarifier | opus | Researches the area, then surfaces edge cases and proposed acceptance criteria. |
 
-🧭 **Scout** - surveys the ground: what to reuse, how healthy the area is, what novelty needs a tracer-bullet first.
+---
+
+## 🧭 Scout
+
+Surveys the ground: what to reuse, how healthy the area is, what novelty needs a tracer-bullet first, and the root cause behind a bug.
+
+*No email infra found, so a research stage joins.*
 
 | Stage | Model | Role |
 |-------|-------|------|
 | reuse-scanner | sonnet | Finds reusable code and quick wins; flags duplication and missing infra. |
 | health-checker | haiku | Scores the health of the area you're touching and surfaces cleanup targets. |
 | prototype-identifier | haiku | Flags unfamiliar APIs or SDKs and suggests shapes to try first. |
-| code-prototyper | sonnet | Builds a tracer-bullet against the real API/integration (algorithm correctness as a mode) to de-risk novelty before planning. |
-| data-prototyper | sonnet | Tries competing schemas/data shapes against real samples and writes a human-reference report. |
+| code-prototyper | sonnet | Builds a tracer-bullet against the real API to de-risk novelty before planning. |
+| data-prototyper | sonnet | Tries competing schemas against real samples and writes a reference report. |
 | performance-prototyper | sonnet | Measures timing/scale-critical unknowns with a runnable and a charted report. |
 | researcher | sonnet | Pulls library, framework, and domain knowledge from the web. |
+| code-investigator | opus | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis the planner consumes. |
 
-📐 **Blueprint** - turns settled intent into a concrete blueprint, then attacks it adversarially.
+---
+
+## 📐 Blueprint
+
+Turns settled intent into a concrete blueprint, then attacks it adversarially.
+
+*Two legitimate UI shapes? A picker page lets you choose before planning.*
 
 | Stage | Model | Role |
 |-------|-------|------|
-| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the chosen spec. |
-| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the chosen flow spec. |
+| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the spec. |
+| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the flow spec. |
 | code-planner | opus | Turns intent into a concrete step-by-step blueprint. |
 | plan-challenger | opus | Adversarial review of the plan: holes, failure modes, simpler alternatives. |
+| plan-arbiter | opus | On a multi-plan build, cross-reviews the competing plans; decides Adopt / Hybrid / Revise-first. |
 
-🧪 **Tests** - derives the test cases and writes them red, validated against intent before any code is allowed.
+---
+
+## 🧪 Tests
+
+Derives the test cases and writes them red, validated against intent before any code is allowed.
+
+*The acceptance criteria become failing tests that gate the implementer.*
 
 | Stage | Model | Role |
 |-------|-------|------|
@@ -244,20 +245,31 @@ code · XXL · 18 stages
 | test-author | sonnet | Writes the failing (red) tests before any implementation exists. |
 | test-review | opus | Validates the red tests against intent, then releases the implementer. |
 
-🔨 **Build** - builds the change to the plan, diagnoses bugs at their root, and gates anything destructive.
+---
+
+## 🔨 Build
+
+Builds the change to the plan, and gates anything destructive.
+
+*The implementer stays locked until the red tests are validated.*
 
 | Stage | Model | Role |
 |-------|-------|------|
 | code-implementer | opus | Executes the approved plan. Held by the TDD lock until tests are validated. |
-| code-investigator | opus | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis. |
-| fixer | sonnet | Applies reviewer findings and reruns the lenses it touched until clean. |
-| safety-gate | sonnet | Before anything destructive or irreversible, shows what is at stake and waits for your go-ahead. Sticky. |
+| safety-gate | sonnet | Before anything destructive or irreversible, shows what's at stake and waits for your go-ahead. Sticky. |
 
-🔬 **Review** - scrutinizes every diff in parallel: correctness always, the rest as the change demands.
+---
+
+## 🔬 Review
+
+Scrutinizes every diff in parallel: correctness always, the rest as the change demands.
+
+*An auth-touching diff pulls in the security lens; clean lenses converge the route.*
 
 | Lens | Model | Runs when |
 |------|-------|-----------|
 | correctness | opus | every change |
+| simplicity | sonnet | every change |
 | quality | opus | logic changes |
 | acceptance | sonnet | logic changes |
 | plan-adherence | sonnet | logic changes |
@@ -275,35 +287,41 @@ code · XXL · 18 stages
 | accessibility | sonnet | UI touched |
 | design-consistency | sonnet | UI touched |
 
-🚀 **Ship** - opt-in at convergence: on a ship request, gates the forward git/gh commands, then commits, pushes, and opens a draft PR.
+*Then `fixer` (sonnet) applies the reviewer findings and reruns the lenses it touched until clean - the trailing heal line of Review.*
+
+---
+
+## 📓 Document
+
+Records the glossary, stack, and intent updates the run surfaced, only after you approve.
+
+*A new term the run coined is proposed for the glossary - written only on your OK.*
 
 | Stage | Model | Role |
 |-------|-------|------|
-| ship-gate | sonnet | On a ship request at convergence, names the commit/push/PR commands and how to undo each, and waits for your go-ahead. Sticky. |
-| ship-executor | sonnet | Composes one commit, pushes the branch, opens a draft PR. Held by the ship lock until the gate clears. |
-
-📓 **Document** - records the glossary, stack, and intent updates the run surfaced, only after you approve.
-
-| Stage | Model | Role |
-|-------|-------|------|
-| capture-agent | opus | Proposes glossary / stack / intent updates surfaced during the run; writes only after your approval. |
+| capture-agent | opus | Proposes glossary / stack / intent updates surfaced during the run; writes only after approval. |
 | adr-drafter | opus | Drafts a single ADR from a decision summary. Backs `/alp-river:adr`. |
 
-### System
+---
 
-```text
-🔎 Intent
-🖥️ System
-🔬 Review
-```
+## 🚀 Ship
 
-🔎 **Intent** - triage frames system intent directly and picks the path.
+Opt-in at convergence: on a ship request, gates the forward git/gh commands, then commits, pushes, and opens a draft PR.
 
 | Stage | Model | Role |
 |-------|-------|------|
-| triage | haiku | Always-on. Reads your request, picks the path, sniffs early risk and bug-framing. |
+| ship-gate | sonnet | Names the commit/push/PR commands and how to undo each, and waits for your go-ahead. Sticky. |
+| ship-executor | sonnet | Composes one commit, pushes the branch, opens a draft PR. Held by the ship lock until the gate clears. |
 
-🖥️ **System** - plans, runs, and verifies OS-level changes, holding any destructive step behind a safety check.
+*`setup-agent` (opus) is command-only - it backs `/alp-river:setup` and is not part of any path.*
+
+---
+
+## 🛤️ Other paths
+
+### 🖥️ System
+
+Changing the machine (configs, troubleshooting, CLI tooling) - leaves behind a verified change, destructive steps gated.
 
 | Stage | Model | Role |
 |-------|-------|------|
@@ -311,87 +329,37 @@ code · XXL · 18 stages
 | system-executor | sonnet | Runs the plan one step at a time. Held by the safety lock before destructive steps. |
 | system-verifier | sonnet | Confirms the change actually reached its intended state. |
 | system-investigator | sonnet | Root-cause diagnosis for OS-level faults from service state, logs, and configs. |
-| safety-gate | sonnet | Before anything destructive or irreversible, shows what is at stake and waits for your go-ahead. Sticky. |
 
-🔬 **Review** - one lens guards the system path when it touches sensitive surface.
+*Shares `safety-gate` (🔨 Build) and the `security` lens (🔬 Review).*
 
-| Lens | Model | Runs when |
-|------|-------|-----------|
-| security | sonnet | any system change that touches auth/secrets/permissions (sticky) |
+### 💬 Talk
 
-### Talk
+Thinking out loud, asking, weighing options - leaves behind nothing written: answers, worked examples, tradeoffs.
 
-```text
-🔎 Intent
-🧭 Scout
-💬 Discuss
-📓 Document
-```
+A 1-2 stage route renders flat, with no phase banners:
 
-🔎 **Intent** - reads the request and settles what you actually want before answering.
+#### "What's the cleanest way to structure this module?"
 
-| Stage | Model | Role |
-|-------|-------|------|
-| triage | haiku | Always-on. Reads your request, picks the path, sniffs early risk and bug-framing. |
-| interviewer | opus | When the ask is ambiguous, probes scope and success criteria, looping until intent settles. |
+`talk · XS · 2 stages`
 
-🧭 **Scout** - look before answering: existing code, health, research, UI options, or a root-cause trace.
+- ✓ triage
+- ✓ discuss - options + tradeoffs, no code
+
+*Shares the 🔎 Intent and 🧭 Scout stages with the code path.*
+
+### ✏️ Sketch
+
+Trying an idea fast - leaves behind a throwaway runnable in `.prototypes/`, relaxed ceremony.
 
 | Stage | Model | Role |
 |-------|-------|------|
-| reuse-scanner | sonnet | Finds reusable code and quick wins; flags duplication and missing infra. |
-| health-checker | haiku | Scores the health of the area you're touching and surfaces cleanup targets. |
-| researcher | sonnet | Pulls library, framework, and domain knowledge from the web. |
-| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the chosen spec. |
-| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the chosen flow spec. |
-| code-investigator | opus | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis. |
-| system-investigator | sonnet | Root-cause diagnosis for OS-level faults from service state, logs, and configs. |
+| sketch-build | sonnet | Throwaway runnable code in `.prototypes/`, relaxed ceremony. |
 
-💬 **Discuss** - options with worked examples and tradeoffs, nothing written.
+*Shares the prototypers (🧭 Scout / 📐 Blueprint), `fixer` and the `correctness` / `security` lenses (🔬 Review).*
 
-| Stage | Model | Role |
-|-------|-------|------|
-| discuss | opus | The talk path: options with worked examples and tradeoffs; never writes code. |
+---
 
-📓 **Document** - capture a decision the discussion reached, on request.
-
-| Stage | Model | Role |
-|-------|-------|------|
-| adr-drafter | opus | Drafts a single ADR from a decision summary. Backs `/alp-river:adr`. |
-
-### Sketch
-
-```text
-🔎 Intent
-🔨 Build
-🔬 Review
-```
-
-🔎 **Intent** - triage frames the throwaway and picks the path.
-
-| Stage | Model | Role |
-|-------|-------|------|
-| triage | haiku | Always-on. Reads your request, picks the path, sniffs early risk and bug-framing. |
-
-🔨 **Build** - throwaway runnable artifact in `.prototypes/`, relaxed ceremony.
-
-| Stage | Model | Role |
-|-------|-------|------|
-| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the chosen spec. |
-| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the chosen flow spec. |
-| sketch-build | sonnet | The sketch path: throwaway runnable code in `.prototypes/`, relaxed ceremony. |
-| fixer | sonnet | Applies reviewer findings and reruns the lenses it touched until clean. |
-
-🔬 **Review** - correctness on every sketch; security if the surface demands it.
-
-| Lens | Model | Runs when |
-|------|-------|-----------|
-| correctness | sonnet | every sketch |
-| security | sonnet | sticky |
-
-*`setup-agent` (opus) is command-only - it backs `/alp-river:setup` and is not part of any path.*
-
-## Slash commands
+## ⌨️ Slash commands
 
 ```
 /alp-river:go        Run the workflow. Triage routes the request; the router composes the stages it needs.
@@ -402,7 +370,9 @@ code · XXL · 18 stages
 /alp-river:audit     Self-audit the plugin and report a health scorecard with top fixes.
 ```
 
-## Structure
+---
+
+## 🗂️ Structure
 
 ```
 alp-river/
@@ -417,9 +387,11 @@ alp-river/
 └── templates/              <- copy into your project's docs/ for context injection
 ```
 
-## Under the hood
+---
 
-The router is deterministic code (`hooks/route.py`). A stage joins when one of its `subscribes` topics matches a live signal, filtered to the live path by its `routes`; run order is a topological sort of the `input`/`output` artifact dependencies. The catalog it reads (`generated/catalog.json`) is compiled from each agent's frontmatter by a save-time hook. The judgment lives in the stages - triage frames the work, each stage classifies its own findings - so the router never reasons. It just routes.
+## 🔧 Under the hood
+
+The router is deterministic code (`hooks/route.py`) - it routes, it never reasons. A stage joins when one of its `subscribes` topics matches a live signal, filtered to the live path by its `routes`; run order is a topological sort of the `input`/`output` artifact dependencies. The catalog it reads (`generated/catalog.json`) is compiled from each agent's frontmatter by a save-time hook. The judgment lives in the stages - triage frames the work, each stage classifies its own findings.
 
 ```mermaid
 flowchart LR
@@ -440,11 +412,11 @@ Two **locks** hold a step until it is safe to proceed:
 - **TDD lock** on the code implementer - on a logic change, code can't start until the red tests are validated. Trivial changes skip it.
 - **safety lock** on the system executor - a destructive or irreversible step is held until the safety gate gets your go-ahead.
 
-**Convergence** - the route is done when no signal triggers an unrun stage and every review lens is clean. Reviewer findings feed the fixer automatically.
+**Convergence** - done when no signal triggers an unrun stage and every review lens is clean. Reviewer findings feed the fixer automatically. A SessionStart hook injects a small essentials block plus a pointer to `WORKFLOW.md`; after `/compact` it re-anchors that pointer and restores the canonical run state so the router resumes deterministically.
 
-A SessionStart hook injects a small essentials block plus a pointer to `WORKFLOW.md`; after `/compact` it re-anchors that pointer and restores the canonical run state so the router resumes deterministically.
+---
 
-## Local development
+## 💻 Local development
 
 Clone the repo and pass `--plugin-dir`:
 
@@ -453,6 +425,8 @@ git clone https://github.com/alp82/alp-river.git
 claude --plugin-dir ./alp-river
 ```
 
-## Author
+---
+
+## ✍️ Author
 
 Alper Ortac &middot; [x.com/alperortac](https://x.com/alperortac)

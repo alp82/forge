@@ -109,8 +109,12 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Avoid:** "replan"; not "scope-shift" (which breaks a route premise - this re-splits remaining milestones).
 
 ### Colored milestone render
-**Definition:** The milestone-status layer the render card adds during a milestone build: a `milestone k of N` header and the milestone list marked 🟩 (verified) / 🟨 (building) / 🟥 (pending), atop the existing per-stage `▶ ✓ 🔒 •` markers. The card is native markdown, so these markers render natively.
+**Definition:** The milestone-status layer the render card adds during a milestone build: one line per milestone showing its state, atop the per-stage markers. See `doctrine/render-card.md` for the marker glosses.
 **Avoid:** "progress bar", "status colors".
+
+### Card grammar
+**Definition:** The one shared vocabulary every render-card surface speaks - the markers, the layout rules, and the fixed phase-banner order - so a rendered list never implies an order the route does not run. See `doctrine/render-card.md`.
+**Avoid:** "render format", "card layout".
 
 ### plan-arbiter
 **Definition:** The read-only stage that cross-reviews N competing personality-driven plans against intent and the codebase and decides Adopt / Hybrid / Revise-first. Distinct from plan-challenger, which renders an Approve/Revise verdict on a single plan.
@@ -139,7 +143,7 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Avoid:** "uncertainty markers", "hedging".
 
 ### Run-timing readout
-**Definition:** The one-time card the orchestrator renders at convergence showing a run's total wall-clock time and a per-phase (and per-milestone, when the milestone loop ran) breakdown. See WORKFLOW.md.
+**Definition:** The one-time card the orchestrator renders at convergence showing a run's total wall-clock time and a per-phase (and per-milestone, when the milestone loop ran) breakdown. See `doctrine/render-card.md`.
 **Avoid:** "timer", "profiler", "stopwatch".
 
 ## Context injection

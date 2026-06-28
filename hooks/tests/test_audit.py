@@ -940,10 +940,12 @@ def _make_doctrine_root(
     code_doctrine_content=None,
     claude_md_content=None,
     briefs_content=None,
+    render_card_content=None,
     include_workflow=True,
     include_code_doctrine=True,
     include_claude_md=True,
     include_briefs=True,
+    include_render_card=True,
 ):
     """Build a minimal repo root in tmp_path with controlled doctrine files.
 
@@ -992,6 +994,17 @@ def _make_doctrine_root(
             briefs_content = "# Briefs\n" + "".join(f"{lw}\n" for lw in leitworts)
         else:
             briefs_content = "# briefs\n(placeholder - no leitwort phrase found)\n"
+    if render_card_content is None:
+        # Build content that includes ALL render-card phrases dynamically.
+        rc_phrases = _get_all_phrases_for("doctrine/render-card.md")
+        if rc_phrases:
+            render_card_content = "# Render card\n" + "".join(
+                f"{p}\n" for p in rc_phrases
+            )
+        else:
+            render_card_content = (
+                "# render-card\n(placeholder - no canary phrase found)\n"
+            )
 
     if include_workflow:
         (tmp_path / "WORKFLOW.md").write_text(workflow_content, encoding="utf-8")
@@ -1004,6 +1017,10 @@ def _make_doctrine_root(
         )
     if include_briefs:
         (doctrine_dir / "briefs.md").write_text(briefs_content, encoding="utf-8")
+    if include_render_card:
+        (doctrine_dir / "render-card.md").write_text(
+            render_card_content, encoding="utf-8"
+        )
 
     if include_claude_md:
         (tmp_path / "CLAUDE.md").write_text(claude_md_content, encoding="utf-8")
@@ -1106,6 +1123,7 @@ def test_h12_all_phrases_absent_exactly_five_fixes(tmp_path):
         code_doctrine_content="# code-doctrine\nno relevant phrases here\n",
         claude_md_content="# CLAUDE.md\nno relevant phrases here\n",
         briefs_content="# briefs\nno relevant phrases here\n",
+        render_card_content="# render-card\nno relevant phrases here\n",
     )
     _, fixes = audit._score_doctrine_integrity(root)
     assert len(fixes) == len(audit.DOCTRINE_PHRASES), (
@@ -1197,6 +1215,7 @@ def test_rc4_h03_h12_invariant_holds_with_two_briefs_entries(tmp_path):
         code_doctrine_content="# code-doctrine\nno relevant phrases here\n",
         claude_md_content="# CLAUDE.md\nno relevant phrases here\n",
         briefs_content="# briefs\nno relevant phrases here\n",
+        render_card_content="# render-card\nno relevant phrases here\n",
     )
     _, fixes = audit._score_doctrine_integrity(root)
     assert len(fixes) == len(audit.DOCTRINE_PHRASES), (
@@ -1454,13 +1473,13 @@ def test_h21_subprocess_scorecard_json_has_doctrine_integrity():
 
 
 def test_doctrine_phrases_length_pinned():
-    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 8 entries
+    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 9 entries
     (3 originals + CLAUDE.md + briefs overview + the two RC4 briefs labels +
-    the artifact-handles canary)."""
-    assert len(audit.DOCTRINE_PHRASES) == 8, (
-        f"DOCTRINE_PHRASES must have exactly 8 entries "
+    the artifact-handles canary + the render-card canary)."""
+    assert len(audit.DOCTRINE_PHRASES) == 9, (
+        f"DOCTRINE_PHRASES must have exactly 9 entries "
         f"(3 originals + CLAUDE.md + briefs overview + the two RC4 briefs labels "
-        f"+ the artifact-handles canary); "
+        f"+ the artifact-handles canary + the render-card canary); "
         f"got {len(audit.DOCTRINE_PHRASES)}: {audit.DOCTRINE_PHRASES!r}"
     )
 

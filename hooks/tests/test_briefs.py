@@ -55,14 +55,14 @@ def test_briefs_r01_doctrine_phrases_contains_briefs_entry():
 
 
 def test_briefs_r02_doctrine_phrases_length_is_five():
-    """RED-2: audit.DOCTRINE_PHRASES has exactly 8 entries after the RC4
-    briefs label pair plus the artifact-handles canary are added.
+    """RED-2: audit.DOCTRINE_PHRASES has exactly 9 entries after the RC4
+    briefs label pair, the artifact-handles canary, and the render-card canary are added.
 
     Guards against dropping the briefs entries below the expected count.
     """
-    assert len(audit.DOCTRINE_PHRASES) == 8, (
-        f"DOCTRINE_PHRASES must have exactly 8 entries (5 existing + the two "
-        f"RC4 briefs labels + the artifact-handles canary); got "
+    assert len(audit.DOCTRINE_PHRASES) == 9, (
+        f"DOCTRINE_PHRASES must have exactly 9 entries (5 existing + the two "
+        f"RC4 briefs labels + the artifact-handles canary + the render-card canary); got "
         f"{len(audit.DOCTRINE_PHRASES)}: {audit.DOCTRINE_PHRASES!r}"
     )
 
