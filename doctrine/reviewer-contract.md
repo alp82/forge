@@ -24,6 +24,8 @@ Reviewers Read those files directly to inspect current state. Reviewers that nee
 
 Main agent fills slots verbatim from predecessor output. No paraphrase.
 
+When an `<APPROVED_PLAN>` slot holds a handle line rather than the block, Read the file at that path and treat its bytes as the verbatim plan (`WORKFLOW.md` ## Input Template Contract).
+
 ### Cut lanes
 
 Cut lanes do not overlap. Each lens owns one:

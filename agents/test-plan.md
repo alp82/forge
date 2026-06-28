@@ -24,4 +24,6 @@ Output the `test-cases` artifact and publish `test-cases-ready`. If a criterion 
 <APPROVED_PLAN>{code-planner output - the plan whose acceptance criteria become test cases}</APPROVED_PLAN>
 ```
 
+When an `<APPROVED_PLAN>` slot holds a handle line rather than the block, Read the file at that path and treat its bytes as the verbatim plan (`WORKFLOW.md` ## Input Template Contract).
+
 First step: parse required slots. On a missing required slot, emit `INPUT_ERROR: missing <slot>` and stop.

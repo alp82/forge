@@ -51,6 +51,7 @@ DOCTRINE_PHRASES = (
     ),
     ("See it in plain words", "doctrine/briefs.md"),
     ("See it as an interactive doc", "doctrine/briefs.md"),
+    ("artifacts on disk, handles in context", "WORKFLOW.md"),
 )
 
 # Catalog stages that mark a present quality gate (test chain + review lenses).
@@ -317,6 +318,9 @@ _MANDATED_CONTRACT_FRAGMENTS = (
     "on a missing required slot, emit `input_error: missing <slot>` and stop",
     # Reviewer Contract: shared opener line.
     "follows the reviewer contract in your doctrine block",
+    # Artifact handles: in-body handle-read line, repeated across the 5 plan
+    # consumers plus reviewer-contract.md by design (one canonical wording).
+    "holds a handle line rather than the block",
 )
 
 

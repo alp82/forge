@@ -2,6 +2,14 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.0 - 2026-06-27
+
+This release makes an interrupted session recoverable: when a run is cut off before it finishes, you can pick up where it left off instead of starting over.
+
+- A run cut off mid-task - the process killed, the terminal closed, the machine lost - no longer loses your place; reopening the project offers to resume where it stopped after you confirm.
+- Recovering your place after a long conversation is automatically condensed now works reliably.
+- Large plans now use much less of the session's working memory throughout a run, with no change to what gets done.
+
 ## 1.2.18 - 2026-06-26
 
 - At the points where the assistant asks you to settle direction, confirm intent, or sign off on a plan, you can now pick "See it in plain words" to have the same decision re-stated inline in plain language with a before/after example - and pull up the full interactive page from there if you want more.

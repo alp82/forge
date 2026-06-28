@@ -1,4 +1,12 @@
 
+order weird:
+
+code-planner
+--> coder-implementer
+plan-challenger
+test-plan
+
+---
 
 improve
     https://github.com/shadcn/improve
@@ -15,6 +23,12 @@ linting & testing
 mdx: visual plan & recap
     https://github.com/BuilderIO/skills/tree/main/skills/visual-plan
     https://github.com/BuilderIO/skills/tree/main/skills/visual-recap
+
+---
+
+river smaller footprint. goal: identify context overload and use less.
+subagents to the rescue.
+main orchestrator as lean as possible without quality decrease
 
 ---
 
@@ -45,4 +59,3 @@ reviewer-calibration harness: run a reviewer N times over a fixture set of diffs
 experiment/judge optimization loop: define a metric (scalar or LLM-judge rubric), generate N prompt/code variants, score over fixtures, keep the winner; for tuning alp-river's own agent prompts against labeled fixtures.
 
 ---
-^

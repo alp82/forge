@@ -8,6 +8,11 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/recover-run-state.sh",
+            "timeout": 10
           }
         ]
       },
@@ -18,6 +23,11 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/recover-run-state.sh",
+            "timeout": 10
           }
         ]
       },
@@ -36,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/reinject-canonical-state.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/recover-run-state.sh",
             "timeout": 10
           }
         ]

@@ -50,6 +50,8 @@ Domain mapping (against `<TOUCHED_FILES>`): test-verifier → any file change; c
 <ROUND>{1 | 2 | 3+}</ROUND>
 ```
 
+When an `<APPROVED_PLAN>` slot holds a handle line rather than the block, Read the file at that path and treat its bytes as the verbatim plan (`WORKFLOW.md` ## Input Template Contract).
+
 ## Output (strict)
 
 ```

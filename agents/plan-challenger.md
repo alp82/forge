@@ -64,6 +64,8 @@ For the CHALLENGE_QUESTIONS header (max 12 chars). Worked examples:
 <APPROVED_PLAN>{planner's APPROVED_PLAN block for the plan you are reviewing}</APPROVED_PLAN>
 ```
 
+When an `<APPROVED_PLAN>` slot holds a handle line rather than the block, Read the file at that path and treat its bytes as the verbatim plan (`WORKFLOW.md` ## Input Template Contract).
+
 ## Output (strict)
 
 ```
