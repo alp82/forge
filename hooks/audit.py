@@ -52,6 +52,7 @@ DOCTRINE_PHRASES = (
     ("See it in plain words", "doctrine/briefs.md"),
     ("See it as an interactive doc", "doctrine/briefs.md"),
     ("artifacts on disk, handles in context", "WORKFLOW.md"),
+    ("one card grammar, and the banner is the order", "doctrine/render-card.md"),
 )
 
 # Catalog stages that mark a present quality gate (test chain + review lenses).
