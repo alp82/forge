@@ -1014,7 +1014,7 @@
           "exec-log"
         ]
       },
-      "input_template": "<CONFIRMED_INTENT>{triage or interviewer read of the request - the basis for the commit subject}</CONFIRMED_INTENT>\n<DIFF>{the session diff summary, or \"none\" to read the live working tree}</DIFF>\n",
+      "input_template": "<CONFIRMED_INTENT>{triage or interviewer read of the request - the basis for the commit subject}</CONFIRMED_INTENT>\n<SHIP_TARGET>{main | branch - the target the user cleared at the ship gate}</SHIP_TARGET>\n<DIFF>{the session diff summary, or \"none\" to read the live working tree}</DIFF>\n",
       "lock": [
         {
           "until": "ship-approved",
@@ -1022,7 +1022,7 @@
         }
       ],
       "name": "ship-executor",
-      "output_template": "EXEC_LOG:\n1. [step] - RAN: [command] - RESULT: [exit code / output summary]\n2. ...\nSTATUS: [complete | stopped-at-step-N - reason]\nPR_URL: [the draft PR url, or \"none - stopped before PR\"]\nRECOVERY: [how to undo what shipped - delete the remote branch / close the draft PR, or \"none - nothing pushed\"]\n",
+      "output_template": "EXEC_LOG:\n1. [step] - RAN: [command] - RESULT: [exit code / output summary]\n2. ...\nSTATUS: [complete | stopped-at-step-N - reason]\nPR_URL: [the draft PR url (branch target), \"none - shipped to <base>, no PR\" (main target), or \"none - stopped before PR\"]\nRECOVERY: [how to undo what shipped - main: git revert <sha> after push, git reset --soft HEAD~1 before push; branch: delete the remote branch / close the draft PR; or \"none - nothing pushed\"]\n",
       "routes": [
         "code"
       ],
@@ -1051,7 +1051,7 @@
       "guard": "sticky",
       "input_template": "<DIFF>{the session diff - working-tree summary, or \"none\" to read live}</DIFF>\n<CONFIRMED_INTENT>{triage or interviewer read of the request}</CONFIRMED_INTENT>\n",
       "name": "ship-gate",
-      "output_template": "SHIP_DECISION:\n  question: [what the user is clearing, named concretely]\n  header: [max 12 chars - e.g. \"Ship\"]\n  options:\n    - label: Proceed\n      description: [commits, pushes <current-branch>, opens a draft PR against <default-branch>]\n    - label: Hold\n      description: [nothing ships now; the work stays local]\n    - label: Abort\n      description: [call off the ship; nothing further changes]\nSHIP_PLAN:\n- COMMIT: git add -A && git commit - RECOVERY: amend or reset the local commit\n- PUSH: git push -u origin <current-branch> - RECOVERY: git push origin --delete <current-branch>\n- PR: gh pr create --draft --head <current-branch> --base <default-branch> - RECOVERY: gh pr close <current-branch>\nBASE_BRANCH_CHECK: [ok - on a feature branch | DANGER - HEAD is the base branch, opening a PR from the base against itself]\n",
+      "output_template": "SHIP_DECISION:\n  question: [what the user is clearing, named concretely - lands the work on <base> directly or via a draft PR]\n  header: [max 12 chars - e.g. \"Ship\"]\n  options:\n    - label: Ship it (main)\n      description: [one commit on <base>, pushed to origin/<base>, no PR - lands on the default branch with no review buffer]\n    - label: Ship it (branch)\n      description: [one commit on a feature branch, pushed, draft PR against <base>]\n    - label: Hold\n      description: [nothing ships now; the work stays local]\n    - label: Abort\n      description: [call off the ship; nothing further changes]\nRECOMMENDED: [main | branch - the target the current branch state fits; the orchestrator lists it first]\nSHIP_PLAN (main):\n- COMMIT: git add -A && git commit on <base> - RECOVERY: git reset --soft HEAD~1 (before push)\n- PUSH: git push origin <base> - RECOVERY: git revert <sha> (force-push to <base> is blocked)\nSHIP_PLAN (branch):\n- COMMIT: git add -A && git commit on <feature-branch> - RECOVERY: amend or reset the local commit\n- PUSH: git push -u origin <feature-branch> - RECOVERY: git push origin --delete <feature-branch>\n- PR: gh pr create --draft --head <feature-branch> --base <base> - RECOVERY: gh pr close <feature-branch>\nBRANCH_STATE: [on base branch <base> | on feature branch <name>]\n",
       "routes": [
         "code"
       ],

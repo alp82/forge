@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.2 - 2026-06-30
+
+- The resume-after-interruption offer added in 1.3.0 now actually appears on a fresh install. Its startup step had shipped unable to launch, so recovery silently never ran and starting a session surfaced a permission error - both are fixed.
+- Shipping a session's work can now go straight to the default branch as the default choice - one commit, pushed, no pull request - with the feature-branch-and-draft-PR flow still available as the second option. You pick the target at the ship prompt, and it shows the exact commands and how to undo each for whichever you choose.
+
 ## 1.3.1 - 2026-06-28
 
 - The live progress card now groups each step under its stage of the work - intent, scouting, planning, tests, build, review - in the order the run actually runs them, so what you read always matches what happens next.
