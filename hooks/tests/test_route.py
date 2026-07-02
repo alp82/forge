@@ -3171,17 +3171,17 @@ def test_check_catalog_no_orphan_clean_error_after_rc4():
 
 # --- RC4-E01 ---
 def test_plugin_json_version_1_2_18():
-    """plugin.json version must be '1.3.2'."""
+    """plugin.json version must be '1.3.3'."""
     plugin_path = Path(__file__).resolve().parents[2] / ".claude-plugin" / "plugin.json"
     data = json.loads(plugin_path.read_text(encoding="utf-8"))
     assert (
-        data["version"] == "1.3.2"
-    ), f"plugin.json version must be '1.3.2', got {data['version']!r}"
+        data["version"] == "1.3.3"
+    ), f"plugin.json version must be '1.3.3', got {data['version']!r}"
 
 
 # --- RC4-E02 ---
 def test_marketplace_json_version_1_2_18_matches_plugin():
-    """marketplace.json version must be '1.3.2' and equal plugin.json."""
+    """marketplace.json version must be '1.3.3' and equal plugin.json."""
     base = Path(__file__).resolve().parents[2] / ".claude-plugin"
     plugin_ver = json.loads((base / "plugin.json").read_text(encoding="utf-8"))[
         "version"
@@ -3190,8 +3190,8 @@ def test_marketplace_json_version_1_2_18_matches_plugin():
         "metadata"
     ]["version"]
     assert (
-        market_ver == "1.3.2"
-    ), f"marketplace.json version must be '1.3.2', got {market_ver!r}"
+        market_ver == "1.3.3"
+    ), f"marketplace.json version must be '1.3.3', got {market_ver!r}"
     assert (
         market_ver == plugin_ver
     ), f"marketplace.json version {market_ver!r} must equal plugin.json {plugin_ver!r}"

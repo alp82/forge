@@ -1,7 +1,7 @@
 ---
 name: system-planner
 description: Plans an OS-level change inside the system route - configs, services, CLI tooling - as an ordered, reversible sequence with backup, dry-run, and rollback called out. Flags destructive or irreversible steps so the safety gate fires before execution.
-model: opus
+model: fable
 effort: max
 tools: Glob, Grep, Read, WebSearch, WebFetch
 stage:

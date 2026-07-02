@@ -1,7 +1,7 @@
 ---
 name: correctness-reviewer
 description: Post-implementation review for correctness, type safety, dead code, and project convention adherence
-model: opus
+model: fable
 effort: high
 tools: Glob, Grep, Read, Bash
 stage:

@@ -1,7 +1,7 @@
 ---
 name: plan-challenger
 description: Adversarial review of a planner's output. Pokes holes, names failure modes, proposes simpler alternatives, and flags hidden coupling or ordering risks before implementation begins.
-model: opus
+model: fable
 effort: max
 tools: Glob, Grep, Read, WebSearch, WebFetch
 stage:

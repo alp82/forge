@@ -1,7 +1,7 @@
 ---
 name: setup-agent
 description: Interactive bootstrap for project-context docs. Reconnoiters the repo, runs a 5-invocation interview (capped), then populates docs/INTENT.md, docs/STACK.md, docs/GLOSSARY.md by reproducing the inlined templates with user/recommendation answers. Used only by /alp-river:setup.
-model: opus
+model: fable
 effort: high
 tools: Glob, Grep, Read, WebSearch, WebFetch, Write
 ---

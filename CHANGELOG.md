@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.3 - 2026-07-02
+
+- The workflow's most demanding steps - planning, judging a plan, extracting what you want, and the deep build, investigation, and authoring work - now run on the strongest model tier again, so those steps get deeper reasoning.
+- The scratch folder this tool writes into your project now stays out of version control automatically, with a prompt to stop tracking it if it was already committed.
+
 ## 1.3.2 - 2026-06-30
 
 - The resume-after-interruption offer added in 1.3.0 now actually appears on a fresh install. Its startup step had shipped unable to launch, so recovery silently never ran and starting a session surfaced a permission error - both are fixed.

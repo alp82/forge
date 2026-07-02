@@ -1,7 +1,7 @@
 ---
 name: assumptions
 description: Reviews changed code for unstated or risky assumptions - unguarded inputs, implicit contracts, and environmental or ordering premises that hold today but could silently break, and are neither guarded nor documented
-model: opus
+model: fable
 effort: high
 tools: Glob, Grep, Read, Bash
 stage:

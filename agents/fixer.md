@@ -14,7 +14,7 @@ stage:
     publishes: ['#code-written', '#ui-touched', '#scope-shift']
 ---
 
-Default model is sonnet for M tasks. On L/XL, main agent overrides to opus at spawn time via the Agent tool's `model` parameter.
+Default model is sonnet for M tasks. On L/XL, main agent overrides to fable at spawn time via the Agent tool's `model` parameter.
 
 ## Rules
 

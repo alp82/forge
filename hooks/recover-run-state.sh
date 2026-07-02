@@ -157,7 +157,7 @@ case "$source_type" in
     prune_stale
 
     write_path="${project_cwd}/.alp-river/runs/${session_id}/run-state.json"
-    context="## Run-state write path"$'\n\n'"Persist the canonical run-state snapshot each turn (loop step 4) to:"$'\n'"${write_path}"$'\n'"This per-run file is where durability and recovery read from."
+    context="## Run-state write path"$'\n\n'"Each turn (loop step 4), dispatch the run-state-writer subagent to persist the canonical run-state snapshot to:"$'\n'"${write_path}"$'\n'"This per-run file is where durability and recovery read from."
 
     candidate=""
     if [ "$source_type" = "resume" ]; then

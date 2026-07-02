@@ -1,16 +1,13 @@
-
-order weird:
-
-code-planner
---> coder-implementer
-plan-challenger
-test-plan
-
 ---
 
 improve
     https://github.com/shadcn/improve
     https://www.reddit.com/r/ClaudeCode/comments/1u37glf/if_you_do_one_thing_with_fable_5_access_do_this/
+
+---
+
+agnostic plugin
+    https://www.ap-sdk.dev/docs/porting/claude
 
 ---
 
@@ -45,10 +42,6 @@ video generation
 ---
 
 remove git hook
-
----
-
-codex fork
 
 ---
 

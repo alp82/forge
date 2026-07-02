@@ -30,11 +30,11 @@
 
 The last three updates:
 
+**1.3.3** - The workflow's most demanding steps - planning, judging a plan, extracting intent, and deep build work - now run on the strongest model tier again for deeper reasoning. Its scratch run-state folder now stays out of version control automatically.
+
 **1.3.1** - The live progress card now groups every step under its phase in run order, reads in plain words throughout, and the published stage list is complete.
 
 **1.3.0** - An interrupted run is now recoverable: reopen the project and resume where it stopped instead of starting over.
-
-**1.2.18** - At the points where the assistant asks you to settle direction, confirm intent, or sign off on a plan, you can now pick "See it in plain words" to have the same decision re-stated inline in plain language.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -190,8 +190,8 @@ Reads the request, settles what you actually want, and frames the work.
 | Stage | Model | Role |
 |-------|-------|------|
 | triage | haiku | Always-on. Reads your request, picks the path, flags early risk and bug-framing. |
-| interviewer | opus | When the ask is ambiguous, probes scope and success criteria until intent settles. |
-| requirements-clarifier | opus | Researches the area, then surfaces edge cases and proposed acceptance criteria. |
+| interviewer | fable | When the ask is ambiguous, probes scope and success criteria until intent settles. |
+| requirements-clarifier | fable | Researches the area, then surfaces edge cases and proposed acceptance criteria. |
 
 ---
 
@@ -210,7 +210,7 @@ Surveys the ground: what to reuse, how healthy the area is, what novelty needs a
 | data-prototyper | sonnet | Tries competing schemas against real samples and writes a reference report. |
 | performance-prototyper | sonnet | Measures timing/scale-critical unknowns with a runnable and a charted report. |
 | researcher | sonnet | Pulls library, framework, and domain knowledge from the web. |
-| code-investigator | opus | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis the planner consumes. |
+| code-investigator | fable | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis the planner consumes. |
 
 ---
 
@@ -222,11 +222,11 @@ Turns settled intent into a concrete blueprint, then attacks it adversarially.
 
 | Stage | Model | Role |
 |-------|-------|------|
-| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the spec. |
-| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the flow spec. |
-| code-planner | opus | Turns intent into a concrete step-by-step blueprint. |
-| plan-challenger | opus | Adversarial review of the plan: holes, failure modes, simpler alternatives. |
-| plan-arbiter | opus | On a multi-plan build, cross-reviews the competing plans; decides Adopt / Hybrid / Revise-first. |
+| design-prototyper | fable | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the spec. |
+| ux-prototyper | fable | For multiple legitimate user flows, builds a clickable wireflow; you paste back the flow spec. |
+| code-planner | fable | Turns intent into a concrete step-by-step blueprint. |
+| plan-challenger | fable | Adversarial review of the plan: holes, failure modes, simpler alternatives. |
+| plan-arbiter | fable | On a multi-plan build, cross-reviews the competing plans; decides Adopt / Hybrid / Revise-first. |
 
 ---
 
@@ -240,7 +240,7 @@ Derives the test cases and writes them red, validated against intent before any 
 |-------|-------|------|
 | test-plan | sonnet | Derives concrete test cases from the plan's acceptance criteria. |
 | test-author | sonnet | Writes the failing (red) tests before any implementation exists. |
-| test-review | opus | Validates the red tests against intent, then releases the implementer. |
+| test-review | fable | Validates the red tests against intent, then releases the implementer. |
 
 ---
 
@@ -252,7 +252,7 @@ Builds the change to the plan, and gates anything destructive.
 
 | Stage | Model | Role |
 |-------|-------|------|
-| code-implementer | opus | Executes the approved plan. Held by the TDD lock until tests are validated. |
+| code-implementer | fable | Executes the approved plan. Held by the TDD lock until tests are validated. |
 | safety-gate | sonnet | Before anything destructive or irreversible, shows what's at stake and waits for your go-ahead. Sticky. |
 
 ---
@@ -265,21 +265,21 @@ Scrutinizes every diff in parallel: correctness always, the rest as the change d
 
 | Lens | Model | Runs when |
 |------|-------|-----------|
-| correctness | opus | every change |
+| correctness | fable | every change |
 | simplicity | sonnet | every change |
-| quality | opus | logic changes |
+| quality | fable | logic changes |
 | acceptance | sonnet | logic changes |
 | plan-adherence | sonnet | logic changes |
 | naming-clarity | sonnet | logic changes |
-| assumptions | opus | logic changes |
+| assumptions | fable | logic changes |
 | structure | sonnet | logic changes |
-| architecture | opus | logic changes |
+| architecture | fable | logic changes |
 | consistency | sonnet | logic changes |
 | reuse | sonnet | logic changes |
 | performance | sonnet | logic changes |
 | test-gap | sonnet | logic changes |
 | test-verifier | sonnet | logic changes |
-| security | opus | auth / secrets / permissions surface (sticky) |
+| security | fable | auth / secrets / permissions surface (sticky) |
 | ux | sonnet | UI touched |
 | accessibility | sonnet | UI touched |
 | design-consistency | sonnet | UI touched |
@@ -296,8 +296,8 @@ Records the glossary, stack, and intent updates the run surfaced, only after you
 
 | Stage | Model | Role |
 |-------|-------|------|
-| capture-agent | opus | Proposes glossary / stack / intent updates surfaced during the run; writes only after approval. |
-| adr-drafter | opus | Drafts a single ADR from a decision summary. Backs `/alp-river:adr`. |
+| capture-agent | fable | Proposes glossary / stack / intent updates surfaced during the run; writes only after approval. |
+| adr-drafter | fable | Drafts a single ADR from a decision summary. Backs `/alp-river:adr`. |
 
 ---
 
@@ -310,7 +310,7 @@ Opt-in at convergence: on a ship request, gates the forward git/gh commands, the
 | ship-gate | sonnet | Names the commit/push/PR commands and how to undo each, and waits for your go-ahead. Sticky. |
 | ship-executor | sonnet | Composes one commit, pushes the branch, opens a draft PR. Held by the ship lock until the gate clears. |
 
-*`setup-agent` (opus) is command-only - it backs `/alp-river:setup` and is not part of any path.*
+*`setup-agent` (fable) is command-only - it backs `/alp-river:setup` and is not part of any path.*
 
 ---
 
@@ -322,7 +322,7 @@ Changing the machine (configs, troubleshooting, CLI tooling) - leaves behind a v
 
 | Stage | Model | Role |
 |-------|-------|------|
-| system-planner | opus | Plans an OS-level change as ordered, reversible steps with backup and rollback. |
+| system-planner | fable | Plans an OS-level change as ordered, reversible steps with backup and rollback. |
 | system-executor | sonnet | Runs the plan one step at a time. Held by the safety lock before destructive steps. |
 | system-verifier | sonnet | Confirms the change actually reached its intended state. |
 | system-investigator | sonnet | Root-cause diagnosis for OS-level faults from service state, logs, and configs. |

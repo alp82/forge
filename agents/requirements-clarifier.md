@@ -1,7 +1,7 @@
 ---
 name: requirements-clarifier
 description: Pre-plan analysis that researches the target area first, then surfaces ambiguities, edge cases, conflicting requirements, and missing acceptance criteria before the planner runs. Re-runs in a loop with prior rounds folded in until clarity is reached without new aspects.
-model: opus
+model: fable
 effort: high
 tools: Glob, Grep, Read, WebSearch, WebFetch
 stage:

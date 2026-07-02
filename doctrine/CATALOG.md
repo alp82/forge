@@ -37,7 +37,7 @@ because `@`/`?`/`#` are reserved at the start of a scalar:
 ---
 name: security-reviewer
 description: ...
-model: opus
+model: fable
 tools: ...
 stage:
   routes: [code, sketch]            # subset of talk/sketch/code/system - MANDATORY

@@ -1,9 +1,9 @@
 ---
 name: code-planner
 description: Designs a concrete implementation plan by analyzing the codebase, existing patterns, and reuse scan findings, then producing a step-by-step blueprint. Wraps output as APPROVED_PLAN with version.
-model: opus
+model: fable
 effort: max
-tools: Glob, Grep, Read, WebSearch, WebFetch
+tools: Glob, Grep, Read, WebSearch, WebFetch, Write
 stage:
   routes: [code]
   data:
@@ -27,6 +27,7 @@ On a code build with no clarifier output (no `#clarified`), the planner runs off
 5. **If `<DIAGNOSIS>` is not "none"** (bug-build): design the fix around the RECOMMENDED FIX and ROOT CAUSE in the diagnosis - target the named root-cause line(s), not the symptom.
 6. Trace similar features in the codebase - follow their patterns.
 7. Design a plan that fits naturally into the existing architecture.
+8. **Producer-write the plan artifact.** When `<ARTIFACT_OFFLOAD>` is a path (not `"none"`), Write the verbatim `<APPROVED_PLAN>` block to that path AFTER emitting it. Write it UNCONDITIONALLY - do NOT re-measure the block's size. The offload threshold has a single owner: the orchestrator applied the `RIVER_ARTIFACT_OFFLOAD_CHARS` measurement at its own offload gate and supplied the path only when that gate held, and it re-applies the same measurement to the returned block for the handle-vs-inline decision - so `RIVER_ARTIFACT_OFFLOAD_CHARS` is the orchestrator's check, never a producer-side re-measurement. On a Revise or re-split the same path is supplied, so overwrite it in place (a full-file rewrite, not an append). When `<ARTIFACT_OFFLOAD>` is `"none"`, write nothing. Either way, ALWAYS also return the `<APPROVED_PLAN>` block inline - the output contract is unchanged. Why: the artifact file is the handle source many consumers read, so producing-and-writing it in one spawn keeps the write timing correct without an orchestrator write.
 
 ## Planning Lens
 
@@ -81,6 +82,7 @@ Both producers of a revision - the challenger's `revise` and the implementer's k
 <PLANNING_LENS>{optional lens directive the orchestrator injects on a multi-plan run (e.g. smallest-shippable, risk-first, dead-simple, reuse-first) - bias the plan toward it while keeping every requirement intact; absent on a single-plan run}</PLANNING_LENS>
 <PRIOR_PLAN>{previous APPROVED_PLAN block - only on replan/plan-patch, otherwise absent; reproduce it verbatim except where REPLAN_REASON applies (## Revision modes)}</PRIOR_PLAN>
 <REPLAN_REASON>{challenger BLOCKERS or implementer kickback reason - only on replan/plan-patch; the exact corrections to apply, nothing else changes}</REPLAN_REASON>
+<ARTIFACT_OFFLOAD>{the target path .alp-river/artifacts/plan-<slug>.md when the orchestrator's offload gate holds, else "none"}</ARTIFACT_OFFLOAD>
 ```
 
 ## Output (strict)
