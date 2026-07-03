@@ -133,24 +133,24 @@ GRADUATED_AGENT_EFFORT = {
 
 # README.md model-table line numbers that must read "fable" (1-indexed).
 README_FABLE_TABLE_LINES = (
-    193,
-    194,
-    213,
-    225,
-    226,
-    227,
+    208,
+    209,
     228,
-    229,
+    240,
+    241,
+    242,
     243,
-    255,
-    268,
+    244,
+    258,
     270,
-    274,
-    276,
-    282,
-    299,
-    300,
-    325,
+    283,
+    285,
+    289,
+    291,
+    297,
+    314,
+    315,
+    340,
 )
 
 
@@ -282,12 +282,12 @@ def test_a10_red_readme_model_table_rows_read_fable():
 
 
 def test_a11_red_readme_line_313_setup_agent_fable():
-    """TC-11: README.md line 313 prose reads "setup-agent (fable)"."""
+    """TC-11: README.md line 328 prose reads "setup-agent (fable)"."""
     lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    line_313 = lines[312] if len(lines) > 312 else ""
+    line_328 = lines[327] if len(lines) > 327 else ""
     assert (
-        "setup-agent" in line_313 and "(fable)" in line_313
-    ), f"README.md line 313 must read 'setup-agent (fable)'; got: {line_313!r}"
+        "setup-agent" in line_328 and "(fable)" in line_328
+    ), f"README.md line 328 must read 'setup-agent (fable)'; got: {line_328!r}"
 
 
 def test_a12_red_readme_no_opus_table_rows():
@@ -320,16 +320,16 @@ def test_a14_red_adr_command_fable():
 
 
 def test_a15_red_catalog_doc_example_fable():
-    """TC-15: doctrine/CATALOG.md:40 example frontmatter reads `model: fable`."""
+    """TC-15: doctrine/CATALOG.md:37 example frontmatter reads `model: fable`."""
     lines = (
         (REAL_REPO_ROOT / "doctrine" / "CATALOG.md")
         .read_text(encoding="utf-8")
         .splitlines()
     )
-    line_40 = lines[39] if len(lines) > 39 else ""
+    line_37 = lines[36] if len(lines) > 36 else ""
     assert re.search(
-        r"model:\s*fable", line_40
-    ), f"doctrine/CATALOG.md line 40 must read 'model: fable'; got: {line_40!r}"
+        r"model:\s*fable", line_37
+    ), f"doctrine/CATALOG.md line 37 must read 'model: fable'; got: {line_37!r}"
 
 
 def test_a16_red_glossary_tier_definition_fable():
@@ -343,7 +343,7 @@ def test_a16_red_glossary_tier_definition_fable():
 def test_a17_red_opus_sweep_only_readme_main_session_lines():
     """TC-17: `grep -rn "opus" agents/ commands/ doctrine/ docs/ WORKFLOW.md README.md`
     returns matches ONLY in README.md, and only at the two out-of-scope main-session
-    lines (62, 66)."""
+    lines (73, 77)."""
     targets = [
         REAL_REPO_ROOT / "agents",
         REAL_REPO_ROOT / "commands",
@@ -371,24 +371,24 @@ def test_a17_red_opus_sweep_only_readme_main_session_lines():
     opus_linenos = [
         i + 1 for i, line in enumerate(readme_lines) if "opus" in line.lower()
     ]
-    assert opus_linenos == [62, 66], (
-        f"README.md must mention 'opus' only on lines 62 and 66 (main-session "
+    assert opus_linenos == [73, 77], (
+        f"README.md must mention 'opus' only on lines 73 and 77 (main-session "
         f"recommendation, out of scope); got lines: {opus_linenos!r}"
     )
 
 
 def test_a18_green_readme_main_session_opus_lines_untouched():
-    """TC-18 (negative / scope boundary, regression guard): README.md lines 62 and
-    66 (main-session Opus recommendation) are NOT touched by this change."""
+    """TC-18 (negative / scope boundary, regression guard): README.md lines 73 and
+    77 (main-session Opus recommendation) are NOT touched by this change."""
     lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    line_62 = lines[61] if len(lines) > 61 else ""
-    line_66 = lines[65] if len(lines) > 65 else ""
+    line_73 = lines[72] if len(lines) > 72 else ""
+    line_77 = lines[76] if len(lines) > 76 else ""
     assert (
-        "Opus at high effort" in line_62
-    ), f"README.md:62 must still say 'Opus at high effort'; got: {line_62!r}"
+        "Opus at high effort" in line_73
+    ), f"README.md:73 must still say 'Opus at high effort'; got: {line_73!r}"
     assert (
-        "Opus at high effort" in line_66
-    ), f"README.md:66 must still say 'Opus at high effort'; got: {line_66!r}"
+        "Opus at high effort" in line_77
+    ), f"README.md:77 must still say 'Opus at high effort'; got: {line_77!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -421,7 +421,14 @@ def test_b01_red_run_state_writer_file_exists():
 
 
 def test_b02_red_run_state_writer_frontmatter():
-    """TC-20: frontmatter has name/model/effort/tools/description as specified."""
+    """TC-20: frontmatter has name/model/effort/tools/description as specified.
+
+    Per plan-audit-fix-batch.md step 2, `tools:` must grant both Read and Write,
+    in that order (TC-WRITER-01) - a prior Read is what permits the Write tool
+    to overwrite an existing run-state.json; the write remains a full overwrite
+    (agents/run-state-writer.md:59). A regression back to `tools: Write` alone
+    must trip this assertion (TC-WRITER-02).
+    """
     content = _read("agents/run-state-writer.md")
     assert re.search(
         r"^name:\s*run-state-writer\s*$", content, re.MULTILINE
@@ -436,8 +443,9 @@ def test_b02_red_run_state_writer_frontmatter():
     assert tools_match is not None, "run-state-writer.md must declare a 'tools:' line"
     tools = [t.strip() for t in tools_match.group(1).split(",")]
     assert tools == [
-        "Write"
-    ], f"run-state-writer.md tools must be exactly 'Write'; got: {tools!r}"
+        "Read",
+        "Write",
+    ], f"run-state-writer.md tools must be exactly ['Read', 'Write'], in that order; got: {tools!r}"
     desc_match = re.search(r"^description:\s*(.+)$", content, re.MULTILINE)
     assert (
         desc_match is not None
@@ -446,6 +454,19 @@ def test_b02_red_run_state_writer_frontmatter():
     assert (
         "off-route" in description or "per-turn" in description
     ), f"description must name it an off-route per-turn serializer; got: {description!r}"
+
+
+def test_b02b_red_run_state_writer_write_section_read_first_mandate():
+    """## Write section instructs reading an existing file at <WRITE_PATH>
+    first, then writing the full overwrite (agents/run-state-writer.md:59)."""
+    content = _read("agents/run-state-writer.md")
+    section = _section(content, "## Write", "## Output")
+    assert (
+        "Read it first" in section
+    ), "## Write section must instruct reading an existing file first"
+    assert (
+        "full overwrite" in section
+    ), "## Write section must instruct writing the full overwrite"
 
 
 def test_b03_red_run_state_writer_has_no_stage_key():

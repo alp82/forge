@@ -6,11 +6,37 @@ CONTRACT:
   - BLOCK: stdout contains a JSON object with '"decision":"block"' (exit 0).
   - A non-Bash tool_name exits 0 immediately (ALLOW).
 
-These 70 cases assert POST-narrowing behavior. Against the current
+These cases assert POST-narrowing behavior. Against the current
 (over-blocking) script, TC-01..TC-15 (ALLOW/boundary) are expected to FAIL -
 that is the correct red state. The implementer makes them green by narrowing
 the blocked_verbs regex so that safe git verbs (add, commit, push without
 force/delete flags) and non-git commands are permitted.
+
+TC-71..TC-88 (plan-audit-fix-batch.md steps 5/6) assert POST-hardening
+behavior for three additional guard gaps: a `checkout <ref> -- <pathspec>`
+form (ref before the `--` separator, which silently discards edits and was
+previously only caught in the narrower `checkout -- <pathspec>` shape), the
+`filter-branch` verb, and ref-surgery verbs/flags (`reflog expire`,
+`update-ref -d`, `worktree remove --force`/`-f`). Against the current
+(pre-hardening) script, the new BLOCK cases in that range are expected to
+FAIL - that is the correct red state. The implementer makes them green by
+broadening the blocked-command patterns; the paired ALLOW/boundary cases in
+the same range must stay green throughout, pinning that the hardening does
+not sweep in explicitly out-of-scope forms (`reflog delete`, `update-ref`
+without `-d`, `worktree remove` without a force flag).
+
+TC-89..TC-96 (security-lens residual-gap follow-up) adopt two forms that
+TC-87/TC-88 had previously pinned as out-of-scope: `reflog delete <ref>@{...}`
+and a bare two-arg `update-ref <ref> <sha>` overwrite are now BLOCK, since
+scope has been expanded to cover them. The range also adds BLOCK coverage for
+`update-ref --stdin` (batch ref surgery), `worktree remove -ff` (a bundled
+short force flag), and four working-tree-discard `checkout` forms (`checkout
+.`, `checkout -f <ref>`, `checkout --force <ref>`,
+`checkout --pathspec-from-file=- .`), plus the `git -C <dir>` global-option
+variant of `update-ref --stdin`. TC-96 pins `git show-ref` as ALLOW (read-only
+ref inspection that must not be swept in by the update-ref patterns). Against
+the current (pre-hardening) script, the new/flipped BLOCK cases in this range
+are expected to FAIL - that is the correct red state.
 """
 
 import json
@@ -130,6 +156,39 @@ CASES = [
     ("TC-68", "Bash", "git --no-advice push origin feat/x", False),
     ("TC-69", "Bash", "git --exec-path=/x status", False),
     ("TC-70", "Bash", "git --no-advice add -A", False),
+    # BLOCK: broadened checkout - ref before the `--` pathspec separator (TC-71..TC-73)
+    ("TC-71", "Bash", "git checkout HEAD -- f", True),
+    ("TC-72", "Bash", "git checkout main~2 -- src/", True),
+    ("TC-73", "Bash", "git -C /repo checkout HEAD -- file", True),
+    # BLOCK: filter-branch verb (TC-74..TC-75)
+    ("TC-74", "Bash", "git filter-branch -f --env-filter x", True),
+    ("TC-75", "Bash", "git -c x=y filter-branch --tree-filter x", True),
+    # BLOCK: ref surgery - reflog expire, update-ref -d, worktree remove --force/-f (TC-76..TC-79)
+    ("TC-76", "Bash", "git reflog expire --expire=now --all", True),
+    ("TC-77", "Bash", "git update-ref -d refs/heads/x", True),
+    ("TC-78", "Bash", "git worktree remove --force ../wt", True),
+    ("TC-79", "Bash", "git worktree remove -f ../wt", True),
+    # ALLOW: boundaries the ref-surgery hardening must not sweep in (TC-80..TC-88)
+    ("TC-80", "Bash", "git checkout main", False),
+    ("TC-81", "Bash", "git checkout -b feat/x", False),
+    ("TC-82", "Bash", "git reflog", False),
+    ("TC-83", "Bash", "git reflog show", False),
+    ("TC-84", "Bash", "git worktree list", False),
+    ("TC-85", "Bash", "git worktree remove wt", False),
+    ("TC-86", "Bash", "git log --oneline -- src/", False),
+    # FLIPPED to BLOCK: scope now covers these (previously pinned ALLOW/out-of-scope)
+    ("TC-87", "Bash", "git reflog delete <ref>@{stamp}", True),
+    ("TC-88", "Bash", "git update-ref refs/heads/x abc123", True),
+    # BLOCK: security-lens residual-gap follow-up - update-ref/worktree/checkout (TC-89..TC-95)
+    ("TC-89", "Bash", "git update-ref --stdin", True),
+    ("TC-90", "Bash", "git worktree remove -ff ../wt", True),
+    ("TC-91", "Bash", "git checkout .", True),
+    ("TC-92", "Bash", "git checkout -f main", True),
+    ("TC-93", "Bash", "git checkout --force main", True),
+    ("TC-94", "Bash", "git checkout --pathspec-from-file=- .", True),
+    ("TC-95", "Bash", "git -C /repo update-ref --stdin", True),
+    # ALLOW: read-only ref inspection must not match update-ref patterns (TC-96)
+    ("TC-96", "Bash", "git show-ref", False),
 ]
 
 

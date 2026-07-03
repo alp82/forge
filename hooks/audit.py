@@ -322,6 +322,24 @@ _MANDATED_CONTRACT_FRAGMENTS = (
     # Artifact handles: in-body handle-read line, repeated across the 5 plan
     # consumers plus reviewer-contract.md by design (one canonical wording).
     "holds a handle line rather than the block",
+    # Intent-loop pair (interviewer, requirements-clarifier): both run the same
+    # main-agent loop protocol inside self-contained prompts, one canonical wording.
+    "exit conditions for the main agent",
+    "plain-words escape on demand",
+    "convergence governs the route, not a budget",
+    # Visual-prototyper pair (design-, ux-prototyper): both emit browser-openable
+    # spec artifacts under identical constraints inside self-contained prompts.
+    "vanilla html + js works if needed",
+    "one sentence under the button telling the user to paste the spec",
+    "a sandbox file must run by opening it in a browser",
+    # Domain-prototyper trio (code-, data-, performance-prototyper): shared
+    # tracer-bullet ground rules restated per self-contained prompt by design.
+    "one prototype - the standard tracer bullet",
+    "one prototype per file in",
+    "use the project's language and runtime",
+    # Severity-ranking reviewer trio (architecture-, quality-, simplicity-reviewer):
+    # each carries its own tier list, so the ranking rule rides with it verbatim.
+    "rank findings highest tier first",
 )
 
 

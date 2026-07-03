@@ -49,11 +49,12 @@ input, which is exactly what the `<PLANNING_LENS>` slot is.
   today's behavior, unchanged.
 - **critique-only mode** (multi-plan path, `<CRITIQUE_ONLY>` set): the challenger emits
   BLOCKERS/CONCERNS/STRENGTHS but OMITS the picker and NEVER publishes `#plan-approved`. The
-  arbiter owns approval. One critique-only challenger runs per competing plan.
+  arbiter owns approval, so no challenger preempts it. One critique-only challenger runs per competing plan.
 
 ### Construction invariant
 
-On an armed multi-plan run, `plan-arbiter` MUST be the SOLE source of `#plan-approved`, and the
+On an armed multi-plan run, `plan-arbiter` MUST be the SOLE source of `#plan-approved` - otherwise
+two publishers could race the gate - and the
 orchestrator's fan-out step is the **named guarantor**: it spawns EVERY `plan-challenger` instance
 WITH `<CRITIQUE_ONLY>` set. Because every challenger on that run is critique-only, no
 terminal-mode challenger exists to publish `#plan-approved` - so the arbiter is the only publisher
@@ -66,7 +67,7 @@ static analysis (check_catalog, the router) can tell the two modes apart at cata
 nothing in the toolchain enforces this invariant automatically. The orchestrator's fan-out
 discipline is the SOLE guarantor: the agent's prose (## Critique-only mode) states the behavior,
 and the orchestrator MUST honor it by setting `<CRITIQUE_ONLY>` on every multi-plan challenger
-spawn. This differs from the `WORKFLOW.md` ## Milestone loop "Construction invariant", where the
+spawn, since no static check catches a missed flag. This differs from the `WORKFLOW.md` ## Milestone loop "Construction invariant", where the
 dead state (double `#milestones-complete`) IS statically checkable via signal subscriptions in the
 catalog - that parallel does not hold here.
 
@@ -75,9 +76,9 @@ catalog - that parallel does not hold here.
 The orchestrator publishes `#critiques-ready` AND seeds `@competing-plans` + `@plan-critiques`
 into `available` in ONE atomic recompose - it is **HARD REQUIRED** (same emphasis as the milestone
 loop's "MUST add `@diff` to available") that the trigger never fires before its batch is
-available. The arbiter subscribes `#critiques-ready` and requires both artifacts; emitting the
-trigger before the batch is seeded would compose the arbiter with no inputs and immediately drop
-it as unsatisfiable. So the three values - `critiques-ready`, `competing-plans`, and
+available, because the arbiter subscribes `#critiques-ready` and requires both artifacts -
+emitting the trigger early would compose it with no inputs and immediately drop it as
+unsatisfiable. So the three values - `critiques-ready`, `competing-plans`, and
 `plan-critiques` - co-occur in one recompose, never split across turns. This recompose happens
 after the per-plan critique phase completes: every critique-only challenger has returned before
 the arbiter is triggered.

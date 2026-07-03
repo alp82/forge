@@ -2,6 +2,13 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.4 - 2026-07-02
+
+- Resuming an interrupted session now reliably picks up from the latest saved step, not an early stale one.
+- More history-destroying git commands are now blocked as user-only, including restoring files from another branch or commit.
+- Saved memory notes can no longer pull in files outside the notes folder.
+- The docs and the built-in health check are back in sync with what ships: current version, complete update history, accurate counts.
+
 ## 1.3.3 - 2026-07-02
 
 - The workflow's most demanding steps - planning, judging a plan, extracting what you want, and the deep build, investigation, and authoring work - now run on the strongest model tier again, so those steps get deeper reasoning.

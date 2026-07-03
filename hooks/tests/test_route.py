@@ -1730,9 +1730,12 @@ def test_main_allows_bare_empty_object():
 
 
 def test_main_allows_explicit_empty_trigger_convergence():
-    """An explicit {"live":[]} (known key, no triggers) still converges to the empty route."""
-    proc = _run_cli('{"live":[]}')
-    assert proc.returncode == 0, f'{{"live":[]}} must succeed, stderr={proc.stderr!r}'
+    """Explicit empty lists for all known keys (not nulls) still converge to the
+    empty route (TC-ROUTE-05 regression control: unaffected by null coercion)."""
+    proc = _run_cli('{"live": [], "available": [], "already_run": []}')
+    assert (
+        proc.returncode == 0
+    ), f"empty-list request must succeed, stderr={proc.stderr!r}"
     res = json.loads(proc.stdout)
     assert (
         res["route"] == []
@@ -1756,6 +1759,63 @@ def test_main_rejects_non_dict_toplevel():
     assert (
         "route" not in proc.stdout
     ), "guard must fire before compute_route - no route output"
+
+
+# ---------------------------------------------------------------------------
+# CLI boundary: null-tolerance for live/available/already_run (plan step 8)
+# ---------------------------------------------------------------------------
+
+
+def test_main_tolerates_all_null_request_keys():
+    """TC-ROUTE-01: an explicit JSON null for each of live/available/already_run
+    coerces to empty (same as an absent key), not a TypeError. Pre-fix, `req.get(
+    "live", [])` returns None (not the [] default) when the key is present with a
+    JSON null value, so `set(None)` inside compute_route raises - this is the bug
+    this fix closes (TC-ROUTE-02's pre-fix baseline)."""
+    proc = _run_cli('{"live": null, "available": null, "already_run": null}')
+    assert proc.returncode == 0, (
+        f"all-null request must succeed, not raise TypeError; "
+        f"stderr={proc.stderr!r}"
+    )
+    res = json.loads(proc.stdout)
+    assert (
+        res["route"] == []
+    ), f"all-null request must yield empty route, got {res['route']}"
+    assert (
+        res["size"] == "empty"
+    ), f"all-null request size must be 'empty', got {res['size']}"
+
+
+def test_main_tolerates_mixed_null_and_populated_keys():
+    """TC-ROUTE-03: a null `live`/`already_run` coerces to empty while a populated
+    `available` list is respected as-is - only the null keys coerce."""
+    proc = _run_cli('{"live": null, "available": ["some-stage"], "already_run": []}')
+    assert (
+        proc.returncode == 0
+    ), f"mixed null/non-null request must succeed, stderr={proc.stderr!r}"
+    res = json.loads(proc.stdout)
+    assert (
+        res["route"] == []
+    ), f"no live signals must yield empty route, got {res['route']}"
+    assert (
+        res["size"] == "empty"
+    ), f"mixed null/non-null request size must be 'empty', got {res['size']}"
+
+
+def test_main_absent_keys_match_explicit_null_output():
+    """TC-ROUTE-04: omitting live/available/already_run entirely yields the same
+    empty-route output as sending explicit JSON nulls - missing key and explicit
+    null must behave identically."""
+    proc_absent = _run_cli("{}")
+    proc_null = _run_cli('{"live": null, "available": null, "already_run": null}')
+    assert proc_absent.returncode == 0 and proc_null.returncode == 0, (
+        f"both absent-key and explicit-null requests must succeed; "
+        f"absent stderr={proc_absent.stderr!r} null stderr={proc_null.stderr!r}"
+    )
+    assert json.loads(proc_absent.stdout) == json.loads(proc_null.stdout), (
+        "an absent key and an explicit JSON null for the same key must produce "
+        "identical route output"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -3117,6 +3177,159 @@ def test_check_catalog_reviewer_findings_lens_mismatch_flagged():
 
 
 # ---------------------------------------------------------------------------
+# RC5: whole-token and every-token SIGNALS_PUBLISHED validation
+# (plan-audit-fix-batch.md step 9) - unit tests against
+# check_catalog._check_reviewer_signals(name, s, pubs) directly, on synthetic
+# stage dicts, rather than through check_catalog.check().
+# ---------------------------------------------------------------------------
+
+
+def _sig_stage(signal_line):
+    """A minimal synthetic stage dict carrying only what _check_reviewer_signals
+    reads: an output_template whose SIGNALS_PUBLISHED: line is the given text."""
+    return {
+        "output_template": f"VERDICT: [pass | fail]\nSIGNALS_PUBLISHED: {signal_line}\n"
+    }
+
+
+# --- RC5-01 ---
+def test_check_reviewer_signals_whole_token_rejects_substring_clean():
+    """TC-CATALOG-01: pubs={'clean'}, line contains '#cleanup' (not '#clean' as a
+    whole token) - must be flagged as lacking #clean. Closes the substring
+    false-negative where '#clean' in '#cleanup' reads as satisfied today."""
+    problems = check_catalog._check_reviewer_signals(
+        "test-reviewer", _sig_stage("#cleanup done"), {"clean"}
+    )
+    matched = [p for p in problems if "lacks `#clean`" in p]
+    assert matched, (
+        f"'#cleanup' must NOT whole-token-satisfy a published 'clean' signal; "
+        f"problems={problems}"
+    )
+
+
+# --- RC5-02 ---
+def test_check_reviewer_signals_whole_token_no_phantom_clean():
+    """TC-CATALOG-02: pubs has no 'clean', line contains '#cleanup' - must NOT be
+    flagged for a phantom '#clean' token. Closes the substring false-positive
+    where '#clean' in '#cleanup' reads as a stray #clean token today."""
+    problems = check_catalog._check_reviewer_signals(
+        "test-reviewer", _sig_stage("#cleanup done"), {"findings:security"}
+    )
+    clean_problems = [p for p in problems if "clean" in p]
+    assert not clean_problems, (
+        f"'#cleanup' must not be misread as a phantom '#clean' token; "
+        f"problems={clean_problems}"
+    )
+
+
+# --- RC5-03 ---
+def test_check_reviewer_signals_every_findings_token_checked():
+    """TC-CATALOG-03: pubs={'findings:security'}, line names two lens tokens
+    (#findings:security #findings:ux) - the unpublished 'ux' lens must be
+    flagged. Every #findings:<lens> token is checked, not just the first."""
+    problems = check_catalog._check_reviewer_signals(
+        "test-reviewer",
+        _sig_stage("#findings:security #findings:ux"),
+        {"findings:security"},
+    )
+    matched = [p for p in problems if "ux" in p]
+    assert matched, (
+        f"the unpublished 'ux' lens token must be flagged even though 'security' "
+        f"(the first token) is published; problems={problems}"
+    )
+
+
+# --- RC5-04 ---
+def test_check_reviewer_signals_fully_consistent_line_clean_and_findings():
+    """TC-CATALOG-04: pubs={'clean','findings:security'}, line has both matching
+    tokens - no problems."""
+    problems = check_catalog._check_reviewer_signals(
+        "test-reviewer",
+        _sig_stage("#clean #findings:security"),
+        {"clean", "findings:security"},
+    )
+    assert (
+        problems == []
+    ), f"a fully consistent signal line must not be flagged; problems={problems}"
+
+
+# --- RC5-05 ---
+def test_check_reviewer_signals_multiple_valid_lens_tokens_all_pass():
+    """TC-CATALOG-05: pubs={'findings:security','findings:ux'}, line names both
+    matching lens tokens - no problems."""
+    problems = check_catalog._check_reviewer_signals(
+        "test-reviewer",
+        _sig_stage("#findings:security #findings:ux"),
+        {"findings:security", "findings:ux"},
+    )
+    assert (
+        problems == []
+    ), f"multiple valid lens tokens must all pass; problems={problems}"
+
+
+# --- RC5-06 ---
+def test_check_reviewer_signals_bare_findings_satisfies_family():
+    """TC-CATALOG-06: pubs={'findings:security'}, line has bare '#findings' (no
+    lens) - the family-aware check treats a bare #findings token as satisfying
+    the family requirement; no 'lacks #findings' problem."""
+    problems = check_catalog._check_reviewer_signals(
+        "test-reviewer", _sig_stage("#findings"), {"findings:security"}
+    )
+    family_problems = [p for p in problems if "lacks `#findings`" in p]
+    assert not family_problems, (
+        f"a bare '#findings' token must satisfy the findings family requirement; "
+        f"problems={family_problems}"
+    )
+
+
+# --- RC5-07 ---
+def test_check_reviewer_signals_missing_findings_token_still_flagged():
+    """TC-CATALOG-07: pubs={'findings:security'}, line has only '#clean' (no
+    #findings or #findings:* token at all) - the family check must still fire."""
+    problems = check_catalog._check_reviewer_signals(
+        "test-reviewer", _sig_stage("#clean"), {"findings:security"}
+    )
+    matched = [p for p in problems if "lacks `#findings`" in p]
+    assert matched, (
+        f"a line with no #findings token at all must still be flagged when the "
+        f"stage publishes findings:*; problems={problems}"
+    )
+
+
+# --- RC5-08 ---
+def test_check_reviewer_signals_decorated_token_recognized():
+    """TC-CATALOG-08: pubs={'clean'}, line has a bracket/punctuation-decorated
+    '#clean' token ('[#clean]' and '#clean,') - the tokenizer must still
+    recognize a decorated token, not just a bare-word match."""
+    for decorated in ("[#clean]", "#clean,"):
+        problems = check_catalog._check_reviewer_signals(
+            "test-reviewer", _sig_stage(decorated), {"clean"}
+        )
+        clean_problems = [p for p in problems if "clean" in p]
+        assert not clean_problems, (
+            f"a decorated token {decorated!r} must still whole-token-satisfy a "
+            f"published 'clean' signal; problems={clean_problems}"
+        )
+
+
+# --- RC5-INT-01 ---
+def test_check_catalog_real_catalog_clean_after_signal_rewrite():
+    """TC-CATALOG-INT-01: python3 hooks/check_catalog.py against the real
+    generated/catalog.json exits 0 - the token-matching rewrite introduces no
+    reviewer signal-line regressions."""
+    result = subprocess.run(
+        [sys.executable, str(Path(__file__).resolve().parents[1] / "check_catalog.py")],
+        capture_output=True,
+        text=True,
+        cwd=str(Path(__file__).resolve().parents[2]),
+    )
+    assert result.returncode == 0, (
+        f"hooks/check_catalog.py must exit 0 against the real catalog; "
+        f"got {result.returncode}; stdout={result.stdout!r} stderr={result.stderr!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
 # RC4-D: four reviewers gain #clean in frontmatter (real catalog)
 # ---------------------------------------------------------------------------
 
@@ -3171,17 +3384,17 @@ def test_check_catalog_no_orphan_clean_error_after_rc4():
 
 # --- RC4-E01 ---
 def test_plugin_json_version_1_2_18():
-    """plugin.json version must be '1.3.3'."""
+    """plugin.json version must be '1.3.4'."""
     plugin_path = Path(__file__).resolve().parents[2] / ".claude-plugin" / "plugin.json"
     data = json.loads(plugin_path.read_text(encoding="utf-8"))
     assert (
-        data["version"] == "1.3.3"
-    ), f"plugin.json version must be '1.3.3', got {data['version']!r}"
+        data["version"] == "1.3.4"
+    ), f"plugin.json version must be '1.3.4', got {data['version']!r}"
 
 
 # --- RC4-E02 ---
 def test_marketplace_json_version_1_2_18_matches_plugin():
-    """marketplace.json version must be '1.3.3' and equal plugin.json."""
+    """marketplace.json version must be '1.3.4' and equal plugin.json."""
     base = Path(__file__).resolve().parents[2] / ".claude-plugin"
     plugin_ver = json.loads((base / "plugin.json").read_text(encoding="utf-8"))[
         "version"
@@ -3190,8 +3403,8 @@ def test_marketplace_json_version_1_2_18_matches_plugin():
         "metadata"
     ]["version"]
     assert (
-        market_ver == "1.3.3"
-    ), f"marketplace.json version must be '1.3.3', got {market_ver!r}"
+        market_ver == "1.3.4"
+    ), f"marketplace.json version must be '1.3.4', got {market_ver!r}"
     assert (
         market_ver == plugin_ver
     ), f"marketplace.json version {market_ver!r} must equal plugin.json {plugin_ver!r}"

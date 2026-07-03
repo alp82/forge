@@ -324,7 +324,7 @@ if [ "$user_aware" -eq 1 ] && [ -f "$memory_file" ]; then
   while IFS= read -r link_path; do
     [ -z "$link_path" ] && continue
     case "$link_path" in
-      http://*|https://*|/*)
+      http://*|https://*|/*|*..*)
         continue
         ;;
     esac

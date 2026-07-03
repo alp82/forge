@@ -87,6 +87,6 @@ DISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three bu
 
 `complete` = plan executed fully, build passes. `partial` = plan executed with minor gaps declared in NOTES (not kickback-worthy). `blocked` = KICKBACK is set, or you've kicked back twice on the same blocker without resolving it.
 
-When `VERDICT: complete` or `partial`, `KICKBACK.TIER` MUST be `none`.
-When `VERDICT: blocked` and budget remains, `KICKBACK.TIER` MUST be one of plan-patch / replan / reinterview.
+When `VERDICT: complete` or `partial`, `KICKBACK.TIER` MUST be `none` - so a passing build never triggers the kickback path.
+When `VERDICT: blocked` and budget remains, `KICKBACK.TIER` MUST be one of plan-patch / replan / reinterview - so the orchestrator knows which producer to re-spawn.
 When `VERDICT: blocked` and budget is exhausted, `KICKBACK.TIER` MAY be none - REASON explains the exhaustion.

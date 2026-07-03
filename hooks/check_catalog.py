@@ -77,10 +77,12 @@ def _check_reviewer_signals(name, s, pubs):
     Returns a list of problem strings (empty when the reviewer's line is well-formed). Checks,
     in both directions where applicable:
       - the `SIGNALS_PUBLISHED:` line exists inside `output_template` (the captured fence);
-      - `#clean` <-> publishing `clean` (each implies the other);
-      - `#findings` present whenever the stage publishes any `findings:*` family member;
-      - the `#findings:<lens>` token's lens is one of the stage's published `findings:*` lenses
-        (family-aware) - catches a token naming a lens the frontmatter does not publish.
+      - `#clean` <-> publishing `clean` (each implies the other; matched as a whole token,
+        so `#cleanup` neither satisfies nor falsely triggers `#clean`);
+      - a `#findings` or `#findings:<lens>` token present whenever the stage publishes any
+        `findings:*` family member;
+      - EVERY `#findings:<lens>` token's lens is one of the stage's published `findings:*`
+        lenses (family-aware) - catches any token naming a lens the frontmatter does not publish.
     """
     problems = []
     signal_line = next(
@@ -97,42 +99,56 @@ def _check_reviewer_signals(name, s, pubs):
         )
         return problems
     publishes_findings = _family_match("findings", pubs)
-    if "clean" in pubs and "#clean" not in signal_line:
+    tokens = _signal_line_tokens(signal_line)
+    if "clean" in pubs and "#clean" not in tokens:
         problems.append(
             f"{name}: publishes `clean` but {SIGNALS_PUBLISHED_TOKEN} line lacks `#clean`"
         )
-    if publishes_findings and "#findings" not in signal_line:
+    if publishes_findings and not any(
+        tok == "#findings" or tok.startswith("#findings:") for tok in tokens
+    ):
         problems.append(
             f"{name}: publishes `findings:*` but {SIGNALS_PUBLISHED_TOKEN} line lacks `#findings`"
         )
-    if "#clean" in signal_line and "clean" not in pubs:
+    if "#clean" in tokens and "clean" not in pubs:
         problems.append(
             f"{name}: {SIGNALS_PUBLISHED_TOKEN} line names `#clean` but frontmatter does not publish `clean`"
         )
-    # Lens-match: a `#findings:<lens>` token must name a published findings lens. Parse the
-    # token's lens and require `findings:<lens>` to be a member of the stage's findings family.
-    token_lens = _findings_token_lens(signal_line)
-    if token_lens is not None and not _family_match("findings:" + token_lens, pubs):
-        problems.append(
-            f"{name}: {SIGNALS_PUBLISHED_TOKEN} line names `#findings:{token_lens}` "
-            f"but frontmatter does not publish that findings lens"
-        )
+    # Lens-match: every `#findings:<lens>` token must name a published findings lens. Parse
+    # each token's lens and require `findings:<lens>` to be a member of the stage's findings
+    # family.
+    for token_lens in _findings_token_lenses(signal_line):
+        if not _family_match("findings:" + token_lens, pubs):
+            problems.append(
+                f"{name}: {SIGNALS_PUBLISHED_TOKEN} line names `#findings:{token_lens}` "
+                f"but frontmatter does not publish that findings lens"
+            )
     return problems
 
 
-def _findings_token_lens(signal_line):
-    """Return the `<lens>` from a `#findings:<lens>` token in the line, or None if absent.
-
-    Scans whitespace/punctuation-delimited tokens for one starting `#findings:` and returns the
-    lens after the colon (trailing `]`/`)`/`,`/`.` stripped). A bare `#findings` yields None - no
-    lens to match."""
+def _signal_line_tokens(signal_line):
+    """Return the line's whitespace-delimited tokens with bracket/punctuation decoration
+    stripped (brackets replaced by spaces, trailing `,`/`.`/`;`/`)`/`|` stripped), so a
+    decorated token like `[#clean]` or `#clean,` still matches as a whole token."""
+    tokens = []
     for raw in signal_line.replace("[", " ").replace("]", " ").split():
         tok = raw.strip(",.;)|")
+        if tok:
+            tokens.append(tok)
+    return tokens
+
+
+def _findings_token_lenses(signal_line):
+    """Return every `<lens>` named by a `#findings:<lens>` token in the line (possibly empty).
+
+    A bare `#findings` names no lens and contributes nothing."""
+    lenses = []
+    for tok in _signal_line_tokens(signal_line):
         if tok.startswith("#findings:"):
             lens = tok[len("#findings:") :]
             if lens:
-                return lens
-    return None
+                lenses.append(lens)
+    return lenses
 
 
 def check(catalog):

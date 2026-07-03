@@ -17,7 +17,7 @@ log() {
   echo "[$(date -Iseconds)] $*" >> "$log_file" 2>/dev/null || true
 }
 
-# Emit a block decision without relying on jq — used on fail-closed paths
+# Emit a block decision without relying on jq - used on fail-closed paths
 # where jq itself may be unavailable or broken. The reason must be a JSON-safe
 # static string (no unescaped quotes, backslashes, or newlines).
 block_static() {
@@ -27,7 +27,7 @@ block_static() {
   exit 0
 }
 
-# Fail closed if jq is missing — without it we can't safely distinguish Bash
+# Fail closed if jq is missing - without it we can't safely distinguish Bash
 # from other tool calls, so we don't know whether to inspect the command.
 if ! command -v jq &>/dev/null; then
   block_static "git-write guard requires jq (not installed on PATH). Install jq or run git commands yourself."
@@ -66,7 +66,7 @@ gopt='([[:space:]]+(-c[[:space:]]+[^[:space:]]+|-C[[:space:]]+[^[:space:]]+|--[A
 # The leading class excludes word characters, path separators, and hyphens so
 # `echo "git add"` (git after a quote) still matches (intentionally conservative),
 # but `foogit add` (no boundary) does not.
-blocked_verbs="(^|[^[:alnum:]_/-])git${gopt}[[:space:]]+(cherry-pick|rebase|reset|merge|revert|restore|rm|mv|stash|apply|am|clean|pull)([[:space:]]|$)"
+blocked_verbs="(^|[^[:alnum:]_/-])git${gopt}[[:space:]]+(cherry-pick|rebase|reset|merge|revert|restore|rm|mv|stash|apply|am|clean|pull|filter-branch)([[:space:]]|$)"
 # Destructive `git push` forms the narrowed verb list now lets through:
 # force/delete flags (long forms, bundled short clusters containing f/d),
 # whitespace-led `+` refspecs (force-push, with or without colon), and
@@ -76,10 +76,20 @@ blocked_push_destructive="(^|[^[:alnum:]_/-])git${gopt}[[:space:]]+push([[:space
 blocked_tag="(^|[^[:alnum:]_/-])git${gopt}[[:space:]]+tag[[:space:]]+([^-[:space:]]|-[adsfm])"
 # `git branch -D|-d|-m|-M` (delete/rename)
 blocked_branch="(^|[^[:alnum:]_/-])git${gopt}[[:space:]]+branch[[:space:]]+-[DdmM]"
-# `git checkout -- <path>` (discard working-tree changes)
-blocked_checkout="(^|[^[:alnum:]_/-])git${gopt}[[:space:]]+checkout[[:space:]]+--[[:space:]]"
+# `git checkout` forms that discard working-tree changes: `[<ref>] -- <path>`
+# (a ref before the pathspec separator still discards edits), force checkout
+# (`-f`/`--force` as its own token; `-b` stays allowed), a bare `.` pathspec,
+# and `--pathspec-from-file` (pathspecs smuggled via a file or stdin). The
+# `[^;&|]*` keeps the match inside one shell segment, same idiom as
+# blocked_push_destructive.
+blocked_checkout="(^|[^[:alnum:]_/-])git${gopt}[[:space:]]+checkout([[:space:]][^;&|]*)?[[:space:]](--[[:space:]]|(-f|--force|[.])([[:space:]]|$)|--pathspec-from-file(=|[[:space:]]|$))"
+# Ref surgery: `git reflog expire|delete`, `git update-ref` (blocked
+# unconditionally - it has no read-only form, so this covers -d, the two-arg
+# overwrite, and --stdin), and `git worktree remove --force|-f` (including
+# bundled short clusters like -ff).
+blocked_ref_surgery="(^|[^[:alnum:]_/-])git${gopt}[[:space:]]+(reflog[[:space:]]+(expire|delete)|update-ref([[:space:]]|$)|worktree[[:space:]]+remove([[:space:]][^;&|]*)?[[:space:]](--force|-[A-Za-z]*f[A-Za-z]*)([[:space:]]|$))"
 
-if echo "$command" | grep -qE "$blocked_verbs|$blocked_tag|$blocked_branch|$blocked_checkout|$blocked_push_destructive"; then
+if echo "$command" | grep -qE "$blocked_verbs|$blocked_tag|$blocked_branch|$blocked_checkout|$blocked_ref_surgery|$blocked_push_destructive"; then
   log "BLOCKED: $command"
   reason="This git command rewrites or destroys history/state and is user-only. Forward ops (add/commit/push) are allowed; this one is blocked: ${command}. If you explicitly want it, surface the exact command for the user to run."
   jq -nc --arg reason "$reason" '{decision:"block", reason:$reason}'

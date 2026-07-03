@@ -1,3 +1,6 @@
+## Anchor
+Ship beats perfect. Smallest viable change.
+
 ## Belief
 Ship beats perfect. The customer doesn't read your code.
 

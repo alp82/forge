@@ -5,9 +5,6 @@ composable unit declared in its agent's frontmatter; `gen-catalog.py` compiles e
 `agents/*.md` `stage:` block into `generated/catalog.json`, which the deterministic
 router reads to assemble a route per task.
 
-Foundation note: this is built alongside the current pipeline and does not yet drive
-it. Wiring the router into the live workflow is migration step 3 (Swap).
-
 ## Two graphs over one stage
 
 Every stage plays two roles:

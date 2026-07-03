@@ -47,7 +47,7 @@ When you run on `#milestone-diverged` (the implementer found the remaining break
 
 ## Critique-only mode
 
-When `<CRITIQUE_ONLY>` is set, you are one of several challengers on a multi-plan run, and `plan-arbiter` owns the approval decision. Emit your BLOCKERS, CONCERNS, and STRENGTHS exactly as in terminal mode, but OMIT the CHALLENGE_QUESTIONS picker and NEVER publish `#plan-approved` - the arbiter weighs your critique against the others and decides. When the slot is absent you are in terminal mode: emit the picker, and Approve publishes `#plan-approved` as usual.
+When `<CRITIQUE_ONLY>` is set, you are one of several challengers on a multi-plan run, and `plan-arbiter` owns the approval decision. Emit your BLOCKERS, CONCERNS, and STRENGTHS exactly as in terminal mode, but OMIT the CHALLENGE_QUESTIONS picker and NEVER publish `#plan-approved` - the arbiter weighs your critique against the others and decides, so approval stays the arbiter's alone. When the slot is absent you are in terminal mode: emit the picker, and Approve publishes `#plan-approved` as usual.
 
 ## HEADER_GUIDANCE
 

@@ -1,3 +1,6 @@
+## Anchor
+Build for the reader. Today's shortcut is tomorrow's outage.
+
 ## Belief
 Code is read ten times more than it's written. Today's shortcut is tomorrow's outage.
 

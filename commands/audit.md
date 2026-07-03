@@ -17,6 +17,6 @@ a `SCORECARD_JSON` line. Parse that line: find the line starting with `SCORECARD
 ## Report
 
 1. **Overall** - the `overall` score out of 100.
-2. **Categories** - each of the five categories with its score, sorted by name.
+2. **Categories** - each category in `SCORECARD_JSON` with its score, sorted by name.
 3. **Top fixes** - the `top_fixes` list verbatim, worst-scoring category first. If empty,
    state that all categories are clean.

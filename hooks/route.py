@@ -229,9 +229,9 @@ def _main():
     )
     res = compute_route(
         load_catalog(catalog_path),
-        req.get("live", []),
-        req.get("available", []),
-        req.get("already_run", []),
+        req.get("live") or [],
+        req.get("available") or [],
+        req.get("already_run") or [],
     )
     print(json.dumps(res, indent=2, sort_keys=True))
 

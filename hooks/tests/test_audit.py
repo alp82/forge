@@ -2099,6 +2099,39 @@ def test_k02_live_repo_doctrine_hygiene_score_gt_0():
     )
 
 
+def test_k03_mandated_contract_fragments_all_match_live_repo():
+    """K-03: every fragment in audit._MANDATED_CONTRACT_FRAGMENTS matches at
+    least one line in the live repo's agents/*.md or doctrine/*.md files.
+
+    Guards against an orphaned fragment (doctrine reword drops the wording a
+    fragment pins) or a typo'd fragment that never matched anything."""
+    files = sorted((REAL_REPO_ROOT / "agents").glob("*.md")) + sorted(
+        (REAL_REPO_ROOT / "doctrine").glob("*.md")
+    )
+    combined = "\n".join(f.read_text(encoding="utf-8").lower() for f in files)
+    unmatched = [
+        frag for frag in audit._MANDATED_CONTRACT_FRAGMENTS if frag not in combined
+    ]
+    assert not unmatched, (
+        f"the following _MANDATED_CONTRACT_FRAGMENTS entries match no line in "
+        f"agents/*.md or doctrine/*.md: {unmatched!r}"
+    )
+
+
+def test_k04_live_repo_doctrine_hygiene_score_eq_100():
+    """K-04: build_scorecard(REAL_REPO_ROOT)['categories']['doctrine hygiene']['score'] == 100.
+
+    The plan's maintained state for the live repo's doctrine hygiene category
+    is 100; a drop is a loud signal that a mandated-contract restatement went
+    unsanctioned or a genuine duplicate crept in."""
+    result = audit.build_scorecard(REAL_REPO_ROOT)
+    score = result["categories"]["doctrine hygiene"]["score"]
+    assert score == 100, (
+        f"live repo 'doctrine hygiene' must score 100; got {score}. "
+        f"fixes: {result['categories']['doctrine hygiene']['fixes']!r}"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Group K-SEC - Extended _score_security (M2: 4-arg, four 25-pt sub-checks)
 # ---------------------------------------------------------------------------

@@ -8,7 +8,7 @@
 
 ![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)
 ![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)
-![Version](https://shieldcn.dev/badge/version-1.3.1-D97757.svg?variant=outline&size=lg)
+![Version](https://shieldcn.dev/badge/version-1.3.4-D97757.svg?variant=outline&size=lg)
 
 <br>
 
@@ -30,11 +30,22 @@
 
 The last three updates:
 
-**1.3.3** - The workflow's most demanding steps - planning, judging a plan, extracting intent, and deep build work - now run on the strongest model tier again for deeper reasoning. Its scratch run-state folder now stays out of version control automatically.
+**1.3.4**
 
-**1.3.1** - The live progress card now groups every step under its phase in run order, reads in plain words throughout, and the published stage list is complete.
+- Resuming an interrupted session now reliably picks up from the latest saved step, not an early stale one.
+- More history-destroying git commands are now blocked as user-only, including restoring files from another branch or commit.
+- Saved memory notes can no longer pull in files outside the notes folder.
+- The docs and the built-in health check are back in sync with what ships: current version, complete update history, accurate counts.
 
-**1.3.0** - An interrupted run is now recoverable: reopen the project and resume where it stopped instead of starting over.
+**1.3.3**
+
+- The workflow's most demanding steps - planning, judging a plan, extracting what you want, and the deep build, investigation, and authoring work - now run on the strongest model tier again, so those steps get deeper reasoning.
+- The scratch folder this tool writes into your project now stays out of version control automatically, with a prompt to stop tracking it if it was already committed.
+
+**1.3.2**
+
+- The resume-after-interruption offer added in 1.3.0 now actually appears on a fresh install. Its startup step had shipped unable to launch, so recovery silently never ran and starting a session surfaced a permission error - both are fixed.
+- Shipping a session's work can now go straight to the default branch as the default choice - one commit, pushed, no pull request - with the feature-branch-and-draft-PR flow still available as the second option. You pick the target at the ship prompt, and it shows the exact commands and how to undo each for whichever you choose.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -181,7 +192,11 @@ A big code change - the full route, grouped by phase. This is what XXL looks lik
 
 ---
 
-## 🔎 Intent
+## Stages
+
+The stages of a code build, grouped by phase in run order - the stage-to-phase membership the render card cites.
+
+### 🔎 Intent
 
 Reads the request, settles what you actually want, and frames the work.
 
@@ -195,7 +210,7 @@ Reads the request, settles what you actually want, and frames the work.
 
 ---
 
-## 🧭 Scout
+### 🧭 Scout
 
 Surveys the ground: what to reuse, how healthy the area is, what novelty needs a tracer-bullet first, and the root cause behind a bug.
 
@@ -214,7 +229,7 @@ Surveys the ground: what to reuse, how healthy the area is, what novelty needs a
 
 ---
 
-## 📐 Blueprint
+### 📐 Blueprint
 
 Turns settled intent into a concrete blueprint, then attacks it adversarially.
 
@@ -230,7 +245,7 @@ Turns settled intent into a concrete blueprint, then attacks it adversarially.
 
 ---
 
-## 🧪 Tests
+### 🧪 Tests
 
 Derives the test cases and writes them red, validated against intent before any code is allowed.
 
@@ -244,7 +259,7 @@ Derives the test cases and writes them red, validated against intent before any 
 
 ---
 
-## 🔨 Build
+### 🔨 Build
 
 Builds the change to the plan, and gates anything destructive.
 
@@ -257,7 +272,7 @@ Builds the change to the plan, and gates anything destructive.
 
 ---
 
-## 🔬 Review
+### 🔬 Review
 
 Scrutinizes every diff in parallel: correctness always, the rest as the change demands.
 
@@ -288,7 +303,7 @@ Scrutinizes every diff in parallel: correctness always, the rest as the change d
 
 ---
 
-## 📓 Document
+### 📓 Document
 
 Records the glossary, stack, and intent updates the run surfaced, only after you approve.
 
@@ -301,7 +316,7 @@ Records the glossary, stack, and intent updates the run surfaced, only after you
 
 ---
 
-## 🚀 Ship
+### 🚀 Ship
 
 Opt-in at convergence: on a ship request, gates the forward git/gh commands, then commits, pushes, and opens a draft PR.
 
@@ -310,7 +325,7 @@ Opt-in at convergence: on a ship request, gates the forward git/gh commands, the
 | ship-gate | sonnet | Names the commit/push/PR commands and how to undo each, and waits for your go-ahead. Sticky. |
 | ship-executor | sonnet | Composes one commit, pushes the branch, opens a draft PR. Held by the ship lock until the gate clears. |
 
-*`setup-agent` (fable) is command-only - it backs `/alp-river:setup` and is not part of any path.*
+*`setup-agent` (fable) is command-only - it backs `/alp-river:setup` - and `run-state-writer` (sonnet) is the off-route utility the orchestrator dispatches each turn to persist run state; neither is part of any path.*
 
 ---
 
@@ -378,7 +393,7 @@ alp-river/
 ├── doctrine/               <- CATALOG.md (stage schema), SIGNALS.md (signal vocabulary), ...
 ├── generated/catalog.json  <- compiled stage catalog (50 stages; tracked; the router reads it)
 ├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, recover-state)
-├── agents/                 <- 50 stage definitions + setup-agent
+├── agents/                 <- 50 stage definitions + 2 off-route utilities (setup-agent, run-state-writer)
 ├── commands/               <- 6 slash commands
 ├── psychology/             <- per-agent voice / persona overrides
 └── templates/              <- copy into your project's docs/ for context injection
