@@ -30,6 +30,11 @@
 
 The last three updates:
 
+**1.3.5**
+
+- Saving the run's progress each turn is now a single direct write instead of a delegated background helper call, cutting one background model call from every loop turn.
+- Resuming an interrupted run behaves exactly as before: the saved progress file and the reopen-and-resume offer are unchanged.
+
 **1.3.4**
 
 - Resuming an interrupted session now reliably picks up from the latest saved step, not an early stale one.
@@ -41,11 +46,6 @@ The last three updates:
 
 - The workflow's most demanding steps - planning, judging a plan, extracting what you want, and the deep build, investigation, and authoring work - now run on the strongest model tier again, so those steps get deeper reasoning.
 - The scratch folder this tool writes into your project now stays out of version control automatically, with a prompt to stop tracking it if it was already committed.
-
-**1.3.2**
-
-- The resume-after-interruption offer added in 1.3.0 now actually appears on a fresh install. Its startup step had shipped unable to launch, so recovery silently never ran and starting a session surfaced a permission error - both are fixed.
-- Shipping a session's work can now go straight to the default branch as the default choice - one commit, pushed, no pull request - with the feature-branch-and-draft-PR flow still available as the second option. You pick the target at the ship prompt, and it shows the exact commands and how to undo each for whichever you choose.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -325,7 +325,7 @@ Opt-in at convergence: on a ship request, gates the forward git/gh commands, the
 | ship-gate | sonnet | Names the commit/push/PR commands and how to undo each, and waits for your go-ahead. Sticky. |
 | ship-executor | sonnet | Composes one commit, pushes the branch, opens a draft PR. Held by the ship lock until the gate clears. |
 
-*`setup-agent` (fable) is command-only - it backs `/alp-river:setup` - and `run-state-writer` (sonnet) is the off-route utility the orchestrator dispatches each turn to persist run state; neither is part of any path.*
+*`setup-agent` (fable) is command-only - it backs `/alp-river:setup` - and is not part of any path.*
 
 ---
 
@@ -393,7 +393,7 @@ alp-river/
 ├── doctrine/               <- CATALOG.md (stage schema), SIGNALS.md (signal vocabulary), ...
 ├── generated/catalog.json  <- compiled stage catalog (50 stages; tracked; the router reads it)
 ├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, recover-state)
-├── agents/                 <- 50 stage definitions + 2 off-route utilities (setup-agent, run-state-writer)
+├── agents/                 <- 50 stage definitions + 1 off-route utility (setup-agent)
 ├── commands/               <- 6 slash commands
 ├── psychology/             <- per-agent voice / persona overrides
 └── templates/              <- copy into your project's docs/ for context injection

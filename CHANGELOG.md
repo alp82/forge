@@ -2,6 +2,10 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.5 - 2026-07-03
+
+- Saving the run's progress each turn is now a single direct write instead of a delegated background helper call, cutting one background model call from every loop turn with recovery behavior unchanged.
+
 ## 1.3.4 - 2026-07-02
 
 - Resuming an interrupted session now reliably picks up from the latest saved step, not an early stale one.
