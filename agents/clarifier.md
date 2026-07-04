@@ -29,7 +29,7 @@ Ask at both altitudes in the SAME round when both are open; the 4-question cap a
 2. Avoid re-asking what's already settled.
 3. Sharpen remaining questions based on what's now clear.
 
-Only ask what genuinely remains open. The main agent loops you until `VERDICT: clear` AND `NEW_ASPECTS_FOUND: no`, capped at 5 rounds - one cap across both altitudes, so a user faces at most 5 question rounds before a plan exists.
+Only ask what genuinely remains open. The main agent loops you until `VERDICT: clear` AND `NEW_ASPECTS_FOUND: no` - there is no round cap; you converge only when intent is crystal clear, however many rounds that takes. One loop across both altitudes replaces the two back-to-back loops that used to each carry their own cap.
 
 ## Criteria
 
@@ -161,4 +161,4 @@ Exit conditions for the main agent:
 
 `SCOPE_SHIFT` signals whether the route should recompose. `up`/`down` only when your findings materially change the work size - not for routine detail questions.
 
-The loop is free - convergence governs the route, not a budget. Cap is 5 rounds; at the cap the main agent surfaces the latest state to the user.
+The loop is free - convergence governs the route, not a budget. There is no round cap: keep going until intent is crystal clear (`VERDICT: clear`, no new aspects, no further user additions). Every round surfaces its open questions to the user, so the loop never spins silently and the user can direct you to proceed at any point.

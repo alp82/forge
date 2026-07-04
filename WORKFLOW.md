@@ -197,20 +197,21 @@ hooks rather than in each implementer's prompt.
 
 The single `clarifier` stage runs as a loop, not a single pass - depth scales with the
 unknowns still lurking. It carries both clarify altitudes (direction/intent-level and
-detail/requirements-level) in one loop under one cap, so a user faces at most 5 question
-rounds before a plan exists, never up to 10 across two stages. It loops *internally* (the
-route sees one stage) until its exit criteria hold:
+detail/requirements-level) in one loop, replacing the two back-to-back stages that each
+used to carry their own round cap. It loops *internally* (the route sees one stage) until
+its exit criteria hold:
 1. `VERDICT: clear`.
 2. `NEW_ASPECTS_FOUND: no`.
 3. The user has no further additions.
 
-**Cap**: 5 rounds; at the cap, present the latest state and ask the user to confirm or
-reshape - never loop silently. Re-invocations carry `<PRIOR_ROUNDS>` (a compressed Q&A log)
-so the agent tells new aspects from reaffirmations and never re-asks what is settled.
-Direction questions are queued ahead of detail so a scope answer can dissolve a detail
-question before a slot is spent on it. Before asking, the agent exhausts filesystem and web
-sources and reports `LOOKUPS_PERFORMED`; if research already answers a question, it drops
-it. Internal loops are free - convergence, not a budget, governs the route.
+**No round cap.** The loop runs until intent is crystal clear - convergence, not a budget,
+governs it, however many rounds that takes. Every round surfaces its open questions to the
+user, so the loop never spins silently and the user can direct the agent to proceed at any
+point. Re-invocations carry `<PRIOR_ROUNDS>` (a compressed Q&A log) so the agent tells new
+aspects from reaffirmations and never re-asks what is settled. Direction questions are
+queued ahead of detail so a scope answer can dissolve a detail question before a slot is
+spent on it. Before asking, the agent exhausts filesystem and web sources and reports
+`LOOKUPS_PERFORMED`; if research already answers a question, it drops it.
 
 ## Concise Surfacing Contract
 

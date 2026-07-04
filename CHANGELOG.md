@@ -4,7 +4,7 @@ All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
 ## 1.3.8 - 2026-07-04
 
-- Clarifying an unclear request now happens in one question-and-answer loop instead of two, so you answer at most five rounds before a plan appears instead of up to ten.
+- An unclear request is now clarified in a single question-and-answer loop that keeps going until the goal is genuinely clear, instead of two separate loops that each stopped at a fixed number of rounds.
 
 ## 1.3.7 - 2026-07-04
 
