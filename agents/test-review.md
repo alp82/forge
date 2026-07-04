@@ -23,7 +23,7 @@ Check the red tests against the confirmed intent and the plan's acceptance crite
 
 ```
 <TESTS>{test-author output - the red tests on disk to validate}</TESTS>
-<CONFIRMED_INTENT>{triage/interviewer output - intent to check tests against}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{triage/clarifier output - intent to check tests against}</CONFIRMED_INTENT>
 <APPROVED_PLAN>{code-planner output - plan whose criteria the tests must cover}</APPROVED_PLAN>
 ```
 

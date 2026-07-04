@@ -38,7 +38,7 @@ You are the ship executor. You carry out the approved shipping tail against the 
 ## Input
 
 ```
-<CONFIRMED_INTENT>{triage or interviewer read of the request - the basis for the commit subject}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{triage or clarifier read of the request - the basis for the commit subject}</CONFIRMED_INTENT>
 <SHIP_TARGET>{main | branch - the target the user cleared at the ship gate}</SHIP_TARGET>
 <DIFF>{the session diff summary, or "none" to read the live working tree}</DIFF>
 ```

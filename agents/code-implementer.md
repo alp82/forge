@@ -58,7 +58,7 @@ During a milestone-loop build you implement one milestone at a time. When implem
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
 <APPROVED_PLAN>{planner output, the current-version APPROVED_PLAN block - ABSENT on the direct-impl short path, where you implement straight off CONFIRMED_INTENT}</APPROVED_PLAN>
 <SCOUT>
   <reuse>{reuse-scanner output}</reuse>

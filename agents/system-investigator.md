@@ -37,7 +37,7 @@ You are the system investigator. A bug-framing signal pulled you into the system
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate - what is broken and what "working" looks like}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate - what is broken and what "working" looks like}</CONFIRMED_INTENT>
 ```
 
 First step: parse `<CONFIRMED_INTENT>`. On a missing required slot, emit `INPUT_ERROR: missing <slot>` and stop.

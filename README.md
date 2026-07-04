@@ -30,6 +30,10 @@
 
 The last three updates:
 
+**1.3.8**
+
+- Clarifying an unclear request now happens in one question-and-answer loop instead of two, so you answer at most five rounds before a plan appears instead of up to ten.
+
 **1.3.7**
 
 - A trivial code change - a single-file edit with no new logic, like a typo fix, a doc tweak, a config value, or a version bump - now takes a genuinely short path: it goes straight to making the change plus a correctness check, skipping the planning step it used to run first.
@@ -40,11 +44,6 @@ The last three updates:
 - Finishing a reply that changed no files now skips the end-of-turn test and build checks entirely, saving up to about five minutes on chat-only turns; the checks still run after every real code edit.
 - During an in-flight task run, the end-of-turn checks wait and run once at the finish instead of after every intermediate step.
 - The after-save formatter no longer holds up the turn and never downloads formatter packages; projects without the formatter installed are skipped silently.
-
-**1.3.5**
-
-- Saving the run's progress each turn is now a single direct write instead of a delegated background helper call, cutting one background model call from every loop turn.
-- Resuming an interrupted run behaves exactly as before: the saved progress file and the reopen-and-resume offer are unchanged.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -112,7 +111,7 @@ The spine of a code route, in the order it runs:
 
 You're pulled in only at decisions that could change the outcome:
 
-- **Intent** - a clear ask gets a one-line read and proceeds; an ambiguous one loops with the interviewer until intent settles.
+- **Intent** - a clear ask gets a one-line read and proceeds; an ambiguous one loops with the clarifier until intent settles.
 - **Clarifier** - researches the codebase first, then asks only what's still open.
 - **Design picker** - for UI with multiple legitimate shapes, builds an interactive page; you paste back the chosen spec.
 - **Cost / plan / safety gates** - fire only when the route turns expensive, a plan is ready, or a destructive step is queued. Never as fixed ceremony.
@@ -166,8 +165,7 @@ A big code change - the full route, grouped by phase. This is what XXL looks lik
 
 - 🔎 **Intent**
   - ✓ triage
-  - ✓ interviewer
-  - ✓ requirements-clarifier
+  - ✓ clarifier
 - 🧭 **Scout**
   - ✓ reuse-scanner
   - ✓ health-checker
@@ -197,13 +195,12 @@ The stages of a code build, grouped by phase in run order - the stage-to-phase m
 
 Reads the request, settles what you actually want, and frames the work.
 
-*An ambiguous "make login better" loops with the interviewer until the goal is concrete.*
+*An ambiguous "make login better" loops with the clarifier until the goal is concrete.*
 
 | Stage | Model | Role |
 |-------|-------|------|
 | triage | haiku | Always-on. Reads your request, picks the path, flags early risk and bug-framing. |
-| interviewer | fable | When the ask is ambiguous, probes scope and success criteria until intent settles. |
-| requirements-clarifier | fable | Researches the area, then surfaces edge cases and proposed acceptance criteria. |
+| clarifier | fable | When the ask is ambiguous or under-specified, researches the area, then confirms scope and success criteria and surfaces edge cases and acceptance criteria - one loop, both altitudes. |
 
 ---
 

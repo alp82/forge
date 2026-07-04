@@ -31,7 +31,7 @@ your-project/
 
 | File | Goes to | How it appears |
 |------|---------|----------------|
-| `INTENT.md` | agents that judge fit (interviewer, planner, acceptance, ux, ...) | full body under `### INTENT.md` |
+| `INTENT.md` | agents that judge fit (clarifier, planner, acceptance, ux, ...) | full body under `### INTENT.md` |
 | `STACK.md` | agents that touch tech choice (researcher, implementer, security, perf, ...) | full body under `### STACK.md` |
 | `GLOSSARY.md` | every judgment-call agent | full body under `### GLOSSARY.md` |
 | `adr/*.md` | agents that reason about prior decisions (planner, implementer, fixer, ...) | one bullet per ADR with status, title, summary, path |

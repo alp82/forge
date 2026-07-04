@@ -47,8 +47,8 @@ When the plan's Acceptance section says `n/a - no acceptance criteria from clari
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
-<CLARIFY_OUTPUT>{requirements-clarifier output - holds acceptance criteria}</CLARIFY_OUTPUT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
+<CLARIFY_OUTPUT>{clarifier output - holds acceptance criteria}</CLARIFY_OUTPUT>
 <APPROVED_PLAN>{current APPROVED_PLAN block - includes Out of Scope}</APPROVED_PLAN>
 <TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>
 ```

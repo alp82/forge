@@ -2,6 +2,10 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.8 - 2026-07-04
+
+- Clarifying an unclear request now happens in one question-and-answer loop instead of two, so you answer at most five rounds before a plan appears instead of up to ten.
+
 ## 1.3.7 - 2026-07-04
 
 - A trivial code change - a single-file edit with no new logic, like a typo fix, a doc tweak, a config value, or a version bump - now takes a genuinely short path: it goes straight to making the change plus a correctness check, skipping the planning step it used to run first.

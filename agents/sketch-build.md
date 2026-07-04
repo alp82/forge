@@ -28,7 +28,7 @@ You are the sketch path's maker. The point is a runnable answer to "does this wo
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate - what the sketch is meant to prove}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate - what the sketch is meant to prove}</CONFIRMED_INTENT>
 ```
 
 First step: parse `<CONFIRMED_INTENT>`. On a missing required slot, emit `INPUT_ERROR: missing <slot>` and stop.

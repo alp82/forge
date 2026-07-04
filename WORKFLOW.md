@@ -142,11 +142,11 @@ Six `echo STATE | python3 hooks/route.py` traces:
 - **small planned code** - `{"live":["code","intent-confirmed"],"available":["request","triage-read","confirmed-intent"]}` composes only `code-planner` (size XS) - this single router call is just the planner. Once the planner publishes `#plan-ready`, the next recompose puts `code-implementer` in `held` keyed on `#plan-approved` (its TDD lock is inactive - no `#needs-tests` - but the plan-gate lock holds it): `{"live":["code","intent-confirmed","plan-ready"],...}` returns `held: {"code-implementer": ["plan-approved"]}`. The orchestrator emits `#plan-approved` (auto on this small plan, or a one-tap confirm), releasing the implementer; `correctness-reviewer` and `simplicity-reviewer` then join once `#code-written` makes `@diff` available (simplicity via `#plan-ready`). None of the deep lenses, Scout, clarify, test-chain, challenge, or Document join - they wait on `#significant-build` (and the TDD chain on `#needs-tests`).
 - **sketch** - `{"live":["sketch","code-written"],"available":["confirmed-intent","diff"]}` composes just `sketch-build` then `correctness-reviewer`; the code-only lenses are dropped `off-path` by the `routes` filter. Size S.
 - **system** - `{"live":["system","plan-ready","destructive-op"],"available":["confirmed-intent","system-plan"]}` composes `safety-gate` (armed by `destructive-op`) and holds `system-executor` in `held` keyed on BOTH unmet untils - `held: {"system-executor": ["safety-approved", "plan-approved"]}`. The `safety-gate` clears `#safety-approved` in-route; the orchestrator emits `#plan-approved` via the one-tap pre-execution confirm. Once both fire the executor runs and `system-verifier` follows. Without a `#destructive-op` the safety lock is inactive, but the plan gate still holds the executor on `#plan-approved` alone. No TDD chain, no code lenses.
-- **talk** - `{"live":["talk","ambiguous"],"available":["request","triage-read"]}` composes `interviewer` (pulled by `ambiguous`) then `discuss`, ordered after it because `discuss` optionally consumes the interviewer's `confirmed-intent`. No diff, nothing reviewed.
+- **talk** - `{"live":["talk","ambiguous"],"available":["request","triage-read"]}` composes `clarifier` (pulled by `ambiguous`) then `discuss`, ordered after it because `discuss` optionally consumes the clarifier's `confirmed-intent`. No diff, nothing reviewed.
 
 ### Intent
 
-`triage` settles framing. When the request is clear, **state the one-line interpretation and proceed** - no confirmation gate; the user corrects in their next message if it is wrong. `triage` mints `@confirmed-intent` on a clear code or system ask, so its Scout step is satisfied without the interviewer. When `triage` publishes `ambiguous` (any genuine doubt - low bar), the `interviewer` stage joins and loops until intent is confirmed. Intent is always *stated*, never silently assumed (see Principles), but a clear ask is not stopped.
+`triage` settles framing. When the request is clear, **state the one-line interpretation and proceed** - no confirmation gate; the user corrects in their next message if it is wrong. `triage` mints `@confirmed-intent` on a clear code or system ask, so its Scout step is satisfied without the clarifier. When `triage` publishes `ambiguous` (any genuine doubt - low bar), the `clarifier` stage joins and loops until intent is settled. Intent is always *stated*, never silently assumed (see Principles), but a clear ask is not stopped.
 
 ### Gates
 
@@ -195,19 +195,22 @@ hooks rather than in each implementer's prompt.
 
 ## Clarification Loops
 
-The `interviewer` and `requirements-clarifier` stages run as loops, not single passes -
-depth scales with the unknowns still lurking. Each loops *internally* (the route sees one
-stage) until its exit criteria hold:
-1. VERDICT is `confirmed` (interviewer) or `clear` (clarifier).
+The single `clarifier` stage runs as a loop, not a single pass - depth scales with the
+unknowns still lurking. It carries both clarify altitudes (direction/intent-level and
+detail/requirements-level) in one loop under one cap, so a user faces at most 5 question
+rounds before a plan exists, never up to 10 across two stages. It loops *internally* (the
+route sees one stage) until its exit criteria hold:
+1. `VERDICT: clear`.
 2. `NEW_ASPECTS_FOUND: no`.
 3. The user has no further additions.
 
-**Cap**: 5 rounds per stage; at the cap, present the latest state and ask the user to
-confirm or reshape - never loop silently. Re-invocations carry `<PRIOR_ROUNDS>` (a
-compressed Q&A log) so the agent tells new aspects from reaffirmations and never re-asks
-what is settled. Before asking, the agent exhausts filesystem and web sources and reports
-`LOOKUPS_PERFORMED`; if research already answers a question, it drops it. Internal loops
-are free - convergence, not a budget, governs the route.
+**Cap**: 5 rounds; at the cap, present the latest state and ask the user to confirm or
+reshape - never loop silently. Re-invocations carry `<PRIOR_ROUNDS>` (a compressed Q&A log)
+so the agent tells new aspects from reaffirmations and never re-asks what is settled.
+Direction questions are queued ahead of detail so a scope answer can dissolve a detail
+question before a slot is spent on it. Before asking, the agent exhausts filesystem and web
+sources and reports `LOOKUPS_PERFORMED`; if research already answers a question, it drops
+it. Internal loops are free - convergence, not a budget, governs the route.
 
 ## Concise Surfacing Contract
 
@@ -223,7 +226,7 @@ proceed without prompting. A single-question single-select auto-submits - expect
 `triage`'s one-line intent restatement is plain text, not a picker; confirm/correct needs
 no ceremony.
 
-**Picker-eligible sources**: `interviewer` and `requirements-clarifier` (`QUESTIONS`, open
+**Picker-eligible sources**: `clarifier` (`QUESTIONS`, open
 `DEFERRED_QUESTIONS`, promoted `[unsure]` criteria or assumptions); `design-prototyper`
 (`PARAMS_TO_CONFIRM`); `ux-prototyper` (`FLOW_TO_CONFIRM`); `plan-challenger`
 (`CHALLENGE_QUESTIONS`); and any gate stage whose
@@ -269,8 +272,8 @@ Revise (rerun planner with `BLOCKERS`) / Reshape (back to intent). `SCOPE_MISMAT
 inline alongside `BLOCKERS` and in the Reshape option's `preview`.
 
 **Brief escalation (render-only)**: this is the canonical home for the matched label pair and the
-coexistence mechanic. Four dense pickers (plan-challenger, plan-arbiter, interviewer intent-confirm,
-requirements-clarifier direction/confirm) carry ONE escape option, `See it in plain words` - an
+coexistence mechanic. Three dense pickers (plan-challenger, plan-arbiter, and the `clarifier`
+direction/confirm picker) carry ONE escape option, `See it in plain words` - an
 inline plain re-render that rides the picker as a single option (the question budget stays 4).
 Picking it makes the orchestrator re-render the SAME decision inline in plain before->after form (the
 Description-vs-preview default above) AND re-emit the SAME picker, so the gate STAYS at the picker -
@@ -459,7 +462,7 @@ Each agent fills these three roles with its own speaking-named slots; there is n
 
 **Non-revision boundary.** An agent that makes forward edits to a shared mutable artifact from OTHERS' findings is not revising. `fixer` is the canonical case: it edits the live working tree from reviewers' findings each round, and its `<ROUND>` is an oscillation counter, not a prior-version fold. The guard does not apply to it.
 
-**Convergence loop.** Re-derives an evolving artifact as new user input arrives; carries `<PRIOR_ROUNDS>` and folds in the new answers. Does NOT take the verbatim guard - the artifact is meant to change round over round. Instances: `interviewer` and `requirements-clarifier` (convergence-governed), `setup-agent` (invocation-capped). See `## Clarification Loops` for the loop exit criteria.
+**Convergence loop.** Re-derives an evolving artifact as new user input arrives; carries `<PRIOR_ROUNDS>` and folds in the new answers. Does NOT take the verbatim guard - the artifact is meant to change round over round. Instances: `clarifier` (convergence-governed), `setup-agent` (invocation-capped). See `## Clarification Loops` for the loop exit criteria.
 
 **Not a revision (phases).** Sequential phases - `design-prototyper` (`confirm-params` then `built`), `ux-prototyper` (`confirm-flow-params` then `built`), `capture-agent` (`PROPOSAL` then `WRITE`) - each emit a different artifact and carry forward the user's picks or approvals. The guard does not apply.
 

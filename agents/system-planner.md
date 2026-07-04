@@ -36,9 +36,9 @@ You are the system planner. You turn a confirmed system intent (and a diagnosis,
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate - the desired end state}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate - the desired end state}</CONFIRMED_INTENT>
 <DIAGNOSIS>{system-investigator output when a fault was diagnosed, or "none"}</DIAGNOSIS>
-<CLARIFY_OUTPUT>{requirements-clarifier output, or "none"}</CLARIFY_OUTPUT>
+<CLARIFY_OUTPUT>{clarifier output, or "none"}</CLARIFY_OUTPUT>
 ```
 
 First step: parse `<CONFIRMED_INTENT>`. On a missing required slot, emit `INPUT_ERROR: missing <slot>` and stop.
