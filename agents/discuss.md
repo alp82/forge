@@ -41,7 +41,7 @@ The recon stages (research, reuse-scan, investigator, design-prototyper, ux-prot
 
 ```
 <TRIAGE_READ>{triage's framing of the request}</TRIAGE_READ>
-<CONFIRMED_INTENT>{interviewer or Level 1 restate, or "none" when intent was not clarified}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate, or "none" when intent was not clarified}</CONFIRMED_INTENT>
 ```
 
 First step: parse `<TRIAGE_READ>`. On a missing required slot, emit `INPUT_ERROR: missing <slot>` and stop.

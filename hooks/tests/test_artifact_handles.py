@@ -182,20 +182,21 @@ def test_artifact_handles_g10_reviewer_input_templates_unchanged():
 
 
 # ---------------------------------------------------------------------------
-# GREEN g11 - catalog stage count is 50 and no orphans
+# GREEN g11 - catalog stage count is 49 and no orphans
 # ---------------------------------------------------------------------------
 
 
 def test_artifact_handles_g11_catalog_stage_count_and_no_orphans():
-    """GREEN-11 (regression guard): generated/catalog.json has exactly 50 stages
+    """GREEN-11 (regression guard): generated/catalog.json has exactly 49 stages
     and check_catalog.check(...) reports no orphaned signals.
 
     Passes now. Would fail if the implementer accidentally adds new stages or
     breaks signal wiring.
 
-    Stage count pinned at: 50 (read from generated/catalog.json on 2026-06-27).
+    Stage count pinned at: 49 (was 50 until the interviewer + requirements-clarifier
+    merge into clarifier).
     """
-    PINNED_STAGE_COUNT = 50
+    PINNED_STAGE_COUNT = 49
     catalog_path = REAL_REPO_ROOT / "generated" / "catalog.json"
     assert catalog_path.is_file(), f"generated/catalog.json not found at {catalog_path}"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))

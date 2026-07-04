@@ -58,8 +58,8 @@ For the CHALLENGE_QUESTIONS header (max 12 chars). Worked examples:
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
-<CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
+<CLARIFY_OUTPUT>{clarifier output}</CLARIFY_OUTPUT>
 <CRITIQUE_ONLY>{set on a multi-plan run - emit BLOCKERS/CONCERNS/STRENGTHS but omit the picker and never publish #plan-approved; absent on a single-plan run (terminal mode)}</CRITIQUE_ONLY>
 <APPROVED_PLAN>{planner's APPROVED_PLAN block for the plan you are reviewing}</APPROVED_PLAN>
 ```

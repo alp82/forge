@@ -242,9 +242,9 @@ def test_real_catalog_talk_path():
         cat, {"talk", "ambiguous"}, available={"request", "triage-read"}
     )
     assert "discuss" in res["route"]
-    assert "interviewer" in res["route"]  # ambiguous + talk
-    # discuss optionally consumes interviewer's confirmed-intent -> orders after it
-    assert res["route"].index("interviewer") < res["route"].index("discuss")
+    assert "clarifier" in res["route"]  # ambiguous + talk
+    # discuss optionally consumes the clarifier's confirmed-intent -> orders after it
+    assert res["route"].index("clarifier") < res["route"].index("discuss")
 
 
 def test_real_catalog_coherence():
@@ -820,7 +820,7 @@ _EXCLUSION_SET = {
     "capture-agent",
     "reuse-scanner",
     "health-checker",
-    "requirements-clarifier",
+    "clarifier",
     "prototype-identifier",
     "plan-challenger",
     "test-plan",
@@ -856,11 +856,12 @@ _DEEP_LENSES = {
 
 
 # --- TC-I01 / TC-P01 ---
-def test_real_catalog_has_50_stages_no_skip_tests():
-    """Catalog has 50 stages and skip-tests is absent."""
+def test_real_catalog_has_49_stages_no_skip_tests():
+    """Catalog has 49 stages and skip-tests is absent (50 before the interviewer +
+    requirements-clarifier merge into clarifier)."""
     cat = _real_catalog()
     stages = cat["stages"]
-    assert len(stages) == 50, f"expected 50 stages, got {len(stages)}"
+    assert len(stages) == 49, f"expected 49 stages, got {len(stages)}"
     assert "skip-tests" not in stages, "skip-tests must NOT exist in migrated catalog"
 
 
@@ -1108,12 +1109,12 @@ def test_real_catalog_design_prototyper_absent_on_user_flow_needed_only():
 
 
 # --- TC-P20 ---
-def test_real_catalog_requirements_clarifier_publishes_user_flow_needed():
-    """requirements-clarifier publishes user-flow-needed (publish-side coverage)."""
+def test_real_catalog_clarifier_publishes_user_flow_needed():
+    """clarifier publishes user-flow-needed (publish-side coverage)."""
     stages = _real_catalog()["stages"]
     assert (
-        "user-flow-needed" in stages["requirements-clarifier"]["signals"]["publishes"]
-    ), "requirements-clarifier must publish user-flow-needed"
+        "user-flow-needed" in stages["clarifier"]["signals"]["publishes"]
+    ), "clarifier must publish user-flow-needed"
 
 
 # --- TC-P21 ---
@@ -1781,7 +1782,7 @@ def test_real_catalog_needs_tests_implementer_after_tests_ready():
             "reuse-scanner",
             "health-checker",
             "prototype-identifier",
-            "requirements-clarifier",
+            "clarifier",
             "code-planner",
             "plan-challenger",
             "test-plan",
@@ -1827,7 +1828,7 @@ def test_real_catalog_needs_tests_implementer_runs_with_both_released():
             "reuse-scanner",
             "health-checker",
             "prototype-identifier",
-            "requirements-clarifier",
+            "clarifier",
             "code-planner",
             "plan-challenger",
             "test-plan",
@@ -2152,8 +2153,8 @@ def test_real_catalog_system_path_composes():
     assert res["dropped"].get("code-planner") == "off-path"
 
 
-def test_real_catalog_ambiguous_system_pulls_interviewer():
-    """An ambiguous system request must reach the interviewer, not stall on an empty route."""
+def test_real_catalog_ambiguous_system_pulls_clarifier():
+    """An ambiguous system request must reach the clarifier, not stall on an empty route."""
     cat = _real_catalog()
     res = route.compute_route(
         cat,
@@ -2161,8 +2162,8 @@ def test_real_catalog_ambiguous_system_pulls_interviewer():
         available={"request", "triage-read"},
         already_run={"triage"},
     )
-    assert "interviewer" in res["route"], (
-        "interviewer must compose for an ambiguous system request - "
+    assert "clarifier" in res["route"], (
+        "clarifier must compose for an ambiguous system request - "
         "without it the route is empty and the run stalls"
     )
 

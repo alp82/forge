@@ -43,8 +43,8 @@ When a plan depends on library-specific or framework-specific behavior the criti
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
-<CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
+<CLARIFY_OUTPUT>{clarifier output}</CLARIFY_OUTPUT>
 <COMPETING_PLANS>{the N APPROVED_PLAN blocks, each tagged with the lens its planner ran under}</COMPETING_PLANS>
 <PLAN_CRITIQUES>{the N critique blocks - one critique-only plan-challenger run per competing plan}</PLAN_CRITIQUES>
 ```

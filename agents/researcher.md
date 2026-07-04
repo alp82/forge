@@ -47,9 +47,9 @@ Treat carefully:
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
 <TARGET_AREA>{file paths / module names - main agent's best guess from intent}</TARGET_AREA>
-<EXTERNAL_DEPS_FLAG>{yes | no - from interviewer; if no, return TOPICS_RESEARCHED: none and stop}</EXTERNAL_DEPS_FLAG>
+<EXTERNAL_DEPS_FLAG>{yes | no - from clarifier; if no, return TOPICS_RESEARCHED: none and stop}</EXTERNAL_DEPS_FLAG>
 ```
 
 ## Output (strict)

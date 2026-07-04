@@ -19,7 +19,7 @@
 #               → receives PSYCHOLOGY block.
 #
 # An agent can be user-aware only, project-aware only, both, or neither:
-#   User-aware Y + Project-aware Y: most agents - interviewer, planner,
+#   User-aware Y + Project-aware Y: most agents - clarifier, planner,
 #                                   plan-challenger, implementer, design-prototyper,
 #                                   ux-prototyper, reviewers, fixer, investigator,
 #                                   capture-agent, adr-drafter, discuss, sketch-build
@@ -74,9 +74,9 @@ fi
 user_aware=1
 case "$subagent_type" in
   # User-aware: yes. Project-aware: depends on READ_MAP.
-  interviewer|code-planner|plan-challenger|plan-arbiter|code-implementer|fixer|code-investigator|setup-agent|capture-agent|adr-drafter|design-prototyper|ux-prototyper|discuss|sketch-build|system-planner|system-executor|system-investigator|system-verifier|safety-gate)
+  clarifier|code-planner|plan-challenger|plan-arbiter|code-implementer|fixer|code-investigator|setup-agent|capture-agent|adr-drafter|design-prototyper|ux-prototyper|discuss|sketch-build|system-planner|system-executor|system-investigator|system-verifier|safety-gate)
     ;;
-  requirements-clarifier|reuse-scanner)
+  reuse-scanner)
     ;;
   correctness-reviewer|quality-reviewer|simplicity-reviewer|acceptance-reviewer|plan-adherence-reviewer)
     ;;
@@ -116,8 +116,7 @@ memory_file="$memory_dir/MEMORY.md"
 # Single source of truth for project-context routing. Agent files do not carry
 # a reads: field - what runs is what's in this map.
 declare -A READ_MAP=(
-  [interviewer]="intent glossary adrs"
-  [requirements-clarifier]="intent stack glossary adrs"
+  [clarifier]="intent stack glossary adrs"
   [reuse-scanner]="glossary"
   [health-checker]="stack"
   [prototype-identifier]="stack"
@@ -186,7 +185,7 @@ declare -A DOCTRINE_MAP=(
   [plan-challenger]="code-doctrine briefs"
   [plan-arbiter]="code-doctrine briefs"
   [discuss]="briefs"
-  [interviewer]="briefs"
+  [clarifier]="briefs"
   [fixer]="discoveries"
   [code-investigator]="discoveries"
   [system-planner]="code-doctrine"

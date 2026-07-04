@@ -51,8 +51,8 @@ You run once per phase (`confirm-flow-params`, then `built`). You do not loop yo
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
-<CLARIFY_OUTPUT>{requirements-clarifier output - includes USER_FLOW_PROPOSED}</CLARIFY_OUTPUT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
+<CLARIFY_OUTPUT>{clarifier output - includes USER_FLOW_PROPOSED}</CLARIFY_OUTPUT>
 <SCOUT>
   <reuse>{reuse-scanner output}</reuse>
   <health>{health-checker output}</health>

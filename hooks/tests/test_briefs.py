@@ -26,7 +26,7 @@ BRIEFS_ANCHOR = (
 )
 
 # The four agents that must receive briefs doctrine.
-BRIEFS_AGENTS = ("discuss", "interviewer", "plan-challenger", "plan-arbiter")
+BRIEFS_AGENTS = ("discuss", "clarifier", "plan-challenger", "plan-arbiter")
 
 
 # ---------------------------------------------------------------------------
@@ -120,10 +120,10 @@ def test_briefs_r04_live_repo_doctrine_integrity_score_100():
 
 def test_briefs_r05_doctrine_map_wires_briefs_to_all_four_agents():
     """RED-5: hooks/user-context-injector.sh DOCTRINE_MAP block contains
-    'briefs' in the entry for each of discuss, interviewer,
+    'briefs' in the entry for each of discuss, clarifier,
     plan-challenger, and plan-arbiter.
 
-    Currently discuss and interviewer have no DOCTRINE_MAP entry; plan-challenger
+    Historically discuss and the clarifier had no DOCTRINE_MAP entry; plan-challenger
     and plan-arbiter have only 'code-doctrine'. Fails until all four are wired.
     """
     injector = REAL_REPO_ROOT / "hooks" / "user-context-injector.sh"
@@ -211,7 +211,7 @@ def test_briefs_r06_leitwort_appears_in_exactly_one_file():
 
 
 def test_briefs_g07_briefs_agents_have_no_write_tool():
-    """GREEN-7 (regression guard): discuss, interviewer, plan-challenger, and
+    """GREEN-7 (regression guard): discuss, clarifier, plan-challenger, and
     plan-arbiter do not have 'Write' in their YAML frontmatter tools: line.
 
     Passes now. Would fail if the implementer accidentally adds Write while
@@ -254,14 +254,15 @@ def test_briefs_g07_briefs_agents_have_no_write_tool():
 
 def test_briefs_g08_catalog_valid_and_stage_count_unchanged():
     """GREEN-8 (regression guard): generated/catalog.json has no orphaned signals
-    and the stage count equals the pinned value at test-write time (50).
+    and the stage count equals the pinned value (49).
 
     Passes now. Would fail if the implementer accidentally adds new stages or
     breaks signal wiring.
 
-    Stage count pinned at: 50 (read from generated/catalog.json on 2026-06-25).
+    Stage count pinned at: 49 (was 50 until the interviewer + requirements-clarifier
+    merge into clarifier).
     """
-    PINNED_STAGE_COUNT = 50
+    PINNED_STAGE_COUNT = 49
 
     catalog_path = REAL_REPO_ROOT / "generated" / "catalog.json"
     assert catalog_path.is_file(), f"generated/catalog.json not found at {catalog_path}"
