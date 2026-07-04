@@ -2,6 +2,15 @@ review effort levels
 
 ---
 
+question asking is bad
+* pros and cons
+* simple language
+* visuals
+* extra resources + context if needed
+
+
+---
+
 call codex from claude
 
 ---

@@ -2,6 +2,12 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.6 - 2026-07-04
+
+- Finishing a reply that changed no files now skips the end-of-turn test and build checks entirely, saving up to about five minutes on chat-only turns; the checks still run after every real code edit.
+- During an in-flight task run, the end-of-turn checks wait and run once at the finish instead of after every intermediate step.
+- The after-save formatter no longer holds up the turn and never downloads formatter packages; projects without the formatter installed are skipped silently.
+
 ## 1.3.5 - 2026-07-03
 
 - Saving the run's progress each turn is now a single direct write instead of a delegated background helper call, cutting one background model call from every loop turn with recovery behavior unchanged.

@@ -4,6 +4,11 @@
 Activates whenever the project has a detectable test command.
 Max 1 retry per session to prevent infinite loops.
 
+Gated on a per-session change marker (armed by mark-code-change.py): absent it,
+a chat-only turn exits before any command detection or subprocess. A live,
+non-converged run-state.json for this session is a further exemption so a
+multi-step run verifies exactly once at convergence.
+
 Stdlib only. Always exits 0 (Claude hook contract). A failing suite is signalled
 by a single JSON block on stdout; every pass/skip branch prints nothing. Building
 the JSON via json.dumps makes the exit-code footgun and the jq-injection class
@@ -18,20 +23,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-
-def silent_pass(marker):
-    """Clear the marker (gate re-arms) and exit 0 with no stdout."""
-    if marker is not None:
-        marker.unlink(missing_ok=True)
-    sys.exit(0)
-
-
-def read_marker_count(marker):
-    """Read the marker as an int retry counter; junk/missing reads as 0 (fresh)."""
-    try:
-        return int(marker.read_text().strip())
-    except (ValueError, OSError):
-        return 0
+from verify_shared import (
+    TESTS_CHANGE_PREFIX,
+    live_run_exemption,
+    read_marker_count,
+    session_marker,
+    silent_pass,
+)
 
 
 def main():
@@ -54,14 +52,23 @@ def main():
     # Retry tracking: session-keyed marker so "max 1 retry" survives across
     # invocations in the same Claude session. Fall back to per-invocation when
     # session_id is unavailable.
-    if session_id:
-        marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-    else:
-        marker = Path(f"/tmp/.claude-test-verify-fallback-{os.getpid()}")
+    marker = session_marker("claude-test-verify", session_id)
+    change_marker = session_marker(TESTS_CHANGE_PREFIX, session_id)
 
     # Avoid re-blocking inside an already-blocked Stop loop.
     if stop_hook_active is True or stop_hook_active == "true":
         silent_pass(marker)
+
+    # Chat-only fast path: no Edit/Write armed the change marker this turn, so
+    # exit before the retry-cap read and any command detection or subprocess.
+    # Leave both markers untouched.
+    if not change_marker.exists():
+        sys.exit(0)
+
+    # Mid-run exemption: a live, non-converged run-state for this session means
+    # verification waits and runs once at convergence. The change marker survives.
+    if live_run_exemption(project_root, session_id):
+        sys.exit(0)
 
     # Already retried once - let Claude finish, the correctness-reviewer catches it.
     if read_marker_count(marker) >= 1:
@@ -106,7 +113,7 @@ def main():
 
     # No test command found - don't block.
     if test_cmd is None:
-        silent_pass(marker)
+        silent_pass(marker, change_marker)
 
     # Run tests. capture_output keeps child output off the hook's own stdout
     # (STDOUT PURITY); a non-failing branch must print nothing.
@@ -128,7 +135,7 @@ def main():
 
     # 127 = test runner not resolvable, 124 = timeout - treat as a skip, never block.
     if rc in (124, 127):
-        silent_pass(marker)
+        silent_pass(marker, change_marker)
 
     if rc != 0:
         marker.write_text(str(read_marker_count(marker) + 1))
@@ -140,7 +147,7 @@ def main():
         sys.exit(0)
 
     # Tests passed - clean up.
-    silent_pass(marker)
+    silent_pass(marker, change_marker)
 
 
 if __name__ == "__main__":

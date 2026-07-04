@@ -13,7 +13,7 @@ Eight self-contained work orders that slim the alp-river pipeline: fewer spawns,
 **Order.** Suggested order: 1, 2, 3, 4, 7, 8, 6, 5. Hard constraint: run Task 5 after Tasks 1, 3, 4, and 7 - all four edit WORKFLOW.md and Task 5 rewrites it. Soft constraint: Tasks 6 and 7 both edit `hooks/user-context-injector.sh` - run them serially, 7 first, so the merged clarifier's allowlist entry lands before the injector rewrite.
 
 - [x] Task 1 - Delete the run-state-writer agent
-- [ ] Task 2 - Gate Stop verification on did-code-change; fix auto-format registration
+- [x] Task 2 - Gate Stop verification on did-code-change; fix auto-format registration
 - [ ] Task 3 - Make the trivial path trivial
 - [ ] Task 4 - Consolidate the review wave 12 -> 4 lenses; shrink fixer blast radius
 - [ ] Task 5 - Doctrine diet

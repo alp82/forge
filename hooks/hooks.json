@@ -91,12 +91,18 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/auto-format.sh",
-            "timeout": 30
+            "timeout": 30,
+            "async": true
           },
           {
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/gen-catalog.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/mark-code-change.py",
+            "timeout": 5
           }
         ]
       }

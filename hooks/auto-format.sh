@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 # PostToolUse hook: auto-format files after Edit/Write.
 # Detects project formatter and runs it on the modified file.
-# Runs async so it doesn't block Claude.
-# Failures are logged to ~/.claude/debug/auto-format.log AND surfaced back to
-# the agent via hookSpecificOutput.additionalContext, so unformatted files
-# don't accumulate silently when the formatter is broken or misconfigured.
+# Registered async (fire-and-forget): Claude never waits on it, and an async
+# hook's stdout/JSON is ignored, so failure surfacing is log-only - failures
+# land in ~/.claude/debug/auto-format.log, not back to the agent. Inspect that
+# log when formatting looks wrong or a formatter is broken/misconfigured.
+# Accepted async trade-off: this background formatter can rewrite a file between
+# the agent's Edit and its next Edit/Read of that same file, so occasional
+# stale-old_string / modified-since-read retries mid-turn are inherent to async
+# registration, not a hook bug - start debugging those there.
 
 set -euo pipefail
 
@@ -23,8 +27,10 @@ log() {
   echo "[$(date -Iseconds)] $*" >> "$log_file" 2>/dev/null || true
 }
 
-# Emit collected failures as hookSpecificOutput so the agent sees them on its
-# next turn. jq handles JSON escaping; skip if jq is missing (the script needs
+# Build the hookSpecificOutput JSON from collected failures. Under async
+# registration this output is NOT injected back to the agent (Claude ignores an
+# async hook's stdout), so this stays harmless best-effort - the log is the
+# real surface. jq handles JSON escaping; skip if jq is missing (the script needs
 # jq to read input, so reaching here without jq means we exited earlier).
 emit_failures() {
   [ -z "$failures" ] && return 0
@@ -77,7 +83,7 @@ ext="${file_path##*.}"
 # JavaScript/TypeScript: Prettier > Biome
 if [[ "$ext" =~ ^(js|jsx|ts|tsx|json|css|scss|html|md|yaml|yml)$ ]]; then
   if [ -f ".prettierrc" ] || [ -f ".prettierrc.json" ] || [ -f ".prettierrc.js" ] || [ -f "prettier.config.js" ] || [ -f "prettier.config.mjs" ] || ([ -f "package.json" ] && grep -q '"prettier"' package.json 2>/dev/null); then
-    run_fmt prettier npx prettier --write "$file_path"
+    run_fmt prettier npx --no-install prettier --write "$file_path"
     # ESLint surfacing (report-only): only when configured AND locally resolvable.
     if [ -f ".eslintrc" ] || [ -f ".eslintrc.json" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc.cjs" ] || [ -f ".eslintrc.yaml" ] || [ -f ".eslintrc.yml" ] || [ -f "eslint.config.js" ] || [ -f "eslint.config.mjs" ] || [ -f "eslint.config.cjs" ] || ([ -f "package.json" ] && grep -q '"eslintConfig"' package.json 2>/dev/null); then
       if [ -x "node_modules/.bin/eslint" ]; then
@@ -87,7 +93,7 @@ if [[ "$ext" =~ ^(js|jsx|ts|tsx|json|css|scss|html|md|yaml|yml)$ ]]; then
       fi
     fi
   elif [ -f "biome.json" ] || [ -f "biome.jsonc" ]; then
-    run_fmt biome npx @biomejs/biome format --write "$file_path"
+    run_fmt biome npx --no-install @biomejs/biome format --write "$file_path"
     # Biome lint surfacing (report-only): only when locally resolvable.
     if [ -x "node_modules/.bin/biome" ]; then
       run_fmt "biome lint" node_modules/.bin/biome lint "$file_path"
