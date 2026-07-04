@@ -175,16 +175,18 @@
     "code-implementer": {
       "data": {
         "input": {
-          "optional": [],
-          "required": [
+          "optional": [
             "approved-plan"
+          ],
+          "required": [
+            "confirmed-intent"
           ]
         },
         "output": [
           "diff"
         ]
       },
-      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<APPROVED_PLAN>{planner output, the current-version APPROVED_PLAN block}</APPROVED_PLAN>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<BACKWARD_EDGES_USED>{integer - main agent's running count}</BACKWARD_EDGES_USED>\n",
+      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<APPROVED_PLAN>{planner output, the current-version APPROVED_PLAN block - ABSENT on the direct-impl short path, where you implement straight off CONFIRMED_INTENT}</APPROVED_PLAN>\n<SCOUT>\n  <reuse>{reuse-scanner output}</reuse>\n  <health>{health-checker output}</health>\n  <prototypes>{prototyper output OR \"none\"}</prototypes>\n  <research>{researcher output OR \"none\"}</research>\n</SCOUT>\n<BACKWARD_EDGES_USED>{integer - main agent's running count}</BACKWARD_EDGES_USED>\n",
       "lock": [
         {
           "until": "tests-ready",
@@ -208,7 +210,8 @@
           "scope-shift"
         ],
         "subscribes": [
-          "plan-ready"
+          "plan-ready",
+          "direct-impl"
         ]
       }
     },
@@ -1078,7 +1081,7 @@
           "findings"
         ]
       },
-      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
+      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block}</APPROVED_PLAN>\n",
       "name": "simplicity-reviewer",
       "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [delete:|stdlib:|native:|yagni:|shrink:] [file_path:line] - [what] -> [replacement / shorter form]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\n- net: -N lines possible | Lean already. Ship.\nACTION_NEEDED: [specific fix instructions naming the cut, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:simplicity]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
@@ -1091,7 +1094,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "code-written"
+          "plan-ready"
         ]
       }
     },
@@ -1468,12 +1471,12 @@
           "code",
           "system",
           "intent-confirmed",
+          "direct-impl",
           "ambiguous",
           "bug",
           "novel-domain",
           "needs-tests",
           "significant-build",
-          "multi-file",
           "auth-surface",
           "secrets",
           "perms-change",

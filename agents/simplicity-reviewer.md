@@ -1,6 +1,6 @@
 ---
 name: simplicity-reviewer
-description: Always-on simplicity/YAGNI lens - reports each cut with its replacement and a net-lines tally
+description: Simplicity/YAGNI lens on planned code builds - reports each cut with its replacement and a net-lines tally
 model: sonnet
 effort: high
 tools: Glob, Grep, Read, Bash
@@ -10,7 +10,7 @@ stage:
     input: ['@diff']
     output: ['@findings']
   signals:
-    subscribes: ['#code-written']
+    subscribes: ['#plan-ready']
     publishes: ['#findings:simplicity', '#clean', '#scope-shift']
 ---
 
@@ -64,7 +64,7 @@ Rank findings highest tier first. Drop lower tiers unless the top tiers are empt
 
 ```
 <TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>
-<APPROVED_PLAN>{current APPROVED_PLAN block, or "none" on S/M without plan}</APPROVED_PLAN>
+<APPROVED_PLAN>{current APPROVED_PLAN block}</APPROVED_PLAN>
 ```
 
 ## Output (strict)

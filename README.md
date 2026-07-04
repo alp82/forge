@@ -30,22 +30,21 @@
 
 The last three updates:
 
+**1.3.7**
+
+- A trivial code change - a single-file edit with no new logic, like a typo fix, a doc tweak, a config value, or a version bump - now takes a genuinely short path: it goes straight to making the change plus a correctness check, skipping the planning step it used to run first.
+- Larger and logic-carrying changes are unaffected: they still get the full plan-and-review treatment.
+
+**1.3.6**
+
+- Finishing a reply that changed no files now skips the end-of-turn test and build checks entirely, saving up to about five minutes on chat-only turns; the checks still run after every real code edit.
+- During an in-flight task run, the end-of-turn checks wait and run once at the finish instead of after every intermediate step.
+- The after-save formatter no longer holds up the turn and never downloads formatter packages; projects without the formatter installed are skipped silently.
+
 **1.3.5**
 
 - Saving the run's progress each turn is now a single direct write instead of a delegated background helper call, cutting one background model call from every loop turn.
 - Resuming an interrupted run behaves exactly as before: the saved progress file and the reopen-and-resume offer are unchanged.
-
-**1.3.4**
-
-- Resuming an interrupted session now reliably picks up from the latest saved step, not an early stale one.
-- More history-destroying git commands are now blocked as user-only, including restoring files from another branch or commit.
-- Saved memory notes can no longer pull in files outside the notes folder.
-- The docs and the built-in health check are back in sync with what ships: current version, complete update history, accurate counts.
-
-**1.3.3**
-
-- The workflow's most demanding steps - planning, judging a plan, extracting what you want, and the deep build, investigation, and authoring work - now run on the strongest model tier again, so those steps get deeper reasoning.
-- The scratch folder this tool writes into your project now stays out of version control automatically, with a prompt to stop tracking it if it was already committed.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -122,16 +121,14 @@ You're pulled in only at decisions that could change the outcome:
 
 ## 🎬 Examples
 
-### "Rename a variable across the module"
+### "Fix a typo in a doc comment"
 
-Trivial change - no Scout, no Tests.
+Trivial change - single file, no new logic. The short path skips planning and tests entirely.
 
-`code · S · 4 stages`
+`code · XS · 3 stages`
 
 - 🔎 **Intent**
   - ✓ triage
-- 📐 **Blueprint**
-  - ✓ code-planner
 - 🔨 **Build**
   - ✓ code-implementer
 - 🔬 **Review**
@@ -281,7 +278,7 @@ Scrutinizes every diff in parallel: correctness always, the rest as the change d
 | Lens | Model | Runs when |
 |------|-------|-----------|
 | correctness | fable | every change |
-| simplicity | sonnet | every change |
+| simplicity | sonnet | planned builds |
 | quality | fable | logic changes |
 | acceptance | sonnet | logic changes |
 | plan-adherence | sonnet | logic changes |

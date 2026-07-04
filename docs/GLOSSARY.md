@@ -73,7 +73,7 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Avoid:** "green-light", "gate artifact".
 
 ### Trivial
-**Definition:** A code change with no new logic - docs, config, version, copy, formatting, or dependency edits. Published by `triage` as the absence of `needs-tests`; routes the short path (`planner`, then implement and a correctness check), skipping the test chain. The implementer's TDD lock is inactive because `#needs-tests` is absent.
+**Definition:** A code change with no new logic - docs, config, version, copy, formatting, or dependency edits - that is also single-file and `est-size` S or smaller. Published by `triage` as the explicit `direct-impl` marker; routes the short path straight to the implementer, then a correctness check, skipping the planner and the test chain. Both of the implementer's locks are inactive, so it runs straight off the confirmed intent with no plan (see `WORKFLOW.md` > `## Locks`).
 **Avoid:** "small", "simple".
 
 ### Needs-tests
@@ -85,7 +85,7 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Avoid:** "complex", conflating it with `needs-tests` (the TDD axis).
 
 ### Plan-approved
-**Definition:** The signal that releases both implementers' plan-approval lock. Published by `plan-challenger` on Approve (the `code` path); on the system and trivial-code paths, where no in-route stage publishes it, the orchestrator emits it as a hard required step - a one-tap confirm before execution (auto on a trivial single-file plan). Until it fires, the plan-gate lock holds the implementer/executor, so no change starts against an unapproved plan.
+**Definition:** The signal that releases both implementers' plan-approval lock. Published by `plan-challenger` on Approve (the `code` path); on the system and small planned-build paths the orchestrator emits it as a hard required step - a one-tap confirm before execution, auto-released on a small planned build touching `<=1` file at `est-size <= S`. The `direct-impl` short path has no plan gate, so `plan-approved` is never owed there (see `WORKFLOW.md` > `## Locks`).
 **Avoid:** "green-light", "approved" (that is the generic gate verdict).
 
 ### Self-heal
@@ -240,7 +240,7 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 
 ### Simplicity review
 
-**Definition:** The always-on lens in `agents/simplicity-reviewer.md` that fires on every code build. It walks the YAGNI ladder - does-it-need-to-exist -> stdlib -> native platform feature -> already-installed dependency -> one line -> the minimum that works - stopping at the first rung that holds (a rung higher than necessary is the cut). It scores each cut and ends with `net: -N lines possible` or `Lean already. Ship.` Fires once at End Review over the cumulative diff, not per milestone; milestone-scope ownership is intentionally outside its charter.
+**Definition:** The simplicity/YAGNI lens in `agents/simplicity-reviewer.md` that fires on planned code builds (it subscribes `#plan-ready`); the trivial short path takes correctness only. It walks the YAGNI ladder - does-it-need-to-exist -> stdlib -> native platform feature -> already-installed dependency -> one line -> the minimum that works - stopping at the first rung that holds (a rung higher than necessary is the cut). It scores each cut and ends with `net: -N lines possible` or `Lean already. Ship.` Fires once at End Review over the cumulative diff, not per milestone; milestone-scope ownership is intentionally outside its charter.
 
 **Avoid:** "simplification pass", "dead-code scan".
 

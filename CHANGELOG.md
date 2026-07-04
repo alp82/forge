@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.7 - 2026-07-04
+
+- A trivial code change - a single-file edit with no new logic, like a typo fix, a doc tweak, a config value, or a version bump - now takes a genuinely short path: it goes straight to making the change plus a correctness check, skipping the planning step it used to run first.
+- Larger and logic-carrying changes are unaffected: they still get the full plan-and-review treatment.
+
 ## 1.3.6 - 2026-07-04
 
 - Finishing a reply that changed no files now skips the end-of-turn test and build checks entirely, saving up to about five minutes on chat-only turns; the checks still run after every real code edit.

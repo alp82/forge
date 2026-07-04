@@ -1144,12 +1144,22 @@ def test_real_catalog_ux_prototyper_orders_before_code_planner():
 
 # --- TC-I02 / D-01 ---
 def test_real_catalog_implementer_contract():
-    """implementer: required input == ['approved-plan'] only; lock has 2 entries (TDD + plan-gate)."""
+    """implementer: required input == ['confirmed-intent'], approved-plan optional;
+    subscribes both plan-ready and direct-impl; lock has 2 entries (TDD + plan-gate).
+
+    RED until frontmatter updated for the trivial-path change.
+    """
     stages = _real_catalog()["stages"]
     s = stages["code-implementer"]
     assert s["data"]["input"]["required"] == [
-        "approved-plan"
-    ], f"implementer required must be ['approved-plan'], got {s['data']['input']['required']}"
+        "confirmed-intent"
+    ], f"implementer required must be ['confirmed-intent'], got {s['data']['input']['required']}"
+    assert (
+        "approved-plan" in s["data"]["input"]["optional"]
+    ), f"approved-plan must be optional on implementer, got {s['data']['input']['optional']}"
+    subs = s["signals"]["subscribes"]
+    assert "direct-impl" in subs, f"implementer must subscribe direct-impl, got {subs}"
+    assert "plan-ready" in subs, f"implementer must subscribe plan-ready, got {subs}"
     assert (
         "green-light" not in s["data"]["input"]["required"]
     ), "green-light must NOT be in implementer required input"
@@ -1189,6 +1199,10 @@ def test_real_catalog_triage_publishes_intent_confirmed_not_trivial():
     assert "needs-tests" in pubs, "triage must publish needs-tests"
     assert "significant-build" in pubs, "triage must publish significant-build"
     assert "trivial" not in pubs, "triage must NOT publish trivial after migration"
+    assert "direct-impl" in pubs, "triage must publish direct-impl (trivial short path)"
+    assert (
+        "multi-file" not in pubs
+    ), "triage must NOT publish multi-file (orphaned signal removed)"
 
 
 # --- TC-I05 ---
@@ -1326,6 +1340,174 @@ def test_real_catalog_trivial_code_implementer_runs_with_plan_approved():
     ), "implementer must not be in held once plan-approved is live"
 
 
+# ---------------------------------------------------------------------------
+# TRIVIAL-PATH TESTS (TC-DI-*, TC-FP-*, TC-CO-03)
+# RED until triage/implementer/simplicity frontmatter updated + catalog regen
+# ---------------------------------------------------------------------------
+
+
+# --- TC-DI-01 ---
+def test_real_catalog_direct_impl_route_only_implementer():
+    """Trivial short path: direct-impl live pulls ONLY code-implementer (no planner).
+
+    RED until implementer subscribes direct-impl and requires confirmed-intent.
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "direct-impl"},
+        available={"confirmed-intent"},
+    )
+    assert res["route"] == [
+        "code-implementer"
+    ], f"trivial route must be exactly ['code-implementer'], got {res['route']}"
+    assert res["size"] == "XS", f"trivial route size must be XS, got {res['size']}"
+    assert "code-planner" not in res["route"], "planner must NOT be on the trivial path"
+    assert (
+        res.get("held", {}).get("code-implementer") is None
+    ), "implementer must not be held on the trivial path (no plan-ready lock active)"
+
+
+# --- TC-DI-02 ---
+def test_real_catalog_direct_impl_post_code_reviewers():
+    """Trivial path after code written: correctness fires, simplicity does not, and no
+    planning or deep-lens stage leaks in.
+
+    RED until simplicity re-gated onto plan-ready.
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "direct-impl", "code-written"},
+        available={"confirmed-intent", "diff"},
+    )
+    assert (
+        "correctness-reviewer" in res["route"]
+    ), "correctness-reviewer must fire post-code on the trivial path"
+    assert (
+        "simplicity-reviewer" not in res["route"]
+    ), "simplicity-reviewer must NOT fire on the trivial path (no plan-ready)"
+    assert "code-planner" not in res["route"], "planner must NOT be on the trivial path"
+    assert (
+        "plan-challenger" not in res["route"]
+    ), "plan-challenger must NOT be on the trivial path"
+    route_set = set(res["route"])
+    for stage in _DEEP_LENSES:
+        assert (
+            stage not in route_set
+        ), f"deep lens {stage} must NOT be in trivial-path post-code route"
+
+
+# --- TC-FP-01 ---
+def test_real_catalog_intent_confirmed_composes_planner_not_implementer():
+    """GUARD: the full path (intent-confirmed) composes the planner, not the implementer.
+
+    GREEN now and after - the implementer only fires on plan-ready/direct-impl, so
+    intent-confirmed alone must never place it in route or held.
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "intent-confirmed"},
+        available={"confirmed-intent"},
+    )
+    assert "code-planner" in res["route"], "planner must fire on intent-confirmed"
+    assert (
+        "code-implementer" not in res["route"]
+    ), "implementer must NOT be in route on intent-confirmed alone"
+    assert (
+        "code-implementer" not in res["held"]
+    ), "implementer must NOT be held on intent-confirmed alone"
+
+
+# --- TC-FP-02 ---
+def test_real_catalog_implementer_held_plan_gate_confirmed_only():
+    """Full path with plan-ready but no approved-plan: implementer is HELD by the
+    plan-gate lock, not dropped as unsatisfiable (confirmed-intent satisfies its input).
+
+    RED until required input becomes ['confirmed-intent'] (approved-plan optional).
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "plan-ready"},
+        available={"confirmed-intent"},
+    )
+    assert (
+        "code-implementer" in res["held"]
+    ), "implementer must be held by the plan-gate lock"
+    assert (
+        "plan-approved" in res["held"]["code-implementer"]
+    ), "held payload must list plan-approved as the unmet until"
+    assert (
+        "code-implementer" not in res["route"]
+    ), "implementer must not be in route while the plan-gate lock is active"
+    assert (
+        res["dropped"].get("code-implementer") != "unsatisfiable-input"
+    ), "implementer must NOT drop as unsatisfiable when confirmed-intent is available"
+
+
+# --- TC-FP-03 ---
+def test_real_catalog_implementer_runs_plan_approved_confirmed_only():
+    """Full path with plan-approved: the plan-gate releases and the implementer runs,
+    even though only confirmed-intent (not approved-plan) is available.
+
+    RED until required input becomes ['confirmed-intent'] (approved-plan optional).
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "plan-ready", "plan-approved"},
+        available={"confirmed-intent"},
+    )
+    assert (
+        "code-implementer" in res["route"]
+    ), "implementer must run once plan-approved is live with confirmed-intent available"
+    assert (
+        res.get("held", {}).get("code-implementer") is None
+    ), "implementer must not be held once the plan-gate releases"
+
+
+# --- TC-FP-04 ---
+def test_real_catalog_planned_post_code_both_reviewers():
+    """Full path after code written: both post-code reviewers fire, simplicity via plan-ready.
+
+    RED until simplicity re-gated onto plan-ready.
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "intent-confirmed", "plan-ready", "code-written"},
+        available={"confirmed-intent", "approved-plan", "diff"},
+    )
+    assert (
+        "correctness-reviewer" in res["route"]
+    ), "correctness-reviewer must fire post-code on the full path"
+    assert (
+        "simplicity-reviewer" in res["route"]
+    ), "simplicity-reviewer must fire on the full path (plan-ready live)"
+    assert res["triggered_by"]["simplicity-reviewer"] == "plan-ready", (
+        "simplicity-reviewer must be triggered by plan-ready, "
+        f"got {res['triggered_by'].get('simplicity-reviewer')!r}"
+    )
+
+
+# --- TC-CO-03 ---
+def test_real_catalog_multi_file_orphaned():
+    """multi-file is fully orphaned: no stage subscribes it, no stage publishes it.
+
+    RED until triage stops publishing multi-file.
+    """
+    stages = _real_catalog()["stages"]
+    for name, s in stages.items():
+        assert (
+            "multi-file" not in s["signals"]["subscribes"]
+        ), f"{name} must NOT subscribe multi-file (orphaned signal)"
+        assert (
+            "multi-file" not in s["signals"]["publishes"]
+        ), f"{name} must NOT publish multi-file (orphaned signal)"
+
+
 # --- TC-I10 ---
 def test_real_catalog_coherence_after_migration():
     """check_catalog.check() returns [] on the migrated catalog."""
@@ -1418,7 +1600,7 @@ def test_real_catalog_significant_build_deep_lenses_on_code_written():
     cat = _real_catalog()
     res = route.compute_route(
         cat,
-        {"code", "significant-build", "code-written"},
+        {"code", "significant-build", "plan-ready", "code-written"},
         available={"confirmed-intent", "diff"},
     )
     for stage in (
@@ -1432,7 +1614,7 @@ def test_real_catalog_significant_build_deep_lenses_on_code_written():
         ), f"{stage} must be in route on significant-build + code-written with diff"
     assert (
         "simplicity-reviewer" in res["route"]
-    ), "simplicity-reviewer must be in route when significant-build is live (always-on via #code-written)"
+    ), "simplicity-reviewer must be in route when significant-build is live (via #plan-ready)"
 
 
 # --- TC-I15: re-numbered to avoid clash with the original TC-I11 block above ---
@@ -1501,54 +1683,50 @@ def test_real_catalog_cheap_path_route_minimal():
 
 
 def test_real_catalog_cheap_path_post_code():
-    """Cheap path after code written: correctness-reviewer joins but deep lenses do not
-    (they are gated behind needs-tests)."""
-    cat = _real_catalog()
-    res = route.compute_route(
-        cat,
-        {"code", "intent-confirmed", "code-written"},
-        available={
-            "request",
-            "triage-read",
-            "confirmed-intent",
-            "approved-plan",
-            "diff",
-        },
-    )
-    assert (
-        "correctness-reviewer" in res["route"]
-    ), "correctness-reviewer must appear post-code on cheap path"
-    assert (
-        "simplicity-reviewer" in res["route"]
-    ), "simplicity-reviewer must appear post-code on cheap path"
-    route_set = set(res["route"])
-    for stage in _DEEP_LENSES:
-        assert (
-            stage not in route_set
-        ), f"deep lens {stage} must NOT be in cheap-path post-code route"
+    """Trivial path after code written: correctness-reviewer joins but simplicity-reviewer
+    does not (it now subscribes plan-ready, which the direct-impl path never publishes),
+    and no deep lens appears (they are gated behind significant-build).
 
-
-def test_real_catalog_cheap_path_multi_file_no_prototype_identifier():
-    """LEAK GUARD: multi-file on cheap path must NOT trigger prototype-identifier.
-    prototype-identifier subscribes significant-build, which is absent on the cheap path.
+    RED until simplicity-reviewer re-gated onto plan-ready.
     """
     cat = _real_catalog()
     res = route.compute_route(
         cat,
-        {"code", "intent-confirmed", "multi-file"},
-        available={"request", "triage-read", "confirmed-intent"},
+        {"code", "direct-impl", "code-written"},
+        available={"confirmed-intent", "diff"},
+    )
+    assert (
+        "correctness-reviewer" in res["route"]
+    ), "correctness-reviewer must appear post-code on trivial path"
+    assert (
+        "simplicity-reviewer" not in res["route"]
+    ), "simplicity-reviewer must NOT appear on trivial path (no plan-ready)"
+    route_set = set(res["route"])
+    for stage in _DEEP_LENSES:
+        assert (
+            stage not in route_set
+        ), f"deep lens {stage} must NOT be in trivial-path post-code route"
+
+
+def test_real_catalog_cheap_path_multi_file_no_prototype_identifier():
+    """LEAK GUARD: the trivial path must NOT trigger prototype-identifier.
+    prototype-identifier subscribes significant-build, which is absent on the trivial path.
+    """
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "direct-impl"},
+        available={"confirmed-intent"},
     )
     assert (
         "prototype-identifier" not in res["route"]
-    ), "prototype-identifier must not appear on cheap-path multi-file route"
+    ), "prototype-identifier must not appear on trivial-path route"
     assert (
         res["triggered_by"].get("prototype-identifier") is None
-    ), "prototype-identifier must not be triggered on cheap-path multi-file"
+    ), "prototype-identifier must not be triggered on trivial path"
     route_set = set(res["route"])
     for stage in _EXCLUSION_SET:
-        assert (
-            stage not in route_set
-        ), f"{stage} must NOT be in cheap-path multi-file route"
+        assert stage not in route_set, f"{stage} must NOT be in trivial-path route"
 
 
 def test_real_catalog_needs_tests_implementer_held_pre_test_chain():
@@ -2478,10 +2656,10 @@ def test_real_catalog_family_prefix_plan_approved_releases_plan_gate_code_implem
 # --- TC-SR-01 ---
 def test_simplicity_reviewer_catalog_contract():
     """simplicity-reviewer catalog entry: routes==['code'], input.required==['diff'],
-    output==['findings'], subscribes==['code-written'] (not significant-build),
+    output==['findings'], subscribes==['plan-ready'] (not code-written),
     publishes contains findings:simplicity, clean, scope-shift.
 
-    RED until agent authored + catalog regenerated.
+    RED until simplicity-reviewer re-gated onto plan-ready.
     """
     cat = _real_catalog()
     s = cat["stages"]["simplicity-reviewer"]  # KeyError until catalog regen
@@ -2496,11 +2674,11 @@ def test_simplicity_reviewer_catalog_contract():
     ], f"simplicity-reviewer output must be ['findings'], got {s['data']['output']}"
     subs = s["signals"]["subscribes"]
     assert (
-        "code-written" in subs
-    ), f"simplicity-reviewer must subscribe code-written, got {subs}"
+        "plan-ready" in subs
+    ), f"simplicity-reviewer must subscribe plan-ready, got {subs}"
     assert (
-        "significant-build" not in subs
-    ), f"simplicity-reviewer must NOT subscribe significant-build (always-on), got {subs}"
+        "code-written" not in subs
+    ), f"simplicity-reviewer must NOT subscribe code-written (re-gated onto plan-ready), got {subs}"
     pubs = s["signals"]["publishes"]
     assert (
         "findings:simplicity" in pubs
@@ -2512,36 +2690,31 @@ def test_simplicity_reviewer_catalog_contract():
 
 
 # --- TC-SR-02 ---
-def test_simplicity_reviewer_always_on():
-    """simplicity-reviewer is in route when live contains {code, intent-confirmed, code-written}
-    and diff is available. triggered_by == 'code-written'. correctness-reviewer also in route
-    (positive control - both always-on post-code reviewers).
+def test_simplicity_reviewer_fires_on_plan_ready():
+    """simplicity-reviewer is in route when live contains
+    {code, intent-confirmed, plan-ready, code-written} and diff is available.
+    triggered_by == 'plan-ready'. correctness-reviewer also in route (positive control -
+    correctness stays gated on code-written).
 
-    RED until catalog regenerated.
+    RED until simplicity-reviewer re-gated onto plan-ready.
     """
     cat = _real_catalog()
     res = route.compute_route(
         cat,
-        {"code", "intent-confirmed", "code-written"},
-        available={
-            "request",
-            "triage-read",
-            "confirmed-intent",
-            "approved-plan",
-            "diff",
-        },
+        {"code", "intent-confirmed", "plan-ready", "code-written"},
+        available={"confirmed-intent", "approved-plan", "diff"},
     )
     assert "simplicity-reviewer" in res["route"], (
-        "simplicity-reviewer must be in route on {code, intent-confirmed, code-written} "
-        f"with diff available; route={res['route']}"
+        "simplicity-reviewer must be in route on the full path with diff available; "
+        f"route={res['route']}"
     )
-    assert res["triggered_by"].get("simplicity-reviewer") == "code-written", (
-        "simplicity-reviewer must be triggered by code-written, "
+    assert res["triggered_by"].get("simplicity-reviewer") == "plan-ready", (
+        "simplicity-reviewer must be triggered by plan-ready, "
         f"got triggered_by={res['triggered_by'].get('simplicity-reviewer')!r}"
     )
     assert (
         "correctness-reviewer" in res["route"]
-    ), "correctness-reviewer must also be in route (positive control - both always-on)"
+    ), "correctness-reviewer must also be in route (positive control)"
 
 
 # --- TC-SR-03 ---
@@ -2567,21 +2740,33 @@ def test_simplicity_reviewer_absent_pre_code():
     )
     assert (
         "simplicity-reviewer" not in res["route"]
-    ), "simplicity-reviewer must NOT be in route when code-written is absent"
+    ), "simplicity-reviewer must NOT be in route when plan-ready is absent"
+    # Sub-case: plan-ready live but no diff available -> triggered then dropped.
+    res2 = route.compute_route(
+        cat,
+        {"code", "plan-ready"},
+        available={"confirmed-intent"},
+    )
+    assert (
+        "simplicity-reviewer" not in res2["route"]
+    ), "simplicity-reviewer must NOT be in route when diff is unavailable"
+    assert (
+        res2["dropped"].get("simplicity-reviewer") == "unsatisfiable-input"
+    ), "simplicity-reviewer must drop as unsatisfiable-input on plan-ready without diff"
 
 
 # --- TC-SR-04 ---
 def test_simplicity_reviewer_unsatisfiable_without_diff():
     """simplicity-reviewer is dropped as unsatisfiable-input when diff is not available,
-    even though code-written is live.
+    even though plan-ready is live.
 
-    RED until catalog regenerated.
+    RED until simplicity-reviewer re-gated onto plan-ready.
     """
     cat = _real_catalog()
     res = route.compute_route(
         cat,
-        {"code", "intent-confirmed", "code-written"},
-        available={"request", "triage-read", "confirmed-intent"},
+        {"code", "intent-confirmed", "plan-ready", "code-written"},
+        available={"confirmed-intent"},
         # diff intentionally absent
     )
     assert res["dropped"].get("simplicity-reviewer") == "unsatisfiable-input", (
@@ -2600,7 +2785,7 @@ def test_simplicity_reviewer_off_sketch():
     cat = _real_catalog()
     res = route.compute_route(
         cat,
-        {"sketch", "code-written"},
+        {"sketch", "plan-ready", "code-written"},
         available={"confirmed-intent", "diff"},
     )
     assert res["dropped"].get("simplicity-reviewer") == "off-path", (
@@ -2616,15 +2801,16 @@ def test_simplicity_reviewer_off_sketch():
 def test_simplicity_reviewer_not_in_exclusion_or_deep_lenses():
     """simplicity-reviewer must NOT appear in _EXCLUSION_SET or _DEEP_LENSES.
 
-    It is an always-on post-code reviewer (like correctness-reviewer), so it must be
-    absent from both gating sets. GREEN now - guards against future re-gating.
+    It is a plan-gated post-code reviewer (fires on plan-ready, not significant-build),
+    so it must be absent from both gating sets. GREEN now - guards against future
+    re-gating.
     """
     assert (
         "simplicity-reviewer" not in _EXCLUSION_SET
     ), "simplicity-reviewer must NOT be in _EXCLUSION_SET (it is always-on, not deep-lens-gated)"
     assert (
         "simplicity-reviewer" not in _DEEP_LENSES
-    ), "simplicity-reviewer must NOT be in _DEEP_LENSES (it subscribes code-written, not significant-build)"
+    ), "simplicity-reviewer must NOT be in _DEEP_LENSES (it subscribes plan-ready, not significant-build)"
 
 
 def _parse_doctrine_map_reviewers(text: str) -> set:

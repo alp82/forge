@@ -7,10 +7,10 @@ tools: Glob, Grep, Read, Edit, Write, Bash
 stage:
   routes: [code]
   data:
-    input: ['@approved-plan']
+    input: ['@confirmed-intent', '?approved-plan']
     output: ['@diff']
   signals:
-    subscribes: ['#plan-ready']
+    subscribes: ['#plan-ready', '#direct-impl']
     publishes: ['#code-written', '#ui-touched', '#milestone-diverged', '#scope-shift']
   lock:
     - while: '#needs-tests'
@@ -20,6 +20,12 @@ stage:
 ---
 
 You run held behind two locks that AND together: the TDD gate `{while:#needs-tests, until:#tests-ready}` (held until the red tests are validated) and the plan gate `{while:#plan-ready, until:#plan-approved}` (held until the plan is approved). You are not dispatched until both clear, so by the time you run the tests are ready and the plan is approved.
+
+You have a dual contract. The planned path (`#plan-ready`) hands you a full `<APPROVED_PLAN>` and both locks arm as above. The trivial short path (`#direct-impl`) hands you no plan: `<APPROVED_PLAN>` is absent, you implement straight off `<CONFIRMED_INTENT>`, and both locks are inactive by silence (no `#plan-ready` live -> plan gate inactive; no `#needs-tests` on a trivial change -> TDD gate inactive). On the direct-impl path:
+
+- **Rule 1 reads "implement off the confirmed intent."** There is no plan to follow - deliver the outcome `<CONFIRMED_INTENT>` names, honoring every other rule (reuse, conventions, no placeholders, Code Doctrine) unchanged.
+- **The `EVIDENCE_RECEIPT` is emitted against the confirmed-intent outcome but goes unconsumed.** Plan-adherence-reviewer requires `@approved-plan` and does not run on the trivial path; still emit the receipt in plan order as best you can against the intent.
+- **A kickback on the trivial path escalates to a full plan, not a plan-patch.** There is no prior plan to patch, so a blocker spawns a first plan via the planner - route the kickback as `replan`.
 
 ## Rules
 
@@ -53,7 +59,7 @@ During a milestone-loop build you implement one milestone at a time. When implem
 
 ```
 <CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
-<APPROVED_PLAN>{planner output, the current-version APPROVED_PLAN block}</APPROVED_PLAN>
+<APPROVED_PLAN>{planner output, the current-version APPROVED_PLAN block - ABSENT on the direct-impl short path, where you implement straight off CONFIRMED_INTENT}</APPROVED_PLAN>
 <SCOUT>
   <reuse>{reuse-scanner output}</reuse>
   <health>{health-checker output}</health>

@@ -22,7 +22,8 @@ New topics are added here first, then used.
 | request-received | a new turn arrived | orchestrator seed | triage |
 | ambiguous | request has unresolved readings | triage, clarify | intent, clarify |
 | reshape | user redirected intent | orchestrator | intent |
-| intent-confirmed | outcome locked | triage, interviewer | planner |
+| intent-confirmed | outcome locked, route through planning - on a clear `code` ask triage publishes this OR `direct-impl`, never both | triage, interviewer | planner |
+| direct-impl | trivial `code` change (single-file, `est-size <= S`, no new logic) - skip the plan, go straight to the implementer | triage | code-implementer |
 | novel-domain | unfamiliar problem area | triage | research |
 | bug | a defect to diagnose before fixing - pairs with `code` or `system`, never its own path | triage | code-investigator, system-investigator |
 | needs-tests | a code change carrying real logic (`code` path only) - the TDD axis | triage, correctness-reviewer | test-plan, test-gap, test-verifier, the implementer's TDD lock (test-author joins via `#test-cases-ready`) |
@@ -32,7 +33,6 @@ New topics are added here first, then used.
 
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|
-| multi-file | spans several files | triage, clarify | plan |
 | design-decision | a design choice to record as an ADR | /alp-river:adr command (external seed) | adr-drafter |
 | new-pattern | introduces a new pattern | plan | challenge, architecture |
 | new-export, new-seam | new public surface | plan, implement | architecture |
@@ -100,9 +100,11 @@ The implementer carries two locks that AND together (see `WORKFLOW.md` > `## Loc
 lock `{while:#needs-tests, until:#tests-ready}` and the plan-gate lock
 `{while:#plan-ready, until:#plan-approved}`. On a logic code change `test-review` publishes
 `#tests-ready` after validating the red tests, releasing the TDD lock - code cannot start
-against unvalidated tests. A trivial change carries no `#needs-tests`, so the TDD lock is
-inactive. Either way the plan-gate lock still holds the implementer until `#plan-approved`
-fires, so code never starts against an unapproved plan.
+against unvalidated tests. On a planned build the plan-gate lock holds the implementer until
+`#plan-approved` fires, so code never starts against an unapproved plan. On the `#direct-impl`
+short path BOTH locks are inactive: a trivial change carries no `#needs-tests` (TDD lock
+inactive) and no `#plan-ready` is ever live (plan-gate lock inactive by silence), so the
+implementer runs straight off `@confirmed-intent` with no plan.
 
 ## findings  (Review)
 
@@ -122,7 +124,7 @@ fires, so code never starts against an unapproved plan.
 | approved, scope-down, abandon | user gate verdict | gate stages | orchestrator |
 | cleanup-first | health gate decision | health gate | orchestrator |
 | safety-approved | user cleared a destructive/irreversible system action | safety-gate | system-executor's lock |
-| plan-approved | the plan cleared its approval gate, releasing both implementers' plan-gate lock | plan-challenger (code path, single-plan terminal gate); plan-arbiter (code path, multi-plan adjudication); orchestrator (system / trivial-code, where no in-route stage publishes it) | code-implementer's lock, system-executor's lock |
+| plan-approved | the plan cleared its approval gate, releasing both implementers' plan-gate lock | plan-challenger (code path, single-plan terminal gate); plan-arbiter (code path, multi-plan adjudication); orchestrator (system / small planned build, where no in-route stage publishes it) - never owed on the `#direct-impl` short path, which carries no plan gate | code-implementer's lock, system-executor's lock |
 
 On a multi-plan code build the per-plan critique-only challengers do NOT publish `#plan-approved` - the arbiter does, on its Adopt verdict (see `doctrine/multi-plan.md`). `critiques-ready`, `competing-plans`, and `plan-critiques` are orchestrator-sourced (seeded into the route, see `doctrine/multi-plan.md` ## Seed rationale), so `plan-challenger` does NOT publish `critiques-ready`.
 

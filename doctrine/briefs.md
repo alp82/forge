@@ -18,7 +18,7 @@ This orchestrator-writes-the-doc precedent is scoped to `.briefs/` render artifa
 
 ## Brief trigger
 
-The trigger is an orchestrator-inline rule, NOT a signal: the user pulled `See it as an interactive doc` (on the four lean-B surfaces, from inside the `See it in plain words` re-render; on the other surfaces, directly at the picker), so the orchestrator writes the `.briefs/<touchpoint>-<slug>.html` doc and waits for the paste-back. This is handled exactly like the trivial-code Hold-escalates-to-challenge precedent in `WORKFLOW.md` ### Gates / ## Locks - escalation lives in the option, the orchestrator reads the pick inline. No catalog routing, no new signal. The inline-escape default and the label pair are owned by `WORKFLOW.md` ## Concise Surfacing Contract.
+The trigger is an orchestrator-inline rule, NOT a signal: the user pulled `See it as an interactive doc` (on the four lean-B surfaces, from inside the `See it in plain words` re-render; on the other surfaces, directly at the picker), so the orchestrator writes the `.briefs/<touchpoint>-<slug>.html` doc and waits for the paste-back. This is handled exactly like the small planned-build Hold-escalates-to-challenge precedent in `WORKFLOW.md` ### Gates / ## Locks - escalation lives in the option, the orchestrator reads the pick inline. No catalog routing, no new signal. The inline-escape default and the label pair are owned by `WORKFLOW.md` ## Concise Surfacing Contract.
 
 ## The brief contract (six parts)
 

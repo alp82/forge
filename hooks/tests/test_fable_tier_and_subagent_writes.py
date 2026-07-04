@@ -135,24 +135,24 @@ GRADUATED_AGENT_EFFORT = {
 
 # README.md model-table line numbers that must read "fable" (1-indexed).
 README_FABLE_TABLE_LINES = (
-    208,
-    209,
-    228,
+    205,
+    206,
+    225,
+    237,
+    238,
+    239,
     240,
     241,
-    242,
-    243,
-    244,
-    258,
-    270,
-    283,
-    285,
-    289,
-    291,
-    297,
-    314,
-    315,
-    340,
+    255,
+    267,
+    280,
+    282,
+    286,
+    288,
+    294,
+    311,
+    312,
+    337,
 )
 
 
@@ -284,12 +284,12 @@ def test_a10_red_readme_model_table_rows_read_fable():
 
 
 def test_a11_red_readme_line_313_setup_agent_fable():
-    """TC-11: README.md line 328 prose reads "setup-agent (fable)"."""
+    """TC-11: README.md line 325 prose reads "setup-agent (fable)"."""
     lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    line_328 = lines[327] if len(lines) > 327 else ""
+    line_325 = lines[324] if len(lines) > 324 else ""
     assert (
-        "setup-agent" in line_328 and "(fable)" in line_328
-    ), f"README.md line 328 must read 'setup-agent (fable)'; got: {line_328!r}"
+        "setup-agent" in line_325 and "(fable)" in line_325
+    ), f"README.md line 325 must read 'setup-agent (fable)'; got: {line_325!r}"
 
 
 def test_a12_red_readme_no_opus_table_rows():
@@ -345,7 +345,7 @@ def test_a16_red_glossary_tier_definition_fable():
 def test_a17_red_opus_sweep_only_readme_main_session_lines():
     """TC-17: `grep -rn "opus" agents/ commands/ doctrine/ docs/ WORKFLOW.md README.md`
     returns matches ONLY in README.md, and only at the two out-of-scope main-session
-    lines (73, 77)."""
+    lines (72, 76)."""
     targets = [
         REAL_REPO_ROOT / "agents",
         REAL_REPO_ROOT / "commands",
@@ -373,24 +373,24 @@ def test_a17_red_opus_sweep_only_readme_main_session_lines():
     opus_linenos = [
         i + 1 for i, line in enumerate(readme_lines) if "opus" in line.lower()
     ]
-    assert opus_linenos == [73, 77], (
-        f"README.md must mention 'opus' only on lines 73 and 77 (main-session "
+    assert opus_linenos == [72, 76], (
+        f"README.md must mention 'opus' only on lines 72 and 76 (main-session "
         f"recommendation, out of scope); got lines: {opus_linenos!r}"
     )
 
 
 def test_a18_green_readme_main_session_opus_lines_untouched():
-    """TC-18 (negative / scope boundary, regression guard): README.md lines 73 and
-    77 (main-session Opus recommendation) are NOT touched by this change."""
+    """TC-18 (negative / scope boundary, regression guard): README.md lines 72 and
+    76 (main-session Opus recommendation) are NOT touched by this change."""
     lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    line_73 = lines[72] if len(lines) > 72 else ""
-    line_77 = lines[76] if len(lines) > 76 else ""
+    line_72 = lines[71] if len(lines) > 71 else ""
+    line_76 = lines[75] if len(lines) > 75 else ""
     assert (
-        "Opus at high effort" in line_73
-    ), f"README.md:73 must still say 'Opus at high effort'; got: {line_73!r}"
+        "Opus at high effort" in line_72
+    ), f"README.md:72 must still say 'Opus at high effort'; got: {line_72!r}"
     assert (
-        "Opus at high effort" in line_77
-    ), f"README.md:77 must still say 'Opus at high effort'; got: {line_77!r}"
+        "Opus at high effort" in line_76
+    ), f"README.md:76 must still say 'Opus at high effort'; got: {line_76!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -931,20 +931,20 @@ def test_f04_red_changelog_1_3_3_entry_no_writer_identity_bullet():
         )
 
 
-def test_f05_red_readme_latest_updates_gains_1_3_3_entry():
-    """TC-63: README.md ## 📰 Latest updates gains a condensed **1.3.3** entry at
+def test_f05_red_readme_latest_updates_gains_1_3_7_entry():
+    """TC-63: README.md ## 📰 Latest updates gains a condensed **1.3.7** entry at
     the top, matching the section's existing style."""
     content = _read("README.md")
     section = _section(content, "## 📰 Latest updates", "Full history in")
     assert (
-        "**1.3.3**" in section
-    ), "README.md ## 📰 Latest updates must gain a '**1.3.3**' entry"
-    first_entry_idx = section.index("**1.3.3**")
+        "**1.3.7**" in section
+    ), "README.md ## 📰 Latest updates must gain a '**1.3.7**' entry"
+    first_entry_idx = section.index("**1.3.7**")
     other_entry_match = re.search(r"\*\*1\.3\.\d+\*\*", section[first_entry_idx + 1 :])
     if other_entry_match:
         assert (
             other_entry_match.start() > 0
-        ), "the '**1.3.3**' entry must be the first (topmost) entry in Latest updates"
+        ), "the '**1.3.7**' entry must be the first (topmost) entry in Latest updates"
 
 
 def test_f06_red_changelog_gains_1_3_5_entry():
@@ -987,20 +987,20 @@ def test_f08_red_changelog_1_3_5_entry_no_writer_identity_bullet():
         )
 
 
-def test_f09_red_readme_latest_updates_gains_1_3_5_entry():
-    """README.md ## 📰 Latest updates gains a condensed **1.3.5** entry at
-    the top, matching the section's existing style, and keeps exactly the
-    last three entries."""
+def test_f09_red_readme_latest_updates_topmost_and_last_three():
+    """README.md ## 📰 Latest updates has the newest release (**1.3.7**) topmost,
+    matching the section's existing style, and keeps exactly the last three
+    entries."""
     content = _read("README.md")
     section = _section(content, "## 📰 Latest updates", "Full history in")
     assert (
-        "**1.3.5**" in section
-    ), "README.md ## 📰 Latest updates must gain a '**1.3.5**' entry"
-    first_entry_idx = section.index("**1.3.5**")
+        "**1.3.7**" in section
+    ), "README.md ## 📰 Latest updates must gain a '**1.3.7**' entry"
+    first_entry_idx = section.index("**1.3.7**")
     other_entry_match = re.search(r"\*\*1\.3\.\d+\*\*", section[first_entry_idx + 1 :])
     assert (
         other_entry_match is not None and other_entry_match.start() > 0
-    ), "the '**1.3.5**' entry must be the first (topmost) entry in Latest updates"
+    ), "the '**1.3.7**' entry must be the first (topmost) entry in Latest updates"
     entries = re.findall(r"\*\*1\.3\.\d+\*\*", section)
     assert (
         len(entries) == 3
