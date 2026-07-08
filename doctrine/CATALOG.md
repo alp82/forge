@@ -72,8 +72,8 @@ stage:
 ## Signal naming
 
 - lowercase-kebab topics: `auth-surface`, `code-written`, `plan-ready`.
-- families take a `:qualifier`: `findings:security`, `missing-infra:email`, `risk:auth`,
-  `code-changed:auth`. The router matches on the full topic.
+- families take a `:qualifier`: `findings:security`, `missing-infra:email`, `risk:auth`.
+  The router matches on the full topic.
 - path topics: `talk`, `sketch`, `code`, `system` (published by `triage`, exactly one per
   turn). A bug is `code` or `system` plus a `bug` signal, not a separate path.
 - `scope-shift` is reserved and mandatory on every stage.

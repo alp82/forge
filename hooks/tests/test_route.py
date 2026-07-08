@@ -232,8 +232,8 @@ def test_real_catalog_routes_filter_on_sketch():
     )
     assert "sketch-build" in res["route"]
     assert "correctness-reviewer" in res["route"]  # routes include sketch
-    assert "quality-reviewer" not in res["route"]  # code-only lens, filtered off sketch
-    assert res["dropped"].get("quality-reviewer") == "off-path"
+    assert "shape-reviewer" not in res["route"]  # code-only lens, filtered off sketch
+    assert res["dropped"].get("shape-reviewer") == "off-path"
 
 
 def test_real_catalog_talk_path():
@@ -279,8 +279,8 @@ def test_family_prefix_subscribe_matches_qualified():
 def test_real_catalog_new_lenses_contract():
     stages = _real_catalog()["stages"]
     for name, family in (
-        ("naming-clarity", "findings:naming-clarity"),
-        ("assumptions", "findings:assumptions"),
+        ("shape-reviewer", "findings:shape"),
+        ("conventions-reviewer", "findings:conventions"),
     ):
         s = stages[name]
         assert s["routes"] == ["code"]
@@ -301,10 +301,10 @@ def test_real_catalog_new_lenses_compose_on_code_written():
         {"code", "significant-build", "code-written"},
         available={"confirmed-intent", "diff"},
     )
-    assert "naming-clarity" in res["route"]
-    assert "assumptions" in res["route"]
-    assert res["triggered_by"]["naming-clarity"] == "significant-build"
-    assert res["triggered_by"]["assumptions"] == "significant-build"
+    assert "shape-reviewer" in res["route"]
+    assert "conventions-reviewer" in res["route"]
+    assert res["triggered_by"]["shape-reviewer"] == "significant-build"
+    assert res["triggered_by"]["conventions-reviewer"] == "significant-build"
 
 
 def test_real_catalog_new_lenses_need_diff():
@@ -313,9 +313,9 @@ def test_real_catalog_new_lenses_need_diff():
         cat,
         {"code", "significant-build", "code-written", "needs-tests"},
         available={"confirmed-intent"},
-    )  # no diff - naming-clarity/assumptions require diff so they drop
-    assert "naming-clarity" not in res["route"]
-    assert "assumptions" not in res["route"]
+    )  # no diff - shape-reviewer/conventions-reviewer require diff so they drop
+    assert "shape-reviewer" not in res["route"]
+    assert "conventions-reviewer" not in res["route"]
     # positive control: health-checker subscribes significant-build (post-migration) and
     # has no required inputs, so it appears on {code, significant-build, ...}
     assert "health-checker" in res["route"]
@@ -328,8 +328,8 @@ def test_real_catalog_new_lenses_off_sketch():
         {"sketch", "significant-build", "code-written"},
         available={"confirmed-intent", "diff"},
     )
-    assert res["dropped"].get("naming-clarity") == "off-path"
-    assert res["dropped"].get("assumptions") == "off-path"
+    assert res["dropped"].get("shape-reviewer") == "off-path"
+    assert res["dropped"].get("conventions-reviewer") == "off-path"
     assert (
         "sketch-build" in res["route"]
     )  # positive control: sketch route still composes
@@ -804,16 +804,10 @@ def test_optional_producer_in_route_creates_ordering_edge_without_artifact():
 _EXCLUSION_SET = {
     "acceptance-reviewer",
     "accessibility-reviewer",
-    "architecture-reviewer",
-    "assumptions",
-    "consistency-reviewer",
+    "conventions-reviewer",
     "design-consistency-reviewer",
-    "naming-clarity",
-    "performance-reviewer",
-    "plan-adherence-reviewer",
-    "quality-reviewer",
-    "reuse-reviewer",
-    "structure-reviewer",
+    "performance-reviewer",  # perf-surface-gated, never live on the cheap path
+    "shape-reviewer",
     "test-gap",
     "test-verifier",
     "ux-reviewer",
@@ -833,22 +827,16 @@ _EXCLUSION_SET = {
     "ux-prototyper",
 }
 
-# The 15 deep lenses (exclusion set minus the non-lens stages). All stay absent on a cheap
+# The 9 deep lenses (exclusion set minus the non-lens stages). All stay absent on a cheap
 # path: none of their triggering signals are live there. The UI lenses are now ui-touched-
 # gated, so they need an even stronger signal than the needs-tests lenses to appear.
 _DEEP_LENSES = {
     "acceptance-reviewer",
     "accessibility-reviewer",  # ui-touched-gated
-    "architecture-reviewer",
-    "assumptions",
-    "consistency-reviewer",
+    "conventions-reviewer",
     "design-consistency-reviewer",  # ui-touched-gated
-    "naming-clarity",
-    "performance-reviewer",
-    "plan-adherence-reviewer",
-    "quality-reviewer",
-    "reuse-reviewer",
-    "structure-reviewer",
+    "performance-reviewer",  # perf-surface-gated
+    "shape-reviewer",
     "test-gap",
     "test-verifier",
     "ux-reviewer",  # ui-touched-gated
@@ -856,11 +844,11 @@ _DEEP_LENSES = {
 
 
 # --- TC-I01 / TC-P01 ---
-def test_real_catalog_has_50_stages_no_skip_tests():
-    """Catalog has 50 stages and skip-tests is absent."""
+def test_real_catalog_has_44_stages_no_skip_tests():
+    """Catalog has 44 stages and skip-tests is absent."""
     cat = _real_catalog()
     stages = cat["stages"]
-    assert len(stages) == 50, f"expected 50 stages, got {len(stages)}"
+    assert len(stages) == 44, f"expected 44 stages, got {len(stages)}"
     assert "skip-tests" not in stages, "skip-tests must NOT exist in migrated catalog"
 
 
@@ -1529,29 +1517,23 @@ def test_real_catalog_route_held_disjoint():
 
 
 # --- TC-I12 ---
-def test_real_catalog_15_movers_subscribe_significant_build():
-    """The 15 stages that moved from needs-tests to significant-build each subscribe
-    significant-build and do NOT subscribe needs-tests.
+def test_real_catalog_8_movers_subscribe_significant_build():
+    """The 8 stages gated on significant-build each subscribe significant-build and
+    do NOT subscribe needs-tests.
 
     3 TDD chain stages (test-plan, test-gap, test-verifier) stay on needs-tests - they
-    are explicitly excluded from the mover set.
+    are explicitly excluded from the mover set. performance-reviewer is perf-surface-gated:
+    it subscribes exactly perf-surface, never significant-build or needs-tests.
     """
     _MOVERS = {
         "acceptance-reviewer",
-        "architecture-reviewer",
-        "assumptions",
         "capture-agent",
-        "consistency-reviewer",
+        "conventions-reviewer",
         "health-checker",
-        "naming-clarity",
-        "performance-reviewer",
-        "plan-adherence-reviewer",
         "plan-challenger",
         "prototype-identifier",
-        "quality-reviewer",
-        "reuse-reviewer",
         "reuse-scanner",
-        "structure-reviewer",
+        "shape-reviewer",
     }
     _TDD_CHAIN = {"test-plan", "test-gap", "test-verifier"}
     stages = _real_catalog()["stages"]
@@ -1560,7 +1542,7 @@ def test_real_catalog_15_movers_subscribe_significant_build():
         subs = s["signals"]["subscribes"]
         assert (
             "significant-build" in subs
-        ), f"{name} must subscribe significant-build (15-mover), got {subs}"
+        ), f"{name} must subscribe significant-build (8-mover), got {subs}"
         assert (
             "needs-tests" not in subs
         ), f"{name} must NOT subscribe needs-tests after migration, got {subs}"
@@ -1573,6 +1555,10 @@ def test_real_catalog_15_movers_subscribe_significant_build():
         assert (
             "significant-build" not in subs
         ), f"{name} is TDD chain and must NOT subscribe significant-build, got {subs}"
+    perf_subs = stages["performance-reviewer"]["signals"]["subscribes"]
+    assert perf_subs == [
+        "perf-surface"
+    ], f"performance-reviewer must subscribe exactly perf-surface, got {perf_subs}"
 
 
 # --- TC-I13 ---
@@ -1604,10 +1590,9 @@ def test_real_catalog_significant_build_deep_lenses_on_code_written():
         available={"confirmed-intent", "diff"},
     )
     for stage in (
-        "naming-clarity",
-        "assumptions",
-        "architecture-reviewer",
-        "quality-reviewer",
+        "shape-reviewer",
+        "conventions-reviewer",
+        "acceptance-reviewer",
     ):
         assert (
             stage in res["route"]
@@ -1621,7 +1606,7 @@ def test_real_catalog_significant_build_deep_lenses_on_code_written():
 def test_real_catalog_needs_tests_pulls_only_tdd_chain():
     """needs-tests (without significant-build) pulls ONLY the TDD chain stages.
 
-    test-plan, test-gap, test-verifier are in route; the 15 movers are NOT triggered
+    test-plan, test-gap, test-verifier are in route; the 8 movers are NOT triggered
     by needs-tests alone.
     """
     cat = _real_catalog()
@@ -1637,20 +1622,13 @@ def test_real_catalog_needs_tests_pulls_only_tdd_chain():
         ), f"{stage} must be in route when needs-tests is live (TDD chain)"
     _MOVERS = {
         "acceptance-reviewer",
-        "architecture-reviewer",
-        "assumptions",
         "capture-agent",
-        "consistency-reviewer",
+        "conventions-reviewer",
         "health-checker",
-        "naming-clarity",
-        "performance-reviewer",
-        "plan-adherence-reviewer",
         "plan-challenger",
         "prototype-identifier",
-        "quality-reviewer",
-        "reuse-reviewer",
         "reuse-scanner",
-        "structure-reviewer",
+        "shape-reviewer",
     }
     for stage in _MOVERS:
         assert (
@@ -2611,7 +2589,7 @@ def test_real_catalog_significant_build_without_needs_tests_excludes_tdd_lenses(
     )
     route_set = set(res["route"])
     # Deep lenses triggered by significant-build must be present (positive control)
-    for deep_lens in ("quality-reviewer", "architecture-reviewer", "naming-clarity"):
+    for deep_lens in ("shape-reviewer", "conventions-reviewer", "acceptance-reviewer"):
         assert (
             deep_lens in route_set
         ), f"{deep_lens} must be in route on significant-build + code-written"
@@ -2865,17 +2843,12 @@ def _parse_case_arm_agents(text: str) -> set:
 # A mis-parsed DOCTRINE_MAP line will shrink the parsed set below this floor and fail loudly.
 _EXPECTED_REVIEWER_CONTRACT_AGENTS = {
     "correctness-reviewer",
-    "quality-reviewer",
     "simplicity-reviewer",
-    "architecture-reviewer",
-    "structure-reviewer",
-    "consistency-reviewer",
-    "reuse-reviewer",
+    "shape-reviewer",
+    "conventions-reviewer",
+    "acceptance-reviewer",
     "security-reviewer",
     "performance-reviewer",
-    "acceptance-reviewer",
-    "naming-clarity",
-    "assumptions",
 }
 
 
@@ -2885,8 +2858,8 @@ def test_every_reviewer_contract_agent_is_wired():
     as a case arm in user-context-injector.sh.
 
     Checks that simplicity-reviewer is also wired in the case statement. Excludes
-    commented lines. plan-adherence-reviewer and test-gap are communication-only
-    (no reviewer-contract) and must not false-fail.
+    commented lines. test-gap is communication-only (no reviewer-contract) and must
+    not false-fail.
     """
     injector_path = (
         Path(__file__).resolve().parents[2] / "hooks" / "user-context-injector.sh"
@@ -3086,8 +3059,8 @@ def test_real_catalog_reviewer_stages_have_nonempty_output_template():
         "correctness-reviewer",
         "security-reviewer",
         "acceptance-reviewer",
-        "reuse-reviewer",
-        "plan-adherence-reviewer",
+        "shape-reviewer",
+        "conventions-reviewer",
     )
     for name in reviewer_stages:
         tmpl = cat["stages"][name]["output_template"]
@@ -3102,8 +3075,8 @@ def test_real_catalog_reviewer_output_template_contains_signals_published():
         "correctness-reviewer",
         "security-reviewer",
         "acceptance-reviewer",
-        "reuse-reviewer",
-        "plan-adherence-reviewer",
+        "shape-reviewer",
+        "conventions-reviewer",
     )
     for name in reviewer_stages:
         tmpl = cat["stages"][name]["output_template"]
@@ -3529,19 +3502,19 @@ def test_real_catalog_acceptance_reviewer_publishes_clean():
 
 
 # --- RC4-D02 ---
-def test_real_catalog_reuse_reviewer_publishes_clean():
-    """reuse-reviewer has 'clean' in signals.publishes after RC4."""
+def test_real_catalog_shape_reviewer_publishes_clean():
+    """shape-reviewer has 'clean' in signals.publishes after RC4."""
     cat = _real_catalog()
-    pubs = cat["stages"]["reuse-reviewer"]["signals"]["publishes"]
-    assert "clean" in pubs, f"reuse-reviewer must publish 'clean', got {pubs}"
+    pubs = cat["stages"]["shape-reviewer"]["signals"]["publishes"]
+    assert "clean" in pubs, f"shape-reviewer must publish 'clean', got {pubs}"
 
 
 # --- RC4-D03 ---
-def test_real_catalog_plan_adherence_reviewer_publishes_clean():
-    """plan-adherence-reviewer has 'clean' in signals.publishes after RC4."""
+def test_real_catalog_conventions_reviewer_publishes_clean():
+    """conventions-reviewer has 'clean' in signals.publishes after RC4."""
     cat = _real_catalog()
-    pubs = cat["stages"]["plan-adherence-reviewer"]["signals"]["publishes"]
-    assert "clean" in pubs, f"plan-adherence-reviewer must publish 'clean', got {pubs}"
+    pubs = cat["stages"]["conventions-reviewer"]["signals"]["publishes"]
+    assert "clean" in pubs, f"conventions-reviewer must publish 'clean', got {pubs}"
 
 
 # --- RC4-D04 ---

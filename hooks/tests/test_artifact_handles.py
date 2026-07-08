@@ -10,7 +10,7 @@ green after the implementation lands.
 
 Plan-handle extension guards (b01-b05): the in-body handle-read line lands in the 5
 new <APPROVED_PLAN> consumers (outside the fence so the catalog stays byte-identical),
-stays out of the 3 inline carve-outs, and the audit fragment exempts the by-design
+stays out of the 2 inline carve-outs, and the audit fragment exempts the by-design
 repetition while doctrine integrity holds at 100.
 
 Conventions mirror test_briefs.py: REAL_REPO_ROOT via Path(__file__).resolve().parents[2];
@@ -39,15 +39,10 @@ THRESHOLD_NAME = "RIVER_ARTIFACT_OFFLOAD_CHARS"
 # The reviewers that must carry <APPROVED_PLAN> in their input_template.
 REVIEWER_NAMES = (
     "acceptance-reviewer",
-    "architecture-reviewer",
-    "assumptions",
-    "consistency-reviewer",
+    "conventions-reviewer",
     "correctness-reviewer",
-    "naming-clarity",
-    "quality-reviewer",
-    "reuse-reviewer",
+    "shape-reviewer",
     "simplicity-reviewer",
-    "structure-reviewer",
 )
 
 
@@ -182,20 +177,20 @@ def test_artifact_handles_g10_reviewer_input_templates_unchanged():
 
 
 # ---------------------------------------------------------------------------
-# GREEN g11 - catalog stage count is 50 and no orphans
+# GREEN g11 - catalog stage count is 44 and no orphans
 # ---------------------------------------------------------------------------
 
 
 def test_artifact_handles_g11_catalog_stage_count_and_no_orphans():
-    """GREEN-11 (regression guard): generated/catalog.json has exactly 50 stages
+    """GREEN-11 (regression guard): generated/catalog.json has exactly 44 stages
     and check_catalog.check(...) reports no orphaned signals.
 
     Passes now. Would fail if the implementer accidentally adds new stages or
     breaks signal wiring.
 
-    Stage count pinned at: 50 (read from generated/catalog.json on 2026-06-27).
+    Stage count pinned at: 44 (read from generated/catalog.json on 2026-07-08).
     """
-    PINNED_STAGE_COUNT = 50
+    PINNED_STAGE_COUNT = 44
     catalog_path = REAL_REPO_ROOT / "generated" / "catalog.json"
     assert catalog_path.is_file(), f"generated/catalog.json not found at {catalog_path}"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
@@ -237,9 +232,8 @@ HANDLE_READ_LINE = (
 # The distinctive fragment that identifies the handle-read line and the audit exemption.
 HANDLE_FRAGMENT = "holds a handle line rather than the block"
 
-# The 3 inline carve-outs that must NOT carry the handle-read line.
+# The 2 inline carve-outs that must NOT carry the handle-read line.
 INLINE_CARVE_OUTS = (
-    "plan-adherence-reviewer",
     "plan-arbiter",
     "safety-gate",
 )
@@ -262,7 +256,7 @@ def test_artifact_handles_b01_handle_consumers_carry_read_line():
 
 
 def test_artifact_handles_b02_inline_carve_outs_omit_fragment():
-    """b02: the 3 inline carve-outs do NOT carry the handle fragment - they always
+    """b02: the 2 inline carve-outs do NOT carry the handle fragment - they always
     receive the verbatim inline block, never a handle.
 
     Fails if the implementer wrongly adds the line to a carve-out.

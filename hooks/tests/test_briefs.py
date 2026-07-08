@@ -254,14 +254,14 @@ def test_briefs_g07_briefs_agents_have_no_write_tool():
 
 def test_briefs_g08_catalog_valid_and_stage_count_unchanged():
     """GREEN-8 (regression guard): generated/catalog.json has no orphaned signals
-    and the stage count equals the pinned value at test-write time (50).
+    and the stage count equals the pinned value at test-write time (44).
 
     Passes now. Would fail if the implementer accidentally adds new stages or
     breaks signal wiring.
 
-    Stage count pinned at: 50 (read from generated/catalog.json on 2026-06-25).
+    Stage count pinned at: 44 (read from generated/catalog.json on 2026-07-08).
     """
-    PINNED_STAGE_COUNT = 50
+    PINNED_STAGE_COUNT = 44
 
     catalog_path = REAL_REPO_ROOT / "generated" / "catalog.json"
     assert catalog_path.is_file(), f"generated/catalog.json not found at {catalog_path}"

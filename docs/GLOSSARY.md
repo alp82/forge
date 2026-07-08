@@ -246,7 +246,7 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 
 ### Deletion tag
 
-**Definition:** One of `delete:` / `stdlib:` / `native:` / `yagni:` / `shrink:`, attached by simplicity-reviewer to each proposed cut, each naming the replacement. Defined in `doctrine/reviewer-contract.md`.
+**Definition:** One of `delete:` / `stdlib:` / `native:` / `yagni:` / `shrink:`, attached by simplicity-reviewer to each proposed cut, each naming the replacement. Defined in `agents/simplicity-reviewer.md`.
 
 **Avoid:** "cut marker", "removal label".
 
@@ -256,11 +256,23 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 
 **Avoid:** "essential code", "non-negotiables".
 
+### shape-reviewer
+
+**Definition:** The merged always-on lens owning module shape: interface depth, seams, decomposition, purity, layer violations, and wrong-tool judgment - anchored on the deletion test.
+
+**Avoid:** "architecture lens", "structure lens", "quality lens".
+
+### conventions-reviewer
+
+**Definition:** The merged always-on lens owning codebase-pattern consistency, intrinsic naming clarity, and reuse-over-reinvention, always comparing new code against 2-3 existing examples of the same kind.
+
+**Avoid:** "consistency lens", "naming lens", "reuse lens".
+
 ## Build evidence
 
 ### Evidence receipt
 
-**Definition:** The `EVIDENCE_RECEIPT:` block `code-implementer` appends to its output contract: one line per plan item carrying the `file:line` where that item landed plus the existing pattern it reused. `plan-adherence-reviewer` reads it from `<IMPLEMENTER_NOTES>` to trace each plan item to verifiable evidence rather than re-deriving the trace cold, falling back to the cold trace when no receipt is present.
+**Definition:** The `EVIDENCE_RECEIPT:` block `code-implementer` appends to its output contract: one line per plan item carrying the `file:line` where that item landed plus the existing pattern it reused. `acceptance-reviewer` reads it from `<IMPLEMENTER_NOTES>` to trace each plan item to verifiable evidence rather than re-deriving the trace cold, falling back to the cold trace when no receipt is present.
 
 **Avoid:** "audit trail", "change log".
 

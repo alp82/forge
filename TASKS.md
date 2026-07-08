@@ -29,6 +29,10 @@ opus fallback if fable is not available
 
 ---
 
+skill-based new repo?
+
+---
+
 question asking is bad
 * pros and cons
 * simple language

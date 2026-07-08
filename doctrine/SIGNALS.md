@@ -27,18 +27,19 @@ New topics are added here first, then used.
 | novel-domain | unfamiliar problem area | triage | research |
 | bug | a defect to diagnose before fixing - pairs with `code` or `system`, never its own path | triage | code-investigator, system-investigator |
 | needs-tests | a code change carrying real logic (`code` path only) - the TDD axis | triage, correctness-reviewer | test-plan, test-gap, test-verifier, the implementer's TDD lock (test-author joins via `#test-cases-ready`) |
-| significant-build | a serious `code` build - full Review depth plus Scout (`code` path only) - the review-depth axis | triage, correctness-reviewer | reuse-scanner, health-checker, prototype-identifier, plan-challenger, capture-agent, the deep Review lenses (acceptance, architecture, assumptions, consistency, naming-clarity, performance, plan-adherence, quality, reuse-reviewer, structure) |
+| significant-build | a serious `code` build - full Review depth plus Scout (`code` path only) - the review-depth axis | triage, correctness-reviewer | reuse-scanner, health-checker, prototype-identifier, plan-challenger, capture-agent, the deep Review lenses (acceptance, shape, conventions) |
 
 ## shape / structure
 
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|
 | design-decision | a design choice to record as an ADR | /alp-river:adr command (external seed) | adr-drafter |
-| new-pattern | introduces a new pattern | plan | challenge, architecture |
-| new-export, new-seam | new public surface | plan, implement | architecture |
-| boundary-change | module boundaries move | implement | structure |
-| naming-change, pattern-change | conventions shift | implement | consistency |
+| new-pattern | introduces a new pattern | plan | challenge, shape |
+| new-export, new-seam | new public surface | plan, implement | shape |
+| boundary-change | module boundaries move | implement | shape |
+| naming-change, pattern-change | conventions shift | implement | conventions |
 | ui-touched | the produced diff touches UI files | implement, fixer | accessibility, design-consistency, ux |
+| perf-surface | the produced diff touches a perf-relevant surface - data access, loops over collections, queries, or payload assembly | implement, fixer | performance-reviewer |
 
 ## risk  (triggers safety lenses; publishers of these often pair with `guard: sticky` lenses)
 
@@ -57,7 +58,7 @@ New topics are added here first, then used.
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|
 | existing:&lt;symbol&gt; | reusable code exists | reuse-scan | plan |
-| duplication | new code duplicates existing | reuse-scan, reuse lens | plan, fixer |
+| duplication | new code duplicates existing | reuse-scan, conventions lens | plan, fixer |
 | dead-code | removable code found | health-check | cleanup |
 | missing-infra:&lt;x&gt; | needed infra absent | reuse-scan | research, prototype |
 | unhealthy | touched area is low-health | health-check | cleanup gate |
@@ -81,7 +82,6 @@ New topics are added here first, then used.
 | code-written | a diff exists | implement, fixer, system-executor | correctness-reviewer |
 | milestone-diverged | the remaining milestone breakdown is wrong; re-split forward | code-implementer | plan-challenger |
 | milestones-complete | the final milestone shipped; the orchestrator releases @diff and #code-written for the End Review wave | orchestrator | orchestrator |
-| code-changed:&lt;area&gt; | a fix touched &lt;area&gt; | fixer | area lenses (precise re-review) |
 | config-changed | a system change touched a tracked config file | system-executor | system-verifier |
 | verified | the system reached its desired state | system-verifier | convergence |
 
@@ -110,7 +110,7 @@ implementer runs straight off `@confirmed-intent` with no plan.
 
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|
-| findings:&lt;lens&gt; | a lens found issues | the lens (correctness, quality, security, perf, a11y, structure, architecture, reuse, consistency, naming-clarity, assumptions, ux, adherence, acceptance) | fixer |
+| findings:&lt;lens&gt; | a lens found issues | the lens (correctness, simplicity, shape, conventions, acceptance, security, perf, a11y, ux, consistency - the last is design-consistency-reviewer's) | fixer |
 | smell:&lt;area&gt; | a broad lens spotted an area to inspect | broad lens | matching specialist lens |
 | findings:system | system verification found drift from the desired state | system-verifier | fixer, system-executor |
 | clean | a lens found nothing | the lens | convergence |

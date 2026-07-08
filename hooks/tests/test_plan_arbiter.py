@@ -266,12 +266,12 @@ def test_B05_check_flags_orphan_when_seeds_absent():
 
 
 # --- TC-B06 ---
-def test_B06_catalog_has_50_stages():
-    """After visual-verifier removal and ship-tail addition, the catalog must have 50 stages."""
+def test_B06_catalog_has_44_stages():
+    """After the review-wave consolidation (12 lenses -> 5 always-on), the catalog must have 44 stages."""
     cat = _real_catalog()
     assert (
-        len(cat["stages"]) == 50
-    ), f"expected 50 stages after visual-verifier removal and ship-tail addition, got {len(cat['stages'])}"
+        len(cat["stages"]) == 44
+    ), f"expected 44 stages after the review-wave consolidation, got {len(cat['stages'])}"
 
 
 # --- TC-B07 ---

@@ -84,7 +84,7 @@ def _section(content, start_marker, end_marker):
 # Group A - Change 1: Fable graduation
 # ---------------------------------------------------------------------------
 
-# The 20 agent files that graduate from model: opus to model: fable.
+# The 17 agent files that graduate from model: opus to model: fable.
 GRADUATED_AGENTS = (
     "test-review",
     "plan-challenger",
@@ -92,9 +92,6 @@ GRADUATED_AGENTS = (
     "interviewer",
     "requirements-clarifier",
     "plan-arbiter",
-    "assumptions",
-    "architecture-reviewer",
-    "quality-reviewer",
     "correctness-reviewer",
     "security-reviewer",
     "discuss",
@@ -117,9 +114,6 @@ GRADUATED_AGENT_EFFORT = {
     "interviewer": "high",
     "requirements-clarifier": "high",
     "plan-arbiter": "max",
-    "assumptions": "high",
-    "architecture-reviewer": "high",
-    "quality-reviewer": "high",
     "correctness-reviewer": "high",
     "security-reviewer": "high",
     "discuss": "high",
@@ -147,12 +141,10 @@ README_FABLE_TABLE_LINES = (
     267,
     280,
     282,
-    286,
     288,
-    294,
-    311,
-    312,
-    337,
+    305,
+    306,
+    331,
 )
 
 
@@ -169,7 +161,7 @@ def test_a01_red_no_model_opus_remains_in_agents():
 
 
 def test_a02_red_all_graduated_agents_declare_model_fable():
-    """TC-02: each of the 20 named agents now declares `model: fable`."""
+    """TC-02: each of the 17 named agents now declares `model: fable`."""
     offenders = []
     for name in GRADUATED_AGENTS:
         content = _read(f"agents/{name}.md")
@@ -271,7 +263,7 @@ def test_a09_green_model_tiering_effort_paragraph_unchanged():
 
 
 def test_a10_red_readme_model_table_rows_read_fable():
-    """TC-10: all 18 specified README.md model-table lines read 'fable'."""
+    """TC-10: all 16 specified README.md model-table lines read 'fable'."""
     lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
     offenders = []
     for lineno in README_FABLE_TABLE_LINES:
@@ -284,12 +276,12 @@ def test_a10_red_readme_model_table_rows_read_fable():
 
 
 def test_a11_red_readme_line_313_setup_agent_fable():
-    """TC-11: README.md line 325 prose reads "setup-agent (fable)"."""
+    """TC-11: README.md line 319 prose reads "setup-agent (fable)"."""
     lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    line_325 = lines[324] if len(lines) > 324 else ""
+    line_319 = lines[318] if len(lines) > 318 else ""
     assert (
-        "setup-agent" in line_325 and "(fable)" in line_325
-    ), f"README.md line 325 must read 'setup-agent (fable)'; got: {line_325!r}"
+        "setup-agent" in line_319 and "(fable)" in line_319
+    ), f"README.md line 319 must read 'setup-agent (fable)'; got: {line_319!r}"
 
 
 def test_a12_red_readme_no_opus_table_rows():

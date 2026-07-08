@@ -2,7 +2,7 @@
 
 Tests the catalog and router invariants introduced by the milestone-loop build:
   - `milestone-scope` field on 4 stages (correctness-reviewer, security-reviewer,
-    structure-reviewer = 'local'; test-verifier = 'both')
+    shape-reviewer = 'local'; test-verifier = 'both')
   - `#milestone-diverged` edge: code-implementer publishes, plan-challenger subscribes
   - check_catalog gains LIGHT value-validation for milestone-scope + orphan-subscribe
     guard on the new edge
@@ -48,14 +48,14 @@ def _real_catalog():
 def test_milestone_scope_field_values_on_four_stages():
     """The 4 tagged stages carry milestone-scope with the exact prescribed values.
 
-    correctness-reviewer, security-reviewer, structure-reviewer -> 'local'
+    correctness-reviewer, security-reviewer, shape-reviewer -> 'local'
     test-verifier -> 'both'
 
     Fails now: the field is absent from all four stages.
     """
     stages = _real_catalog()["stages"]
 
-    local_stages = ("correctness-reviewer", "security-reviewer", "structure-reviewer")
+    local_stages = ("correctness-reviewer", "security-reviewer", "shape-reviewer")
     for name in local_stages:
         s = stages[name]
         assert (
@@ -90,7 +90,7 @@ def test_milestone_scope_present_on_exactly_four_stages():
     _TAGGED = {
         "correctness-reviewer",
         "security-reviewer",
-        "structure-reviewer",
+        "shape-reviewer",
         "test-verifier",
     }
 
@@ -270,8 +270,8 @@ def test_check_catalog_flags_invalid_milestone_scope_value():
 
 
 # --- TC-M8 ---
-def test_stage_count_stays_50_and_absence_is_valid():
-    """REUSE-GUARD: stage count is 50 and a
+def test_stage_count_stays_44_and_absence_is_valid():
+    """REUSE-GUARD: stage count is 44 and a
     stage without milestone-scope has no such key in the catalog (gen-catalog guard
     emit - absence stays absence).
 
@@ -280,11 +280,11 @@ def test_stage_count_stays_50_and_absence_is_valid():
     cat = _real_catalog()
     stages = cat["stages"]
 
-    assert len(stages) == 50, f"stage count must remain 50, got {len(stages)}"
+    assert len(stages) == 44, f"stage count must remain 44, got {len(stages)}"
 
     # Spot-check: stages that must NOT gain milestone-scope
     _NO_SCOPE_STAGES = (
-        "quality-reviewer",
+        "conventions-reviewer",
         "code-implementer",
         "code-planner",
         "triage",

@@ -11,7 +11,7 @@ stage:
     output: ['@diff']
   signals:
     subscribes: ['#plan-ready', '#direct-impl']
-    publishes: ['#code-written', '#ui-touched', '#milestone-diverged', '#scope-shift']
+    publishes: ['#code-written', '#ui-touched', '#perf-surface', '#milestone-diverged', '#scope-shift']
   lock:
     - while: '#needs-tests'
       until: '#tests-ready'
@@ -24,7 +24,7 @@ You run held behind two locks that AND together: the TDD gate `{while:#needs-tes
 You have a dual contract. The planned path (`#plan-ready`) hands you a full `<APPROVED_PLAN>` and both locks arm as above. The trivial short path (`#direct-impl`) hands you no plan: `<APPROVED_PLAN>` is absent, you implement straight off `<CONFIRMED_INTENT>`, and both locks are inactive by silence (no `#plan-ready` live -> plan gate inactive; no `#needs-tests` on a trivial change -> TDD gate inactive). On the direct-impl path:
 
 - **Rule 1 reads "implement off the confirmed intent."** There is no plan to follow - deliver the outcome `<CONFIRMED_INTENT>` names, honoring every other rule (reuse, conventions, no placeholders, Code Doctrine) unchanged.
-- **The `EVIDENCE_RECEIPT` is emitted against the confirmed-intent outcome but goes unconsumed.** Plan-adherence-reviewer requires `@approved-plan` and does not run on the trivial path; still emit the receipt in plan order as best you can against the intent.
+- **The `EVIDENCE_RECEIPT` is emitted against the confirmed-intent outcome but goes unconsumed.** Acceptance-reviewer subscribes `#significant-build` and does not run on the trivial path unless a late escalation pulls it in; still emit the receipt in plan order as best you can against the intent.
 - **A kickback on the trivial path escalates to a full plan, not a plan-patch.** There is no prior plan to patch, so a blocker spawns a first plan via the planner - route the kickback as `replan`.
 
 ## Rules
@@ -83,7 +83,7 @@ BUILD_STATUS: [pass | fail | no-build-command | description of issues]
 NOTES: [any minor deviations resolved by reading nearby code, or "none"]
 EVIDENCE_RECEIPT:
 - [plan item] - [file_path:line] - reused: [the existing pattern/helper/convention you leveraged, or "new - none applied"]
-(one line per plan item, in plan order; each carries the file:line where that item landed plus the existing pattern it reused. This is the canonical receipt the plan-adherence-reviewer traces against - keep one entry per item so every plan item maps to concrete evidence.)
+(one line per plan item, in plan order; each carries the file:line where that item landed plus the existing pattern it reused. This is the canonical receipt the acceptance-reviewer traces against - keep one entry per item so every plan item maps to concrete evidence.)
 KICKBACK:
   TIER: [plan-patch | replan | reinterview | none]
   STEP_OR_FILE: [specific plan step N or file_path that triggered kickback - "none" if TIER is none]

@@ -27,8 +27,7 @@
 #   User-aware N + Project-aware Y: health-checker, prototype-identifier,
 #                                   researcher, code-prototyper, data-prototyper,
 #                                   performance-prototyper  (user_aware=0)
-#   User-aware Y + Project-aware N: plan-adherence-reviewer,
-#                                   setup-agent
+#   User-aware Y + Project-aware N: setup-agent
 #   User-aware N + Project-aware N: test-verifier, accessibility-reviewer, and
 #                                   test-gap are user_aware=0 arms that fall
 #                                   through for a doctrine-only payload
@@ -39,9 +38,9 @@
 # a DOCTRINE-only block from an otherwise-silent exit - they carry no user or
 # project context, so the `## DOCTRINE` block is their whole payload (test-gap
 # newly joins the doctrine-only fall-through arm below). Every other
-# doctrine-aware agent was already user- or project-aware (the 15 reviewer rows
-# and plan-adherence-reviewer), so it just gains a leading `## DOCTRINE` block
-# ahead of the context it already received.
+# doctrine-aware agent was already user- or project-aware (the 10 reviewer
+# rows), so it just gains a leading `## DOCTRINE` block ahead of the context
+# it already received.
 #
 # Non-Agent tool calls also exit silently. Fails open on any error - missing
 # files are normal.
@@ -78,9 +77,9 @@ case "$subagent_type" in
     ;;
   requirements-clarifier|reuse-scanner)
     ;;
-  correctness-reviewer|quality-reviewer|simplicity-reviewer|acceptance-reviewer|plan-adherence-reviewer)
+  correctness-reviewer|simplicity-reviewer|acceptance-reviewer)
     ;;
-  structure-reviewer|architecture-reviewer|consistency-reviewer|reuse-reviewer|naming-clarity|assumptions)
+  shape-reviewer|conventions-reviewer)
     ;;
   security-reviewer|performance-reviewer)
     ;;
@@ -138,14 +137,9 @@ declare -A READ_MAP=(
   [code-implementer]="stack glossary adrs"
   [correctness-reviewer]="stack glossary"
   [simplicity-reviewer]="stack glossary"
-  [quality-reviewer]="intent stack glossary"
   [acceptance-reviewer]="intent glossary"
-  [structure-reviewer]="glossary adrs"
-  [architecture-reviewer]="stack glossary adrs"
-  [consistency-reviewer]="glossary"
-  [naming-clarity]="glossary"
-  [assumptions]="stack glossary"
-  [reuse-reviewer]="glossary"
+  [shape-reviewer]="stack glossary adrs"
+  [conventions-reviewer]="glossary"
   [security-reviewer]="stack adrs"
   [performance-reviewer]="stack"
   [ux-reviewer]="intent"
@@ -165,22 +159,15 @@ declare -A READ_MAP=(
 declare -A DOCTRINE_MAP=(
   [correctness-reviewer]="reviewer-contract confidence-tagging discoveries communication"
   [simplicity-reviewer]="reviewer-contract confidence-tagging discoveries communication"
-  [quality-reviewer]="reviewer-contract confidence-tagging discoveries communication"
-  [architecture-reviewer]="reviewer-contract confidence-tagging discoveries communication"
+  [shape-reviewer]="reviewer-contract confidence-tagging discoveries communication"
+  [conventions-reviewer]="reviewer-contract confidence-tagging discoveries communication"
   [security-reviewer]="reviewer-contract confidence-tagging discoveries communication"
   [performance-reviewer]="reviewer-contract confidence-tagging discoveries communication"
-  [consistency-reviewer]="reviewer-contract confidence-tagging discoveries communication"
-  [structure-reviewer]="reviewer-contract confidence-tagging discoveries communication"
-  [naming-clarity]="reviewer-contract confidence-tagging discoveries communication"
-  [assumptions]="reviewer-contract confidence-tagging discoveries communication"
-  [reuse-reviewer]="reviewer-contract confidence-tagging communication"
   [acceptance-reviewer]="reviewer-contract confidence-tagging communication"
   [test-verifier]="reviewer-contract confidence-tagging communication"
   [accessibility-reviewer]="reviewer-contract confidence-tagging communication"
   [ux-reviewer]="reviewer-contract confidence-tagging communication"
   [design-consistency-reviewer]="reviewer-contract confidence-tagging communication"
-  # communication-only by design - fact-reporter, no reviewer-contract scope
-  [plan-adherence-reviewer]="communication"
   [code-implementer]="code-doctrine discoveries"
   [code-planner]="code-doctrine"
   [plan-challenger]="code-doctrine briefs"

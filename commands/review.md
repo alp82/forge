@@ -15,12 +15,12 @@ If `$ARGUMENTS` is empty, ask the user which files to review and stop.
 
 Launch concurrently with `<TOUCHED_FILES>` set to the file paths above and `<APPROVED_PLAN>: none`:
 - `correctness-reviewer` - bugs, type holes, dead code, convention adherence
-- `quality-reviewer` - engineering judgment: hacky shortcuts, dead config, defensive paranoia, wrong tool, unelegant solutions
-- `architecture-reviewer` - module shape: depth, leverage, the deletion test - shallow wrappers, premature seams, leaky interfaces
+- `shape-reviewer` - module shape: depth, seams, decomposition, layers, wrong tool - anchored on the deletion test
+- `conventions-reviewer` - codebase-pattern consistency, naming clarity, and reuse, compared against existing examples
 
 ## Report
 
-Present each reviewer's output verbatim under its own heading - full `VERDICT`, `FINDINGS`, `ACTION_NEEDED`, (for correctness) `OBSOLETE_CODE`, and (for architecture) `MODULES_ASSESSED`. Do not reformat or summarize the findings themselves.
+Present each reviewer's output verbatim under its own heading - full `VERDICT`, `FINDINGS`, `ACTION_NEEDED`, (for correctness) `OBSOLETE_CODE`, (for shape) `MODULES_ASSESSED`, and (for conventions) `EXAMPLES_COMPARED`. Do not reformat or summarize the findings themselves.
 
 Then append:
 

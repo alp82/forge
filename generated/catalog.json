@@ -12,9 +12,9 @@
           "findings"
         ]
       },
-      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output - holds acceptance criteria}</CLARIFY_OUTPUT>\n<APPROVED_PLAN>{current APPROVED_PLAN block - includes Out of Scope}</APPROVED_PLAN>\n<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
+      "input_template": "<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>\n<CLARIFY_OUTPUT>{requirements-clarifier output - holds acceptance criteria}</CLARIFY_OUTPUT>\n<APPROVED_PLAN>{current APPROVED_PLAN block - includes Out of Scope - or \"none\" on a plan-less cheap-path escalation}</APPROVED_PLAN>\n<IMPLEMENTER_NOTES>{implementer output NOTES section + EVIDENCE_RECEIPT - deviations the implementer declared}</IMPLEMENTER_NOTES>\n<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n",
       "name": "acceptance-reviewer",
-      "output_template": "VERDICT: [pass | partial | fail]\n\nREQUIREMENTS:\n- [likely|unsure] [fulfilled | partial | missing] [requirement text] - [file_path:line or \"not found\"]\n(one line per requirement from the intent/plan)\n\nACCEPTANCE_CRITERIA:\n- [likely|unsure] [met | unmet | unverified-manual] VALIDATION: [test|manual|observable] - [criterion] - [evidence: test file:line, observable location, or \"not found\" - for unverified-manual, the manual-check description from the plan]\n(one line per criterion from the plan's `## Acceptance`; skip when plan says `n/a - no acceptance criteria from clarifier`)\n\nSCOPE_DRIFT:\n- [likely|unsure] [added-beyond-scope | out-of-scope-implemented] [file_path:line] - [what and why it's drift]\n(empty if none)\n\nPARTIAL_OR_STUBBED:\n- [likely|unsure] [file_path:line] - [what's incomplete]\n(empty if none)\n\nACTION_NEEDED: [specific gaps to close, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:acceptance]\n",
+      "output_template": "VERDICT: [pass | partial | fail]\n\nREQUIREMENTS:\n- [likely|unsure] [fulfilled | partial | missing] [requirement text] - [file_path:line or \"not found\"]\n(one line per requirement from the intent/plan)\n\nACCEPTANCE_CRITERIA:\n- [likely|unsure] [met | unmet | unverified-manual] VALIDATION: [test|manual|observable] - [criterion] - [evidence: test file:line, observable location, or \"not found\" - for unverified-manual, the manual-check description from the plan]\n(one line per criterion from the plan's `## Acceptance`; skip when plan says `n/a - no acceptance criteria from clarifier`)\n\nPLAN_ADHERENCE:\n- [likely|unsure] [file|function|ordering] [present | missing | mismatched | signature-diverged | violated] [plan item] - [evidence file_path:line or \"not found\"]\n(one line per file/function/ordering constraint named in the plan; `n/a - no plan` when APPROVED_PLAN is none)\n\nSCOPE_DRIFT:\n- [likely|unsure] [added-beyond-scope | out-of-scope-implemented] [file_path:line] - [what and why it's drift]\n(empty if none)\n\nPARTIAL_OR_STUBBED:\n- [likely|unsure] [file_path:line] - [what's incomplete]\n(empty if none)\n\nSILENT_DEVIATIONS:\n- [likely|unsure] [file_path:line] - [what diverged from the plan without being declared in NOTES]\n(empty if none; `n/a` when APPROVED_PLAN is none)\n\nACTION_NEEDED: [specific gaps to close, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:acceptance]\n",
       "routes": [
         "code"
       ],
@@ -87,64 +87,6 @@
         ]
       }
     },
-    "architecture-reviewer": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "diff"
-          ]
-        },
-        "output": [
-          "findings"
-        ]
-      },
-      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
-      "name": "architecture-reviewer",
-      "output_template": "VERDICT: [pass | fail | warn]\nMODULES_ASSESSED: [module names or file paths reviewed, comma-separated]\nFINDINGS:\n- [likely|unsure] [depth|seam|interface|locality|hidden-state] [file_path:line] - [module name] - [failure mode] \u2192 [specific fix: inline / collapse / extract / re-scope]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions naming modules and call sites, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:architecture]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "findings:architecture",
-          "clean",
-          "scope-shift"
-        ],
-        "subscribes": [
-          "significant-build"
-        ]
-      }
-    },
-    "assumptions": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "diff"
-          ]
-        },
-        "output": [
-          "findings"
-        ]
-      },
-      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
-      "name": "assumptions",
-      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [input|contract|environment|ordering|cardinality] [file_path:line] - [the unstated premise and what breaks if it fails] -> [guard it | document it as a precondition | encode it in the type]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific guard/document/type instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:assumptions]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "findings:assumptions",
-          "clean",
-          "scope-shift"
-        ],
-        "subscribes": [
-          "significant-build"
-        ]
-      }
-    },
     "capture-agent": {
       "data": {
         "input": {
@@ -198,7 +140,7 @@
         }
       ],
       "name": "code-implementer",
-      "output_template": "VERDICT: [complete | partial | blocked]\nFILES_MODIFIED:\n- [file_path] - [what was changed]\nFILES_CREATED:\n- [file_path] - [what it does]\nBUILD_STATUS: [pass | fail | no-build-command | description of issues]\nNOTES: [any minor deviations resolved by reading nearby code, or \"none\"]\nEVIDENCE_RECEIPT:\n- [plan item] - [file_path:line] - reused: [the existing pattern/helper/convention you leveraged, or \"new - none applied\"]\n(one line per plan item, in plan order; each carries the file:line where that item landed plus the existing pattern it reused. This is the canonical receipt the plan-adherence-reviewer traces against - keep one entry per item so every plan item maps to concrete evidence.)\nKICKBACK:\n  TIER: [plan-patch | replan | reinterview | none]\n  STEP_OR_FILE: [specific plan step N or file_path that triggered kickback - \"none\" if TIER is none]\n  REASON: [what about the plan can't be executed as written - \"none\" if TIER is none]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
+      "output_template": "VERDICT: [complete | partial | blocked]\nFILES_MODIFIED:\n- [file_path] - [what was changed]\nFILES_CREATED:\n- [file_path] - [what it does]\nBUILD_STATUS: [pass | fail | no-build-command | description of issues]\nNOTES: [any minor deviations resolved by reading nearby code, or \"none\"]\nEVIDENCE_RECEIPT:\n- [plan item] - [file_path:line] - reused: [the existing pattern/helper/convention you leveraged, or \"new - none applied\"]\n(one line per plan item, in plan order; each carries the file:line where that item landed plus the existing pattern it reused. This is the canonical receipt the acceptance-reviewer traces against - keep one entry per item so every plan item maps to concrete evidence.)\nKICKBACK:\n  TIER: [plan-patch | replan | reinterview | none]\n  STEP_OR_FILE: [specific plan step N or file_path that triggered kickback - \"none\" if TIER is none]\n  REASON: [what about the plan can't be executed as written - \"none\" if TIER is none]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
@@ -206,6 +148,7 @@
         "publishes": [
           "code-written",
           "ui-touched",
+          "perf-surface",
           "milestone-diverged",
           "scope-shift"
         ],
@@ -312,7 +255,7 @@
         ]
       }
     },
-    "consistency-reviewer": {
+    "conventions-reviewer": {
       "data": {
         "input": {
           "optional": [],
@@ -325,14 +268,14 @@
         ]
       },
       "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
-      "name": "consistency-reviewer",
-      "output_template": "VERDICT: [pass | fail | warn]\nEXAMPLES_COMPARED: [file paths of existing code used as reference]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [divergence] - [the established pattern it diverges from]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:consistency]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
+      "name": "conventions-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nEXAMPLES_COMPARED: [file paths of existing code used as reference]\nFINDINGS:\n- [likely|unsure] [convention|naming|reuse] [file_path:line] - [divergence, unclear name, or duplication] -> [the established pattern, the clearer name, or the consolidation]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:conventions]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code"
       ],
       "signals": {
         "publishes": [
-          "findings:consistency",
+          "findings:conventions",
           "clean",
           "scope-shift"
         ],
@@ -501,7 +444,7 @@
       },
       "input_template": "<FINDINGS>\n  {aggregated reviewer outputs - each with source agent name, VERDICT, FINDINGS, ACTION_NEEDED}\n</FINDINGS>\n<TOUCHED_FILES>{file paths the implementer or main agent modified or created - sourced from implementer's FILES_MODIFIED + FILES_CREATED, or main-agent session edits on S/M tasks}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M flows that skip planning}</APPROVED_PLAN>\n<ROUND>{1 | 2 | 3+}</ROUND>\n",
       "name": "fixer",
-      "output_template": "FIXED:\n- [file_path:line] - [what was fixed] - [source reviewer]\n(empty list if none)\nBUILD_STATUS: [pass | fail | no-build-command]\nRE_RUN_SET:\n- [gate name] - [reason: \"fixed finding\" | \"domain touched\"]\n(every gate to re-run, no duplicates)\nREMAINING:\n- [file_path:line] - [finding not fixed and why]\n(or \"none\")\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
+      "output_template": "FIXED:\n- [file_path:line] - [what was fixed] - [source reviewer]\n(empty list if none)\nBUILD_STATUS: [pass | fail | no-build-command]\nRE_RUN_SET:\n- [gate name] - [reason: \"fixed finding\" | \"always-fires\"]\n(every gate to re-run, no duplicates; \"always-fires\" covers correctness-reviewer, an always-on lens, and test-verifier, which is #needs-tests-gated yet fires on every fix round a suite exists)\nREMAINING:\n- [file_path:line] - [finding not fixed and why]\n(or \"none\")\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
       "routes": [
         "code",
         "sketch"
@@ -510,6 +453,7 @@
         "publishes": [
           "code-written",
           "ui-touched",
+          "perf-surface",
           "scope-shift"
         ],
         "subscribes": [
@@ -577,35 +521,6 @@
         ]
       }
     },
-    "naming-clarity": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "diff"
-          ]
-        },
-        "output": [
-          "findings"
-        ]
-      },
-      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
-      "name": "naming-clarity",
-      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [vague|misleading|abbrev|scope|unit] [file_path:line] - [the name and why it obscures or misleads] -> [a clearer name]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific rename instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:naming-clarity]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "findings:naming-clarity",
-          "clean",
-          "scope-shift"
-        ],
-        "subscribes": [
-          "significant-build"
-        ]
-      }
-    },
     "performance-prototyper": {
       "data": {
         "input": {
@@ -658,36 +573,7 @@
           "scope-shift"
         ],
         "subscribes": [
-          "significant-build"
-        ]
-      }
-    },
-    "plan-adherence-reviewer": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "diff"
-          ]
-        },
-        "output": [
-          "findings"
-        ]
-      },
-      "input_template": "<APPROVED_PLAN>{planner output, the version referenced in implementer's spawn}</APPROVED_PLAN>\n<TOUCHED_FILES>{file paths the implementer modified or created - sourced from implementer's FILES_MODIFIED + FILES_CREATED}</TOUCHED_FILES>\n<IMPLEMENTER_NOTES>{implementer output NOTES section - deviations the implementer declared}</IMPLEMENTER_NOTES>\n",
-      "name": "plan-adherence-reviewer",
-      "output_template": "VERDICT: [pass | partial | fail]\n\nFILES:\n- [likely|unsure] [present | missing | mismatched] [plan path] - [evidence file_path:line or \"not found\"]\n(one per file listed in plan)\n\nFUNCTIONS:\n- [likely|unsure] [present | signature-diverged | missing] [plan function name + signature] - [evidence]\n(one per function named in plan)\n\nSTEP_ORDERING:\n- [likely|unsure] [respected | violated] [step N \u2192 step M] - [why]\n(only when a violation is observable in the touched files)\n\nSILENT_DEVIATIONS:\n- [likely|unsure] [file_path:line] - [what diverged without being declared in NOTES]\n(empty if none)\n\nACTION_NEEDED: [specific gaps to close, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:adherence]\n",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "findings:adherence",
-          "clean",
-          "scope-shift"
-        ],
-        "subscribes": [
-          "significant-build"
+          "perf-surface"
         ]
       }
     },
@@ -783,35 +669,6 @@
         ]
       }
     },
-    "quality-reviewer": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "diff"
-          ]
-        },
-        "output": [
-          "findings"
-        ]
-      },
-      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
-      "name": "quality-reviewer",
-      "output_template": "VERDICT: [pass | fail | warn]\nDEPS_INSPECTED: [package manifests + key imports you read, comma-separated]\nFINDINGS:\n- [likely|unsure] [approach|bloat|altitude|elegance] [file_path:line] - [what was done] \u2192 [the cleaner path that was available, named specifically]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions naming the API/import to switch to, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:quality]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "findings:quality",
-          "clean",
-          "scope-shift"
-        ],
-        "subscribes": [
-          "significant-build"
-        ]
-      }
-    },
     "requirements-clarifier": {
       "data": {
         "input": {
@@ -873,35 +730,6 @@
         "subscribes": [
           "novel-domain",
           "missing-infra"
-        ]
-      }
-    },
-    "reuse-reviewer": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "diff"
-          ]
-        },
-        "output": [
-          "findings"
-        ]
-      },
-      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
-      "name": "reuse-reviewer",
-      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [file_a:line] duplicates [file_b:line] - [what's duplicated and how to consolidate]\n(empty if pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific extraction/consolidation instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:reuse]\n",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "findings:reuse",
-          "clean",
-          "scope-shift"
-        ],
-        "subscribes": [
-          "significant-build"
         ]
       }
     },
@@ -1002,6 +830,36 @@
           "auth-surface",
           "secrets",
           "perms-change"
+        ]
+      }
+    },
+    "shape-reviewer": {
+      "data": {
+        "input": {
+          "optional": [],
+          "required": [
+            "diff"
+          ]
+        },
+        "output": [
+          "findings"
+        ]
+      },
+      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
+      "milestone-scope": "local",
+      "name": "shape-reviewer",
+      "output_template": "VERDICT: [pass | fail | warn]\nMODULES_ASSESSED: [module names or file paths reviewed, comma-separated]\nFINDINGS:\n- [likely|unsure] [depth|seam|interface|hidden-state|locality|decomposition|purity|layer|approach] [file_path:line] - [module name] - [failure mode] -> [specific fix: inline / collapse / extract / re-scope / the cleaner path, named]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions naming modules and call sites, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:shape]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
+      "routes": [
+        "code"
+      ],
+      "signals": {
+        "publishes": [
+          "findings:shape",
+          "clean",
+          "scope-shift"
+        ],
+        "subscribes": [
+          "significant-build"
         ]
       }
     },
@@ -1123,36 +981,6 @@
         ],
         "subscribes": [
           "sketch"
-        ]
-      }
-    },
-    "structure-reviewer": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "diff"
-          ]
-        },
-        "output": [
-          "findings"
-        ]
-      },
-      "input_template": "<TOUCHED_FILES>{file paths the implementer or main agent modified or created}</TOUCHED_FILES>\n<APPROVED_PLAN>{current APPROVED_PLAN block, or \"none\" on S/M without plan}</APPROVED_PLAN>\n",
-      "milestone-scope": "local",
-      "name": "structure-reviewer",
-      "output_template": "VERDICT: [pass | fail | warn]\nFINDINGS:\n- [likely|unsure] [file_path:line] - [structural issue] \u2192 [specific decomposition]\n(empty if VERDICT is pass, max 5 issues, [likely] findings first)\nACTION_NEEDED: [specific fix instructions, or \"none\"]\nSIGNALS_PUBLISHED: [#clean OR #findings:structure]\nDISCOVERIES: (emit per the Discoveries doctrine in your DOCTRINE block; three buckets with \"(none)\" sentinel when empty)\n",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "findings:structure",
-          "clean",
-          "scope-shift"
-        ],
-        "subscribes": [
-          "significant-build"
         ]
       }
     },

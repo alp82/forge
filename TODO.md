@@ -15,7 +15,7 @@ Eight self-contained work orders that slim the alp-river pipeline: fewer spawns,
 - [x] Task 1 - Delete the run-state-writer agent
 - [x] Task 2 - Gate Stop verification on did-code-change; fix auto-format registration
 - [x] Task 3 - Make the trivial path trivial
-- [ ] Task 4 - Consolidate the review wave 12 -> 4 lenses; shrink fixer blast radius
+- [x] Task 4 - Consolidate the review wave 12 -> 5 lenses; shrink fixer blast radius
 - [ ] Task 5 - Doctrine diet
 - [ ] Task 6 - Injector diet
 - [ ] Task 7 - Merge interviewer + requirements-clarifier
@@ -90,31 +90,33 @@ A one-line, single-file change should not cost 6-8 subagent spawns; give the tri
 - `generated/catalog.json` regenerates clean via `hooks/gen-catalog.py`.
 - `## Locks` is confirmed compatible without edits, or minimally adjusted.
 
-## Task 4 - Consolidate the review wave 12 -> 4 lenses; shrink fixer blast radius
+## Task 4 - Consolidate the review wave 12 -> 5 lenses; shrink fixer blast radius
 
 **Goal:**
-Collapse the twelve-lens review wave into four always-on lenses with clear ownership, and stop the fixer from re-firing most of the wave after every fix.
+Collapse the twelve-lens review wave into five always-on lenses with clear ownership, move performance to a gated conditional, and stop the fixer from re-firing most of the wave after every fix.
 
 **Evidence:**
 - WORKFLOW.md:140 (anchor `the full Review wave`) - a significant build runs 12 lenses: correctness and simplicity always-on; quality, architecture, structure, consistency, performance, reuse, acceptance, plan-adherence, assumptions, naming-clarity on `#significant-build`.
 - agents/acceptance-reviewer.md:29 (anchor `files listed in the plan were actually created/modified as described`) already checks plan adherence - a full overlap with plan-adherence-reviewer.
 - agents/fixer.md:40 (anchor `correctness-reviewer → any code change`) - the domain mapping sends 6 reviewers at "any code change", so every fix re-fires most of the wave: near-quadratic re-review.
 - agents/performance-reviewer.md:44 (anchor `Reporting perf costs you haven't measured`) forbids unmeasured findings, yet the agent receives only `<TOUCHED_FILES>` (:52) - it cannot measure anything, so its mandate contradicts its inputs.
-- 30-45% of the six named lens files is jurisdiction text ("not mine, X owns it") backed by doctrine/reviewer-contract.md:29 (anchor `### Cut lanes`); with four lenses the lane-policing prose loses its reason to exist.
+- 30-45% of the six named lens files is jurisdiction text ("not mine, X owns it") backed by doctrine/reviewer-contract.md:29 (anchor `### Cut lanes`); with five lenses the lane-policing prose loses its reason to exist.
 
 **Changes:**
-- Apply the approved grouping: (1) correctness-reviewer absorbs `agents/assumptions.md` (including its silent-failure focus); (2) a design-reviewer merges quality-reviewer, simplicity-reviewer, architecture-reviewer, structure-reviewer; (3) a conventions-reviewer merges consistency-reviewer, naming-clarity, reuse-reviewer; (4) acceptance-reviewer absorbs plan-adherence-reviewer.
-- Keep the conditionals: security-reviewer stays as is; the three UI lenses (ux, accessibility, design-consistency) optionally merge into one ui-reviewer gated on `#ui-touched`; test-gap and test-verifier stay.
-- Fold a static-cost-only performance lens into design-reviewer, or fix performance-reviewer's mandate to match its inputs.
+- Apply the approved grouping: (1) correctness-reviewer absorbs `agents/assumptions.md` (including its silent-failure focus); (2) simplicity-reviewer stays untouched; (3) a shape-reviewer merges architecture-reviewer and structure-reviewer; (4) a conventions-reviewer merges consistency-reviewer, naming-clarity, reuse-reviewer; (5) acceptance-reviewer absorbs plan-adherence-reviewer.
+- Delete quality-reviewer outright: bloat findings route to simplicity-reviewer, hacky-shortcut/wrong-tool findings route to shape-reviewer. Quality has no domain of its own and fails the leitwort test.
+- Move performance-reviewer to the conditional set, gated on a perf-surface signal (the diff touches data access, loops over collections, queries, or payload assembly); rewrite its mandate to static-cost-only review, since it receives only touched files and cannot measure.
+- Keep the other conditionals: security-reviewer stays as is; the three UI lenses (ux, accessibility, design-consistency) optionally merge into one ui-reviewer gated on `#ui-touched`; test-gap and test-verifier stay.
 - Delete the jurisdiction text from the surviving lenses and the `### Cut lanes` section from doctrine/reviewer-contract.md.
 - New fixer rule: re-fire only the lens(es) whose findings were fixed, plus correctness.
 - Update the WORKFLOW.md worked routes and README `## Stages`; regenerate the catalog.
 - Note native `/code-review ultra` as the END-wave alternative for XL diffs.
 
 **Acceptance:**
-- The always-on set is exactly correctness / design / conventions / acceptance.
-- The absorbed lens files and `agents/plan-adherence-reviewer.md` are deleted.
+- The always-on set is exactly correctness / simplicity / shape / conventions / acceptance.
+- quality-reviewer and the absorbed lens files (assumptions, architecture, structure, consistency, naming-clarity, reuse, plan-adherence) are deleted.
 - The Cut-lanes section is gone.
+- performance-reviewer is conditional with a static-cost-only mandate.
 - The fixer re-fire rule is updated.
 - Catalog and README match the new lens set.
 

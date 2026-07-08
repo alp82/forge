@@ -279,24 +279,18 @@ Scrutinizes every diff in parallel: correctness always, the rest as the change d
 |------|-------|-----------|
 | correctness | fable | every change |
 | simplicity | sonnet | planned builds |
-| quality | fable | logic changes |
+| shape | fable | logic changes |
+| conventions | sonnet | logic changes |
 | acceptance | sonnet | logic changes |
-| plan-adherence | sonnet | logic changes |
-| naming-clarity | sonnet | logic changes |
-| assumptions | fable | logic changes |
-| structure | sonnet | logic changes |
-| architecture | fable | logic changes |
-| consistency | sonnet | logic changes |
-| reuse | sonnet | logic changes |
-| performance | sonnet | logic changes |
 | test-gap | sonnet | logic changes |
 | test-verifier | sonnet | logic changes |
+| performance | sonnet | perf surface touched |
 | security | fable | auth / secrets / permissions surface (sticky) |
 | ux | sonnet | UI touched |
 | accessibility | sonnet | UI touched |
 | design-consistency | sonnet | UI touched |
 
-*Then `fixer` (sonnet) applies the reviewer findings and reruns the lenses it touched until clean - the trailing heal line of Review.*
+*Then `fixer` (sonnet) applies the reviewer findings, then re-runs the lenses whose findings it fixed plus correctness and the test suite until clean - the trailing heal line of Review.*
 
 ---
 
@@ -388,9 +382,9 @@ alp-river/
 ├── .claude-plugin/         <- plugin.json (version), marketplace.json
 ├── WORKFLOW.md             <- the full router-loop doctrine
 ├── doctrine/               <- CATALOG.md (stage schema), SIGNALS.md (signal vocabulary), ...
-├── generated/catalog.json  <- compiled stage catalog (50 stages; tracked; the router reads it)
+├── generated/catalog.json  <- compiled stage catalog (44 stages; tracked; the router reads it)
 ├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, recover-state)
-├── agents/                 <- 50 stage definitions + 1 off-route utility (setup-agent)
+├── agents/                 <- 44 stage definitions + 1 off-route utility (setup-agent)
 ├── commands/               <- 6 slash commands
 ├── psychology/             <- per-agent voice / persona overrides
 └── templates/              <- copy into your project's docs/ for context injection

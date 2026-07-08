@@ -1,10 +1,10 @@
-"""Version / changelog checks for the 1.3.7 trivial-path (direct-impl) release.
+"""Version / changelog checks for the 1.3.8 review-wave-consolidation release.
 
 Per CLAUDE.md's versioning rule, a workflow-surface change under agents/,
 commands/, hooks/, or WORKFLOW.md earns a patch bump, mirrored in both
 plugin.json and marketplace.json, plus a CHANGELOG.md entry. This file is the
-single release-version gate - it tracks the current release (it moved 1.3.5 ->
-1.3.6, now 1.3.6 -> 1.3.7).
+single release-version gate - it tracks the current release (it moved 1.3.6 ->
+1.3.7, now 1.3.7 -> 1.3.8).
 
 TC-VER-04 (soft prose-style check on the changelog entry) is intentionally
 NOT authored here - it is human judgment, not a test, per the test plan.
@@ -18,10 +18,10 @@ PLUGIN_JSON = REPO_ROOT / ".claude-plugin" / "plugin.json"
 MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 CHANGELOG_MD = REPO_ROOT / "CHANGELOG.md"
 
-EXPECTED_VERSION = "1.3.7"
+EXPECTED_VERSION = "1.3.8"
 
 
-def test_plugin_json_version_is_1_3_7():
+def test_plugin_json_version_is_1_3_8():
     data = json.loads(PLUGIN_JSON.read_text())
     assert data.get("version") == EXPECTED_VERSION, (
         f"expected .claude-plugin/plugin.json version == {EXPECTED_VERSION!r}, "
@@ -43,7 +43,7 @@ def test_marketplace_json_version_matches_plugin_json():
     )
 
 
-def test_changelog_has_1_3_7_entry():
+def test_changelog_has_1_3_8_entry():
     text = CHANGELOG_MD.read_text()
     assert (
         f"## {EXPECTED_VERSION}" in text

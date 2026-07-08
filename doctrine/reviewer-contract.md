@@ -1,6 +1,6 @@
 ## Reviewer Contract
 
-Shared rules for every specialized reviewer (correctness, quality, simplicity, architecture, security, performance, accessibility, design-consistency, ux, consistency, structure, reuse, naming-clarity, assumptions). Each reviewer's own file carries only its Criteria list and any specialization - the rest lives here.
+Shared rules for every specialized reviewer (correctness, simplicity, shape, conventions, acceptance, security, performance, accessibility, design-consistency, ux). Each reviewer's own file carries only its Criteria list and any specialization - the rest lives here.
 
 ### Confidence tagging (reviewer reporting threshold)
 
@@ -18,22 +18,13 @@ Every reviewer receives inputs via a tagged-slot template authored in its `## In
 <TOUCHED_FILES>{file paths the implementer modified or created - sourced from implementer's FILES_MODIFIED + FILES_CREATED, or from main-agent session edits on S/M tasks}</TOUCHED_FILES>
 ```
 
-Reviewers Read those files directly to inspect current state. Reviewers that need more declare the additional slots in their template (acceptance-reviewer: `<CONFIRMED_INTENT>` + `<APPROVED_PLAN>`; structure/consistency/reuse-reviewer: `<APPROVED_PLAN>` for scope judgment; plan-adherence-reviewer: `<APPROVED_PLAN>`).
+Reviewers Read those files directly to inspect current state. Reviewers that need more declare the additional slots in their template (acceptance-reviewer: `<CONFIRMED_INTENT>` + `<APPROVED_PLAN>` + `<IMPLEMENTER_NOTES>`; shape/conventions-reviewer: `<APPROVED_PLAN>` for scope judgment).
 
 **First step for every reviewer**: parse required slots. On any missing required slot, emit `INPUT_ERROR: missing <slot>` and stop - do not attempt a partial review.
 
 Main agent fills slots verbatim from predecessor output. No paraphrase.
 
 When an `<APPROVED_PLAN>` slot holds a handle line rather than the block, Read the file at that path and treat its bytes as the verbatim plan (`WORKFLOW.md` ## Input Template Contract).
-
-### Cut lanes
-
-Cut lanes do not overlap. Each lens owns one:
-
-- **simplicity** owns the YAGNI ladder and net-lines line-count cuts - the 5 deletion tags (`delete:`/`stdlib:`/`native:`/`yagni:`/`shrink:`).
-- **quality** owns wrong-tool / wrong-altitude judgment only.
-- **architecture** owns module shape, seams, and the earns-its-keep deletion test (is this abstraction earning its keep?).
-- **structure** owns decomposition and layers.
 
 ### Base output format
 
@@ -76,16 +67,16 @@ A reviewer MUST NOT:
 
 Shared do-not-flag-as-bloat list for every cut-making reviewer. A required trust-boundary validation, data-loss-preventing error handler, security/accessibility affordance, hardware calibration, or the one runnable check behind non-trivial logic is the floor, not a cut. Do not tag it `delete:`/`yagni:`/`shrink:`. Removing it is taking out a wall, not trimming fat.
 
-### Example output (consistency-reviewer)
+### Example output (conventions-reviewer)
 
 ```
-VERDICT: warn
+VERDICT: fail
 EXAMPLES_COMPARED: src/features/reports/controller.ts, src/features/users/controller.ts
 FINDINGS:
-- [likely] src/features/items/controller.ts:22 - returns `{ data, meta }` but every other controller returns the bare array. Align with reports/users.
-- [likely] src/features/items/service.ts:8 - `get_item` (snake_case) diverges from camelCase used elsewhere in the module.
+- [likely] [convention] src/features/items/controller.ts:22 - returns `{ data, meta }` but every other controller returns the bare array. Align with reports/users.
+- [likely] [convention] src/features/items/service.ts:8 - `get_item` (snake_case) diverges from camelCase used elsewhere in the module.
 ACTION_NEEDED: Change return shape to bare array; rename `get_item` to `getItem`.
-SIGNALS_PUBLISHED: #findings:consistency
+SIGNALS_PUBLISHED: #findings:conventions
 DISCOVERIES:
   glossary:
     (none)

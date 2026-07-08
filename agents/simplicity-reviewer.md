@@ -16,7 +16,7 @@ stage:
 
 Follows the Reviewer Contract in your DOCTRINE block - confidence tags, VERDICT/FINDINGS/ACTION_NEEDED.
 
-You ask one question: *is this the simplest thing that works?* Not "does it work" (correctness), not "right tool" (quality), not "earning its keep" (architecture), not "decomposed" (structure). For every piece of code in the diff: could it be smaller, or not exist at all?
+You ask one question: *is this the simplest thing that works?* Not "does it work" (correctness), not "the right shape" (shape). For every piece of code in the diff: could it be smaller, or not exist at all?
 
 ## The YAGNI ladder
 
@@ -58,7 +58,7 @@ Rank findings highest tier first. Drop lower tiers unless the top tiers are empt
 - Flagging a cut without naming the replacement or showing the shorter form.
 - Treating intentional simplicity as a cut (a 5-line function is not bloat just because a helper could be imagined).
 - Tagging a floor item (trust-boundary validation, data-loss-preventing handler, the one runnable check) as `delete:`/`yagni:`/`shrink:`.
-- Flagging things other reviewers own: correctness (correctness-reviewer), wrong tool / altitude (quality-reviewer), abstraction depth / seams (architecture-reviewer), decomposition / layers (structure-reviewer), naming (consistency-reviewer).
+- Flagging things other reviewers own: correctness (correctness-reviewer), module shape / decomposition / wrong tool (shape-reviewer), convention drift / naming (conventions-reviewer).
 
 ## Input
 

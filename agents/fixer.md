@@ -11,7 +11,7 @@ stage:
     output: ['@diff']
   signals:
     subscribes: ['#findings']
-    publishes: ['#code-written', '#ui-touched', '#scope-shift']
+    publishes: ['#code-written', '#ui-touched', '#perf-surface', '#scope-shift']
 ---
 
 Default model is sonnet for M tasks. On L/XL, main agent overrides to fable at spawn time via the Agent tool's `model` parameter.
@@ -32,12 +32,13 @@ Fix every reported finding. Anything you can't fix (build broken, requires plan 
 
 ## RE-RUN set
 
-After fixing, emit the gates that the main agent should re-run. The set is the union of:
+After fixing, emit the gates that the main agent should re-run. The set is exactly:
 
-- Every gate that produced a finding you fixed.
-- Every gate whose domain the fixer's edits touched (e.g. if you edited a UI file while fixing a correctness issue, accessibility-reviewer belongs in the set even if it didn't flag the original finding).
+- Every lens whose findings you fixed.
+- correctness-reviewer, always (it holds its RE_RUN_SET seat explicitly even though its `#code-written` subscription also reaches it).
+- test-verifier, always when the project has a test suite.
 
-Domain mapping (against `<TOUCHED_FILES>`): test-verifier → any file change; correctness-reviewer → any code change; quality-reviewer → any code change; acceptance-reviewer → any code change; plan-adherence-reviewer → any file listed in APPROVED_PLAN; structure-reviewer → any function/file changed; architecture-reviewer → any new export / wrapper / seam touched; consistency-reviewer → any code change; reuse-reviewer → any code change; security-reviewer → auth/permissions/input-handling files; performance-reviewer → db/query/hot-path files; a11y / design-consistency / ux → UI files.
+The conditional UI/perf lenses re-join via the signals your fix publishes (`#ui-touched`, `#perf-surface`), never via RE_RUN_SET.
 
 ## Input
 
@@ -60,8 +61,8 @@ FIXED:
 (empty list if none)
 BUILD_STATUS: [pass | fail | no-build-command]
 RE_RUN_SET:
-- [gate name] - [reason: "fixed finding" | "domain touched"]
-(every gate to re-run, no duplicates)
+- [gate name] - [reason: "fixed finding" | "always-fires"]
+(every gate to re-run, no duplicates; "always-fires" covers correctness-reviewer, an always-on lens, and test-verifier, which is #needs-tests-gated yet fires on every fix round a suite exists)
 REMAINING:
 - [file_path:line] - [finding not fixed and why]
 (or "none")
