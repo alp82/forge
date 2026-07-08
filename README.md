@@ -30,6 +30,13 @@
 
 The last three updates:
 
+**1.3.10**
+
+- The git safety guard now checks only commands actually being run, so commit messages and echoed text that merely mention a blocked command pass, read-only `git stash list`/`show` are allowed, and a machine without the jq tool gets a logged warning instead of every command being refused.
+- macOS desktop notifications containing quotes or backslashes now display correctly.
+- The repo health check no longer counts lookalike words such as "also" as an explanation.
+- Saving a non-plugin file no longer loads an unused YAML parser.
+
 **1.3.9**
 
 - Every serious build now ends with five focused always-on review checks instead of twelve overlapping ones: correctness, simplicity, shape (module structure), conventions (naming, patterns, reuse), and acceptance (the right thing got built, per the plan).
@@ -39,11 +46,6 @@ The last three updates:
 **1.3.8**
 
 - An unclear request is now clarified in a single question-and-answer loop that keeps going until the goal is genuinely clear, instead of two separate loops that each stopped at a fixed number of rounds.
-
-**1.3.7**
-
-- A trivial code change - a single-file edit with no new logic, like a typo fix, a doc tweak, a config value, or a version bump - now takes a genuinely short path: it goes straight to making the change plus a correctness check, skipping the planning step it used to run first.
-- Larger and logic-carrying changes are unaffected: they still get the full plan-and-review treatment.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

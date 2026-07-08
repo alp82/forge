@@ -2,6 +2,13 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.10 - 2026-07-08
+
+- The git safety guard now checks only commands actually being run, so commit messages and echoed text that merely mention a blocked command pass, read-only `git stash list`/`show` are allowed, and a machine without the jq tool gets a logged warning instead of every command being refused.
+- macOS desktop notifications containing quotes or backslashes now display correctly.
+- The repo health check no longer counts lookalike words such as "also" as an explanation.
+- Saving a non-plugin file no longer loads an unused YAML parser.
+
 ## 1.3.9 - 2026-07-08
 
 - Every serious build now ends with five focused always-on review checks instead of twelve overlapping ones: correctness, simplicity, shape (module structure), conventions (naming, patterns, reuse), and acceptance (the right thing got built, per the plan).

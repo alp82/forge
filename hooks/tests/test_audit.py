@@ -2701,3 +2701,120 @@ def test_k_sec_reg_06_missing_catalog_guard_present(tmp_path):
     assert any(
         kw in fix_text for kw in ("ship-executor", "ship-ready", "ship-approved")
     ), f"fixes must reference the ship-executor lock; got {cat['fixes']!r}"
+
+
+# ---------------------------------------------------------------------------
+# Group L - Rationale word-bounding (_has_rationale)
+# ---------------------------------------------------------------------------
+# plan-guard-hook-bug-fixes.md step 5/6: _has_rationale moves from naked
+# substring matching to word/phrase-bounded matching (mirrors
+# _is_load_bearing's tokenize + strip-punctuation + membership approach), so
+# lookalike words such as "also" in "this also applies here" or "so" inside
+# "sincerely yours" no longer count as an explanation. Against the current
+# (substring) implementation, the False-expected unit cases below are
+# expected to FAIL - that is the correct red state.
+
+
+def test_l01_has_rationale_false_on_also_lookalike():
+    """'this also applies here' does not carry a rationale marker (no 'also' in RATIONALE_MARKERS,
+    but naked substring matching on 'so' inside other words is the bug this guards)."""
+    assert audit._has_rationale("this also applies here") is False
+
+
+def test_l02_has_rationale_false_on_torso_substring():
+    """'the torso is rigid' - 'so' is a substring of 'torso', not the standalone word."""
+    assert audit._has_rationale("the torso is rigid") is False
+
+
+def test_l03_has_rationale_false_on_sincerely_substring():
+    """'sincerely yours' - 'since' is a substring of 'sincerely', not the standalone word."""
+    assert audit._has_rationale("sincerely yours") is False
+
+
+def test_l04_has_rationale_true_on_because():
+    assert audit._has_rationale("this must hold because it protects data") is True
+
+
+def test_l05_has_rationale_true_on_since_with_punctuation():
+    """'since,' - the marker word is punctuation-adjacent, not isolated by whitespace alone."""
+    assert audit._has_rationale("do this first, since, order matters") is True
+
+
+def test_l06_has_rationale_true_on_parenthesized_because():
+    """'(because)' - the marker word is bounded by parentheses, not whitespace."""
+    assert audit._has_rationale("always validate (because) untrusted input") is True
+
+
+def test_l07_has_rationale_true_on_standalone_so():
+    assert (
+        audit._has_rationale("validate inputs so bad data cannot corrupt state") is True
+    )
+
+
+def test_l08_has_rationale_true_on_to_avoid_phrase():
+    assert (
+        audit._has_rationale("log every request to avoid losing the audit trail")
+        is True
+    )
+
+
+def test_l09_has_rationale_true_on_which_prevents_phrase():
+    assert (
+        audit._has_rationale("encrypt data at rest which prevents plaintext leaks")
+        is True
+    )
+
+
+def test_l10_has_rationale_true_on_line_final_rightly_so():
+    """Deliberate broadening (challenger concern): a line ending 'rightly so.' counts as
+    anchored - the standalone word 'so' is matched even punctuation-adjacent at line end.
+    """
+    assert audit._has_rationale("skip the retry here, rightly so.") is True
+
+
+def test_l11_why_anchor_also_only_scores_zero(tmp_path):
+    """A MUST directive whose only would-be rationale word is 'also' scores 0, offender listed."""
+    root = _make_why_anchor_root(
+        tmp_path,
+        agents_files={
+            "also-only.md": (
+                "# Also Only\n" "MUST validate inputs; this also applies here.\n"
+            ),
+        },
+    )
+    score, offenders = audit._score_why_anchor(root)
+    assert score == 0, f"'also'-only rationale: expected score 0, got {score}"
+    assert len(offenders) == 1, (
+        f"'also'-only rationale: expected exactly 1 offender, got {len(offenders)}: "
+        f"{offenders!r}"
+    )
+
+
+def test_l12_why_anchor_since_regressions_scores_100(tmp_path):
+    """A MUST directive ending 'since regressions break production' scores 100."""
+    root = _make_why_anchor_root(
+        tmp_path,
+        agents_files={
+            "since-regressions.md": (
+                "# Since Regressions\n"
+                "MUST run the full suite since regressions break production.\n"
+            ),
+        },
+    )
+    score, offenders = audit._score_why_anchor(root)
+    assert (
+        score == 100
+    ), f"'since regressions break production': expected score 100, got {score}; offenders={offenders!r}"
+    assert offenders == [], f"expected empty offenders, got {offenders!r}"
+
+
+def test_l13_group_j_and_k_still_pass_after_word_bounding():
+    """Group J and K stay green (their rationale words are genuine); K-01's live floor
+    (score > 0) is satisfied by the repo's real because/so-that lines. This is a
+    regression pin, not a new mechanism - re-runs the same assertions inline."""
+    result = audit.build_scorecard(REAL_REPO_ROOT)
+    score = result["categories"]["why-anchor coverage"]["score"]
+    assert score > 0, (
+        f"live repo 'why-anchor coverage' must still score > 0 after word-bounding "
+        f"RATIONALE_MARKERS; got {score}"
+    )

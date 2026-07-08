@@ -129,22 +129,24 @@ GRADUATED_AGENT_EFFORT = {
 }
 
 # README.md model-table line numbers that must read "fable" (1-indexed).
+# Re-pinned at 1.3.10: the README "Latest updates" section rolled (1.3.10 in,
+# 1.3.7 out), shifting everything below it by +2 lines.
 README_FABLE_TABLE_LINES = (
-    203,
-    222,
-    234,
-    235,
+    205,
+    224,
     236,
     237,
     238,
-    252,
-    264,
-    277,
+    239,
+    240,
+    254,
+    266,
     279,
-    285,
-    302,
-    303,
-    328,
+    281,
+    287,
+    304,
+    305,
+    330,
 )
 
 
@@ -276,12 +278,12 @@ def test_a10_red_readme_model_table_rows_read_fable():
 
 
 def test_a11_red_readme_line_313_setup_agent_fable():
-    """TC-11: README.md line 316 prose reads "setup-agent (fable)"."""
+    """TC-11: README.md line 318 prose reads "setup-agent (fable)"."""
     lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    line_316 = lines[315] if len(lines) > 315 else ""
+    line_318 = lines[317] if len(lines) > 317 else ""
     assert (
-        "setup-agent" in line_316 and "(fable)" in line_316
-    ), f"README.md line 316 must read 'setup-agent (fable)'; got: {line_316!r}"
+        "setup-agent" in line_318 and "(fable)" in line_318
+    ), f"README.md line 318 must read 'setup-agent (fable)'; got: {line_318!r}"
 
 
 def test_a12_red_readme_no_opus_table_rows():
@@ -337,7 +339,7 @@ def test_a16_red_glossary_tier_definition_fable():
 def test_a17_red_opus_sweep_only_readme_main_session_lines():
     """TC-17: `grep -rn "opus" agents/ commands/ doctrine/ docs/ WORKFLOW.md README.md`
     returns matches ONLY in README.md, and only at the two out-of-scope main-session
-    lines (71, 75)."""
+    lines (73, 77)."""
     targets = [
         REAL_REPO_ROOT / "agents",
         REAL_REPO_ROOT / "commands",
@@ -365,24 +367,24 @@ def test_a17_red_opus_sweep_only_readme_main_session_lines():
     opus_linenos = [
         i + 1 for i, line in enumerate(readme_lines) if "opus" in line.lower()
     ]
-    assert opus_linenos == [71, 75], (
-        f"README.md must mention 'opus' only on lines 71 and 75 (main-session "
+    assert opus_linenos == [73, 77], (
+        f"README.md must mention 'opus' only on lines 73 and 77 (main-session "
         f"recommendation, out of scope); got lines: {opus_linenos!r}"
     )
 
 
 def test_a18_green_readme_main_session_opus_lines_untouched():
-    """TC-18 (negative / scope boundary, regression guard): README.md lines 71 and
-    75 (main-session Opus recommendation) are NOT touched by this change."""
+    """TC-18 (negative / scope boundary, regression guard): README.md lines 73 and
+    77 (main-session Opus recommendation) are NOT touched by this change."""
     lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    line_71 = lines[70] if len(lines) > 70 else ""
-    line_75 = lines[74] if len(lines) > 74 else ""
+    line_73 = lines[72] if len(lines) > 72 else ""
+    line_77 = lines[76] if len(lines) > 76 else ""
     assert (
-        "Opus at high effort" in line_71
-    ), f"README.md:71 must still say 'Opus at high effort'; got: {line_71!r}"
+        "Opus at high effort" in line_73
+    ), f"README.md:73 must still say 'Opus at high effort'; got: {line_73!r}"
     assert (
-        "Opus at high effort" in line_75
-    ), f"README.md:75 must still say 'Opus at high effort'; got: {line_75!r}"
+        "Opus at high effort" in line_77
+    ), f"README.md:77 must still say 'Opus at high effort'; got: {line_77!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -923,20 +925,22 @@ def test_f04_red_changelog_1_3_3_entry_no_writer_identity_bullet():
         )
 
 
-def test_f05_red_readme_latest_updates_gains_1_3_7_entry():
-    """TC-63: README.md ## 📰 Latest updates gains a condensed **1.3.7** entry at
-    the top, matching the section's existing style."""
+def test_f05_readme_latest_updates_topmost_entry_is_current_version():
+    """TC-63, re-pinned at 1.3.10: README.md ## 📰 Latest updates rolls (it keeps
+    the last three releases), so instead of pinning a literal version this asserts
+    the topmost entry matches the shipped plugin.json version - the durable form
+    of the original 'gains a condensed **1.3.7** entry at the top' contract."""
+    version = json.loads(
+        (REAL_REPO_ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
+    )["version"]
     content = _read("README.md")
     section = _section(content, "## 📰 Latest updates", "Full history in")
-    assert (
-        "**1.3.7**" in section
-    ), "README.md ## 📰 Latest updates must gain a '**1.3.7**' entry"
-    first_entry_idx = section.index("**1.3.7**")
-    other_entry_match = re.search(r"\*\*1\.3\.\d+\*\*", section[first_entry_idx + 1 :])
-    if other_entry_match:
-        assert (
-            other_entry_match.start() > 0
-        ), "the '**1.3.7**' entry must be the first (topmost) entry in Latest updates"
+    first_entry_match = re.search(r"\*\*(\d+\.\d+\.\d+)\*\*", section)
+    assert first_entry_match, "README.md ## 📰 Latest updates must contain an entry"
+    assert first_entry_match.group(1) == version, (
+        f"the topmost Latest updates entry must match plugin.json version "
+        f"{version!r}; got {first_entry_match.group(1)!r}"
+    )
 
 
 def test_f06_red_changelog_gains_1_3_5_entry():

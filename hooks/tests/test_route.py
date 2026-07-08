@@ -3628,6 +3628,100 @@ def test_reviewer_contract_has_published_signal_mapping_subsection():
     ), "reviewer-contract.md must document #findings:acceptance in the signal-mapping subsection"
 
 
+# ---------------------------------------------------------------------------
+# gen-catalog: yaml import deferred below the hook-payload early return
+# ---------------------------------------------------------------------------
+# plan-guard-hook-bug-fixes.md step 7/8: gen-catalog.py's module-level
+# `import yaml` moves behind main()'s non-agent early return, imported
+# inline as parse_frontmatter's first statement. These tests run the real
+# script file
+# as a subprocess (not the module-level _gen_catalog already loaded above,
+# which would use the real yaml) with a poisoned yaml.py shadowing the real
+# module via PYTHONPATH, so an accidental early import is observable.
+#
+# Against the current (unconditional module-level import) script, the
+# non-agent case is expected to FAIL - the import happens before main() ever
+# inspects the hook payload, so it currently reports "PyYAML required" and
+# exits 0 regardless of file_path.
+
+import tempfile as _tempfile
+
+
+def _write_poison_yaml(dir_path):
+    """Write a yaml.py that fails ImportError with a marker string, so an
+    accidental import surfaces distinctly from a genuine missing-yaml error."""
+    (Path(dir_path) / "yaml.py").write_text(
+        'raise ImportError("poisoned: yaml imported")\n', encoding="utf-8"
+    )
+
+
+def _run_gen_catalog_with_poison_yaml(hook_payload):
+    """Run hooks/gen-catalog.py as a subprocess with a poisoned yaml.py
+    shadowing the real module via PYTHONPATH, feeding hook_payload on stdin.
+    Returns the completed subprocess.CompletedProcess."""
+    with _tempfile.TemporaryDirectory() as poison_dir:
+        _write_poison_yaml(poison_dir)
+        env = dict(os.environ)
+        existing = env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = poison_dir + (os.pathsep + existing if existing else "")
+        result = subprocess.run(
+            [sys.executable, str(_GEN_CATALOG_PATH)],
+            input=json.dumps(hook_payload),
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+        return result
+
+
+def test_gen_catalog_nonagent_edit_never_imports_yaml():
+    """A non-agent file_path early-returns before yaml is ever imported: exit 0,
+    stderr free of both 'PyYAML required' and the poison marker."""
+    payload = {"tool_input": {"file_path": "/x/src/app.py"}}
+    result = _run_gen_catalog_with_poison_yaml(payload)
+    assert result.returncode == 0, (
+        f"non-agent edit must exit 0 without ever importing yaml; "
+        f"got {result.returncode}; stderr={result.stderr!r}"
+    )
+    assert "PyYAML required" not in result.stderr, (
+        f"yaml must never be imported on the non-agent early-return path; "
+        f"got stderr={result.stderr!r}"
+    )
+    assert "poisoned" not in result.stderr, (
+        f"yaml must never be imported on the non-agent early-return path; "
+        f"got stderr={result.stderr!r}"
+    )
+
+
+def test_gen_catalog_agent_edit_reaches_deferred_yaml_import():
+    """An agent file_path reaches the deferred import inside parse_frontmatter:
+    exit 0 (fail-open contract preserved), stderr contains 'PyYAML required'."""
+    payload = {"tool_input": {"file_path": "/x/agents/foo.md"}}
+    result = _run_gen_catalog_with_poison_yaml(payload)
+    assert result.returncode == 0, (
+        f"agent edit with yaml unavailable must still exit 0 (fail-open); "
+        f"got {result.returncode}; stderr={result.stderr!r}"
+    )
+    assert "PyYAML required" in result.stderr, (
+        f"the deferred import must be reached for an agent file_path; "
+        f"got stderr={result.stderr!r}"
+    )
+
+
+def test_gen_catalog_agent_edit_poison_leaves_committed_catalog_untouched():
+    """The poisoned import aborts inside parse_frontmatter before any write, so
+    the live committed generated/catalog.json is untouched by the failed run."""
+    committed_path = Path(__file__).resolve().parents[2] / "generated" / "catalog.json"
+    before = committed_path.read_bytes()
+    payload = {"tool_input": {"file_path": "/x/agents/foo.md"}}
+    _run_gen_catalog_with_poison_yaml(payload)
+    after = committed_path.read_bytes()
+    assert before == after, (
+        "generated/catalog.json must be byte-identical after a poisoned-yaml "
+        "run aborts inside parse_frontmatter"
+    )
+
+
 if __name__ == "__main__":
     import traceback
 

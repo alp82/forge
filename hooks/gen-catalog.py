@@ -26,12 +26,6 @@ import json
 import sys
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:
-    sys.stderr.write("gen-catalog: PyYAML required (pip install pyyaml)\n")
-    sys.exit(0)  # never block the tool call; surface and move on
-
 ROOT = Path(__file__).resolve().parent.parent
 AGENTS_DIR = ROOT / "agents"
 OUT = ROOT / "generated" / "catalog.json"
@@ -54,6 +48,14 @@ def changed_path_from_hook_payload():
 
 
 def parse_frontmatter(text):
+    # Deferred import so non-agent Edit/Write invocations (the early return
+    # in main()) never pay the PyYAML cost; repeat calls are sys.modules
+    # cache hits.
+    try:
+        import yaml
+    except ImportError:
+        sys.stderr.write("gen-catalog: PyYAML required (pip install pyyaml)\n")
+        sys.exit(0)  # never block the tool call; surface and move on
     if not text.startswith("---"):
         return None
     lines = text.splitlines()

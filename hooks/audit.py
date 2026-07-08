@@ -65,13 +65,13 @@ DOCTRINE_LENS_DIRS = ("agents", "doctrine")
 STRENGTH_MARKERS = ("MUST", "NEVER", "ALWAYS", "REQUIRED", "HARD")
 
 # Rationale markers that anchor a directive to its why.
-# NOTE: these are naked-substring matches, correct on today's corpus but authoring-fragile -
-# a future doctrine edit that rewrites the rationale phrasing could silently shift a score.
+# Matched as whole words/phrases over punctuation-stripped tokens (see
+# _has_rationale), so lookalike substrings ("torso", "sincerely", "also")
+# never count.
 RATIONALE_MARKERS = (
     "because",
-    "so that",
-    "so ",
-    "so as to",
+    # word-bounded "so" subsumes the former "so that" / "so as to" phrase markers
+    "so",
     "to avoid",
     "otherwise",
     "since",
@@ -457,16 +457,31 @@ def _score_doctrine_hygiene(root):
     return _score_from_frequency_map(line_files, unreadable)
 
 
-def _is_load_bearing(line):
-    """A directive line carrying an all-caps strength marker as a whole word."""
+def _clean_tokens(line):
+    """Tokenize a line: backticks to spaces, split, strip surrounding punctuation.
+
+    Shared by _is_load_bearing and _has_rationale so both check whole
+    words/phrases against the same normalized token stream.
+    """
     tokens = line.replace("`", " ").split()
     # Strip surrounding punctuation so "REQUIRED." and "MUST," are recognized.
-    clean_tokens = {t.strip(".,;:!?()[]\"'") for t in tokens}
-    return any(m in clean_tokens for m in STRENGTH_MARKERS)
+    return [t.strip(".,;:!?()[]\"'") for t in tokens]
+
+
+def _is_load_bearing(line):
+    """A directive line carrying an all-caps strength marker as a whole word."""
+    return any(m in set(_clean_tokens(line)) for m in STRENGTH_MARKERS)
 
 
 def _has_rationale(line):
-    return any(m in line.lower() for m in RATIONALE_MARKERS)
+    """A line carrying a rationale marker as a whole word or phrase.
+
+    Joins the shared tokenization's tokens with single spaces and pads both
+    ends so one boundary check covers single-word and multi-word markers.
+    """
+    clean_tokens = _clean_tokens(line.lower())
+    padded = " " + " ".join(clean_tokens) + " "
+    return any(f" {m} " in padded for m in RATIONALE_MARKERS)
 
 
 def _is_anchor_excluded(line):
