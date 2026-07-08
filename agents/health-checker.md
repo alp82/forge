@@ -41,7 +41,7 @@ When exempting, name the exemption reason in the finding - don't silently skip.
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
 <TARGET_AREA>{file paths / module names to score - main agent's best guess from intent}</TARGET_AREA>
 ```
 

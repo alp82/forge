@@ -20,9 +20,9 @@ New topics are added here first, then used.
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|
 | request-received | a new turn arrived | orchestrator seed | triage |
-| ambiguous | request has unresolved readings | triage, clarify | intent, clarify |
-| reshape | user redirected intent | orchestrator | intent |
-| intent-confirmed | outcome locked, route through planning - on a clear `code` ask triage publishes this OR `direct-impl`, never both | triage, interviewer | planner |
+| ambiguous | request has unresolved readings | triage, clarify | clarify |
+| reshape | user redirected intent | orchestrator | clarify |
+| intent-confirmed | outcome locked, route through planning - on a clear `code` ask triage publishes this OR `direct-impl`, never both | triage, clarify | planner |
 | direct-impl | trivial `code` change (single-file, `est-size <= S`, no new logic) - skip the plan, go straight to the implementer | triage | code-implementer |
 | novel-domain | unfamiliar problem area | triage | research |
 | bug | a defect to diagnose before fixing - pairs with `code` or `system`, never its own path | triage | code-investigator, system-investigator |

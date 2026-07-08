@@ -66,8 +66,8 @@ Both producers of a revision - the challenger's `revise` and the implementer's k
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
-<CLARIFY_OUTPUT>{requirements-clarifier output}</CLARIFY_OUTPUT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
+<CLARIFY_OUTPUT>{clarifier output}</CLARIFY_OUTPUT>
 <SCOUT>
   <reuse>{reuse-scanner output}</reuse>
   <health>{health-checker output}</health>

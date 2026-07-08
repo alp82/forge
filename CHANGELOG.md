@@ -2,11 +2,15 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
-## 1.3.8 - 2026-07-08
+## 1.3.9 - 2026-07-08
 
 - Every serious build now ends with five focused always-on review checks instead of twelve overlapping ones: correctness, simplicity, shape (module structure), conventions (naming, patterns, reuse), and acceptance (the right thing got built, per the plan).
 - The performance check joins only when the change actually touches data access, loops over collections, queries, or payload assembly - clean of guesswork, it flags only costs readable from the code itself.
 - After a fix, only the checks that found the fixed problems re-run, plus the correctness check and the test suite - fix rounds get much cheaper without losing coverage.
+
+## 1.3.8 - 2026-07-04
+
+- An unclear request is now clarified in a single question-and-answer loop that keeps going until the goal is genuinely clear, instead of two separate loops that each stopped at a fixed number of rounds.
 
 ## 1.3.7 - 2026-07-04
 

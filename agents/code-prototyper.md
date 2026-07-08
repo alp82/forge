@@ -31,7 +31,7 @@ stage:
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
 <PROTOTYPE_TARGETS>{prototype-identifier's TARGETS + ALTERNATIVE_SHAPES blocks - what needs validation and which targets need two shapes}</PROTOTYPE_TARGETS>
 ```
 

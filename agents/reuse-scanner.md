@@ -35,7 +35,7 @@ Low-effort improvements in the area about to be touched: dead code, obvious simp
 ## Input
 
 ```
-<CONFIRMED_INTENT>{interviewer or Level 1 restate}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{clarifier or Level 1 restate}</CONFIRMED_INTENT>
 <TARGET_AREA>{file paths / module names the scan should focus on - main agent's best guess from intent}</TARGET_AREA>
 ```
 

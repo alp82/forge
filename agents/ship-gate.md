@@ -39,7 +39,7 @@ You are the ship gate. A `ship-ready` signal armed you at convergence: the sessi
 
 ```
 <DIFF>{the session diff - working-tree summary, or "none" to read live}</DIFF>
-<CONFIRMED_INTENT>{triage or interviewer read of the request}</CONFIRMED_INTENT>
+<CONFIRMED_INTENT>{triage or clarifier read of the request}</CONFIRMED_INTENT>
 ```
 
 First step: read the current branch and the base/default branch. This sets which target you recommend and the recovery wording.

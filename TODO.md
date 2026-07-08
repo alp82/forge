@@ -18,7 +18,7 @@ Eight self-contained work orders that slim the alp-river pipeline: fewer spawns,
 - [x] Task 4 - Consolidate the review wave 12 -> 5 lenses; shrink fixer blast radius
 - [ ] Task 5 - Doctrine diet
 - [ ] Task 6 - Injector diet
-- [ ] Task 7 - Merge interviewer + requirements-clarifier
+- [x] Task 7 - Merge interviewer + requirements-clarifier
 - [ ] Task 8 - Guard/hook bug fixes
 
 ## Task 1 - Delete the run-state-writer agent
@@ -179,7 +179,9 @@ Serialize with Task 7, Task 7 first - both edit `hooks/user-context-injector.sh`
 ## Task 7 - Merge interviewer + requirements-clarifier
 
 **Goal:**
-One clarifier agent instead of two near-identical ones, so a user faces at most 5 question rounds before a plan exists instead of up to 10.
+One clarifier agent instead of two near-identical ones. It runs a single convergence-governed loop that stops only when intent is crystal clear - replacing the two back-to-back loops that each carried their own 5-round cap.
+
+**Amended (post-approval):** the original plan merged the two 5-round caps into one. The user then removed the cap entirely - the merged loop has NO round ceiling and converges on clarity alone. The "at most 5 rounds" framing below is superseded; treat the no-cap criterion as authoritative.
 
 **Evidence:**
 - Both agents are research-first question loops with a 5-round cap (agents/interviewer.md:26 and agents/requirements-clarifier.md:30, both anchor `capped at 5 rounds`), PRIOR_ROUNDS folding (interviewer.md:57 and requirements-clarifier.md:74, anchor `compressed log of prior rounds`), and AskUserQuestion pickers.
@@ -187,7 +189,7 @@ One clarifier agent instead of two near-identical ones, so a user faces at most 
 - Because each loop carries its own 5-round cap, a user can face up to 10 question rounds before any plan exists.
 
 **Changes:**
-- Author one clarifier agent handling both altitudes (intent-level and requirements-level) under a single 5-round cap.
+- Author one clarifier agent handling both altitudes (intent-level and requirements-level) in a single convergence-governed loop with NO round cap - it stops only when intent is crystal clear (`VERDICT: clear`, no new aspects, no further user additions), never at a fixed round count.
 - Delete `agents/interviewer.md` and `agents/requirements-clarifier.md`.
 - Update WORKFLOW.md `### Intent` and `## Clarification Loops`, and the `## Concise Surfacing Contract` picker-eligible list.
 - Update the injector allowlists in `hooks/user-context-injector.sh`: the case statement (interviewer arm at :77, requirements-clarifier arm at :79), READ_MAP (:119-120), and the briefs map entry (:189).
@@ -195,7 +197,7 @@ One clarifier agent instead of two near-identical ones, so a user faces at most 
 
 **Acceptance:**
 - Exactly one clarifier agent remains.
-- At most 5 question rounds occur before a plan exists.
+- The clarifier loop has no round cap; it converges only on crystal-clear intent (`VERDICT: clear`, no new aspects, no further user additions). No "5 rounds" / "up to 10" language survives for the clarifier.
 - Every reference surface (WORKFLOW.md sections, injector allowlists, picker-eligible list) is updated.
 - The catalog regenerates clean.
 

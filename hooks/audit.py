@@ -322,8 +322,8 @@ _MANDATED_CONTRACT_FRAGMENTS = (
     # Artifact handles: in-body handle-read line, repeated across the 5 plan
     # consumers plus reviewer-contract.md by design (one canonical wording).
     "holds a handle line rather than the block",
-    # Intent-loop pair (interviewer, requirements-clarifier): both run the same
-    # main-agent loop protocol inside self-contained prompts, one canonical wording.
+    # Clarify loop (clarifier): the merged intent+requirements loop's canonical
+    # protocol wording. Kept here so a future re-split can't silently re-duplicate it.
     "exit conditions for the main agent",
     "plain-words escape on demand",
     "convergence governs the route, not a budget",
