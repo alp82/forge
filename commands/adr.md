@@ -25,7 +25,7 @@ Capture:
 
 ## Step 2: Draft
 
-Launch `adr-drafter` (fable, read-only) with the four input slots. Handle VERDICT:
+Launch `adr-drafter` (opus, read-only) with the four input slots. Handle VERDICT:
 
 - `drafted` → continue to Step 3 with `DRAFT` and `PROPOSED_FILENAME` slug.
 - `rejected` → surface `ADR_REJECTED` to the user (reason, conflicting ADR path, recommendation). Stop - this command exits without writing. The user can edit the existing ADR manually or re-run with a re-framed title.

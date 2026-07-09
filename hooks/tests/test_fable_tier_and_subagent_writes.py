@@ -80,72 +80,80 @@ def _section(content, start_marker, end_marker):
 
 
 # ---------------------------------------------------------------------------
-# Group A - Change 1: Fable graduation
+# Group A - model retier (1.3.14). Originally the RED tests for the 1.3.3 fable
+# graduation; the 1.3.14 retier repurposed them to pin the post-retier state:
+# fable is reserved for four deep stages at medium effort, every other stage that
+# was on fable moved to opus, and effort: max is retired from the repo while xhigh
+# is admitted to the doctrine's enumerated effort set.
 # ---------------------------------------------------------------------------
 
-# The 16 agent files that graduate from model: opus to model: fable
-# (originally 20; interviewer + requirements-clarifier merged into clarifier,
-# and assumptions + architecture-reviewer + quality-reviewer dropped in the
-# review-wave reviewer consolidation).
-GRADUATED_AGENTS = (
-    "test-review",
-    "plan-challenger",
-    "code-implementer",
-    "clarifier",
-    "plan-arbiter",
-    "correctness-reviewer",
-    "security-reviewer",
-    "discuss",
+# The four deep generative/adversarial stages that stay on model: fable after the
+# 1.3.14 retier: the code planner, the plan challenger, the plan arbiter, and the
+# code implementer. Every other stage that was on fable moved to model: opus.
+FABLE_STAGES = (
     "code-planner",
-    "capture-agent",
-    "code-investigator",
-    "system-planner",
-    "setup-agent",
-    "adr-drafter",
-    "ux-prototyper",
-    "design-prototyper",
+    "plan-challenger",
+    "plan-arbiter",
+    "code-implementer",
 )
 
-# Pinned pre-edit `effort:` value per graduated agent - captured from the repo
-# before this change lands. Model moves to fable; effort must NOT move.
-GRADUATED_AGENT_EFFORT = {
-    "test-review": "high",
-    "plan-challenger": "max",
-    "code-implementer": "high",
-    "clarifier": "high",
-    "plan-arbiter": "max",
-    "correctness-reviewer": "high",
-    "security-reviewer": "high",
-    "discuss": "high",
-    "code-planner": "max",
-    "capture-agent": "high",
-    "code-investigator": "high",
-    "system-planner": "max",
-    "setup-agent": "high",
-    "adr-drafter": "high",
-    "ux-prototyper": "high",
-    "design-prototyper": "high",
+# Post-retier (model, effort) pairing per stage the retier touched. The old premise
+# ("model moves to fable; effort must NOT move") is dead: this map now guards the
+# post-retier model+effort pairing - fable reserved for the four deep stages at
+# medium, everything else moved to opus at its job-matched effort (analysis, the
+# review lenses, and the intent loops at high; the authoring stages at medium;
+# capture at low).
+RETIERED_STAGE_TIERS = {
+    "code-planner": ("fable", "medium"),
+    "plan-challenger": ("fable", "medium"),
+    "plan-arbiter": ("fable", "medium"),
+    "code-implementer": ("fable", "medium"),
+    "system-planner": ("opus", "high"),
+    "code-investigator": ("opus", "high"),
+    "correctness-reviewer": ("opus", "high"),
+    "shape-reviewer": ("opus", "high"),
+    "security-reviewer": ("opus", "high"),
+    "test-review": ("opus", "high"),
+    "clarifier": ("opus", "high"),
+    "discuss": ("opus", "high"),
+    "design-prototyper": ("opus", "high"),
+    "ux-prototyper": ("opus", "high"),
+    "setup-agent": ("opus", "medium"),
+    "adr-drafter": ("opus", "medium"),
+    "capture-agent": ("opus", "low"),
 }
 
-# Leading names of README.md model-table rows that must read "fable". Content
-# anchored (row located by its leading `| name |` cell) so the assertion
-# survives README edits above these rows.
+# The stages that must now declare model: opus - the retiered agents whose model
+# moved off fable.
+OPUS_AGENTS = tuple(
+    name for name, (model, _effort) in RETIERED_STAGE_TIERS.items() if model == "opus"
+)
+
+# Leading names of README.md model-table rows that must read "fable" - reduced by
+# the retier to the four stages that stay on fable. Content anchored (row located
+# by its leading `| name |` cell) so the assertion survives README edits above.
 README_FABLE_TABLE_ROWS = (
+    "code-planner",
+    "plan-challenger",
+    "plan-arbiter",
+    "code-implementer",
+)
+
+# Sibling tuple: README.md model-table rows that must now read "opus" after the
+# retier. The review-lens rows carry their short lens names (correctness, shape,
+# security).
+README_OPUS_TABLE_ROWS = (
     "clarifier",
     "code-investigator",
     "design-prototyper",
     "ux-prototyper",
-    "code-planner",
-    "plan-challenger",
-    "plan-arbiter",
     "test-review",
-    "code-implementer",
+    "system-planner",
+    "capture-agent",
+    "adr-drafter",
     "correctness",
     "shape",
     "security",
-    "capture-agent",
-    "adr-drafter",
-    "system-planner",
 )
 
 
@@ -158,44 +166,60 @@ def _readme_table_row(content, name):
     return m.group(0)
 
 
-def test_a01_red_no_model_opus_remains_in_agents():
-    """TC-01: no agents/*.md file declares `model: opus` anymore."""
-    offenders = []
+def test_a01_agents_model_opus_set_is_exactly_the_retiered_stages():
+    """The set of agents/*.md files declaring `model: opus` equals exactly the
+    stages the retier moved to opus - no more, no fewer."""
+    opus_files = set()
     for path in (REAL_REPO_ROOT / "agents").glob("*.md"):
         content = path.read_text(encoding="utf-8")
         if re.search(r"^model:\s*opus\s*$", content, re.MULTILINE):
+            opus_files.add(path.stem)
+    assert opus_files == set(OPUS_AGENTS), (
+        f"agents/ 'model: opus' set must equal the retiered opus stages; "
+        f"got {sorted(opus_files)!r} expected {sorted(OPUS_AGENTS)!r}"
+    )
+
+
+def test_a02_only_the_four_deep_stages_declare_model_fable():
+    """Exactly the four deep stages declare `model: fable`, and no other agent does."""
+    fable_files = set()
+    for path in (REAL_REPO_ROOT / "agents").glob("*.md"):
+        content = path.read_text(encoding="utf-8")
+        if re.search(r"^model:\s*fable\s*$", content, re.MULTILINE):
+            fable_files.add(path.stem)
+    assert fable_files == set(FABLE_STAGES), (
+        f"agents/ 'model: fable' set must equal the four deep stages; "
+        f"got {sorted(fable_files)!r} expected {sorted(FABLE_STAGES)!r}"
+    )
+
+
+def test_a03_retiered_agents_model_and_effort_match_pairing():
+    """Each retiered agent's frontmatter (model, effort) matches its post-retier
+    pinned pairing."""
+    offenders = []
+    for name, expected in RETIERED_STAGE_TIERS.items():
+        content = _read(f"agents/{name}.md")
+        mm = re.search(r"^model:\s*(\S+)\s*$", content, re.MULTILINE)
+        em = re.search(r"^effort:\s*(\S+)\s*$", content, re.MULTILINE)
+        got = (mm.group(1) if mm else None, em.group(1) if em else None)
+        if got != expected:
+            offenders.append((name, expected, got))
+    assert offenders == [], (
+        f"retiered agents' (model, effort) must match the pinned pairing; "
+        f"mismatches (name, expected, actual): {offenders!r}"
+    )
+
+
+def test_a03b_effort_max_retired_from_agents():
+    """`effort: max` is retired from the repo - no agents/*.md declares it."""
+    offenders = []
+    for path in (REAL_REPO_ROOT / "agents").glob("*.md"):
+        content = path.read_text(encoding="utf-8")
+        if re.search(r"^effort:\s*max\s*$", content, re.MULTILINE):
             offenders.append(path.name)
     assert (
         offenders == []
-    ), f"agents/ must contain no 'model: opus' frontmatter; still present in: {offenders!r}"
-
-
-def test_a02_red_all_graduated_agents_declare_model_fable():
-    """TC-02: each of the 16 named agents now declares `model: fable`."""
-    offenders = []
-    for name in GRADUATED_AGENTS:
-        content = _read(f"agents/{name}.md")
-        if not re.search(r"^model:\s*fable\s*$", content, re.MULTILINE):
-            offenders.append(name)
-    assert (
-        offenders == []
-    ), f"agents/{{name}}.md must declare 'model: fable'; still missing in: {offenders!r}"
-
-
-def test_a03_green_effort_lines_unchanged_for_graduated_agents():
-    """TC-03 (regression guard): each graduated agent's `effort:` line matches its
-    pinned pre-edit value - the model bump must not disturb effort."""
-    offenders = []
-    for name, expected_effort in GRADUATED_AGENT_EFFORT.items():
-        content = _read(f"agents/{name}.md")
-        m = re.search(r"^effort:\s*(\S+)\s*$", content, re.MULTILINE)
-        actual = m.group(1) if m else None
-        if actual != expected_effort:
-            offenders.append((name, expected_effort, actual))
-    assert offenders == [], (
-        f"effort lines must stay unchanged by the model graduation; "
-        f"mismatches (name, expected, actual): {offenders!r}"
-    )
+    ), f"no agents/*.md may declare 'effort: max'; still present in: {offenders!r}"
 
 
 def test_a04_green_fixer_model_stays_sonnet():
@@ -218,88 +242,112 @@ def test_a05_red_fixer_body_overrides_to_fable():
     ), "agents/fixer.md must no longer contain 'overrides to opus'"
 
 
-def test_a06_red_workflow_adr_drafter_descriptor_fable():
-    """TC-06: WORKFLOW.md's adr-drafter descriptor reads "(read-only, fable)"."""
+def test_a06_workflow_adr_drafter_descriptor_opus():
+    """WORKFLOW.md's adr-drafter descriptor reads "(read-only, opus)" after the
+    retier moved adr-drafter off fable."""
     content = _read("WORKFLOW.md")
     assert (
-        "(read-only, fable)" in content
-    ), "WORKFLOW.md must describe adr-drafter as '(read-only, fable)'"
-
-
-def test_a07_red_model_tiering_has_explicit_fable_assignment_rule():
-    """TC-07: ## Model Tiering names fable as the top tier and states an explicit
-    assignment rule: fable iff generative planning / adversarial judgment / intent
-    extraction; mechanical/analytical stays sonnet; classification/lookups haiku."""
-    content = _read("WORKFLOW.md")
-    section = _section(content, "## Model Tiering", "## Instruction-to-hook")
+        "(read-only, opus)" in content
+    ), "WORKFLOW.md must describe adr-drafter as '(read-only, opus)'"
     assert (
-        "`fable`" in section or "fable" in section
-    ), "## Model Tiering must name 'fable' as the top-tier model"
-    assert not re.search(
-        r"`opus`", section
-    ), "## Model Tiering must no longer name 'opus' as a tier"
-    # Rule must be explicit enough to distinguish the three tiers by job type.
-    for term in ("generative planning", "adversarial judgment", "intent"):
-        assert (
-            term in section
-        ), f"## Model Tiering must state the fable-assignment rule mentioning {term!r}"
-    assert (
-        "sonnet" in section and "haiku" in section
-    ), "## Model Tiering must still name sonnet and haiku as the other active tiers"
+        "(read-only, fable)" not in content
+    ), "WORKFLOW.md must no longer describe adr-drafter as '(read-only, fable)'"
 
 
-def test_a08_red_model_tiering_no_opus_tier_named():
-    """TC-08: ## Model Tiering no longer names opus anywhere in its body."""
+def test_a07_model_tiering_names_all_four_tiers_and_job_matched_effort():
+    """## Model Tiering names all four active tiers (fable, opus, sonnet, haiku),
+    states effort is matched to the job, and reserves fable for the deep
+    generative/adversarial stages."""
     content = _read("WORKFLOW.md")
     section = _section(content, "## Model Tiering", "## Instruction-to-hook")
+    for tier in ("`fable`", "`opus`", "`sonnet`", "`haiku`"):
+        assert tier in section, f"## Model Tiering must name {tier} as an active tier"
     assert (
-        "opus" not in section.lower()
-    ), f"## Model Tiering must not mention 'opus' in any case; section={section!r}"
+        "generative and adversarial" in section
+    ), "## Model Tiering must reserve fable for the deep generative/adversarial stages"
+    assert (
+        "matched to the JOB" in section
+    ), "## Model Tiering must state effort is matched to the JOB, not the model"
 
 
-def test_a09_green_model_tiering_effort_paragraph_unchanged():
-    """TC-09 (regression guard): the effort paragraph (haiku does not honor effort)
-    is textually unchanged by this edit."""
+def test_a08_model_tiering_enumerates_xhigh_and_marks_both_reserve_rungs_unused():
+    """## Model Tiering enumerates the effort levels including `xhigh` (kept in the
+    doctrine's set) and documents both reserve rungs (`xhigh` and `max`) as not
+    currently declared by any stage, each with its own reason."""
+    content = _read("WORKFLOW.md")
+    section = _section(content, "## Model Tiering", "## Instruction-to-hook")
+    for level in ("`low`", "`medium`", "`high`", "`xhigh`", "`max`"):
+        assert level in section, f"## Model Tiering must enumerate effort level {level}"
+    assert (
+        "neither is currently declared by any stage" in section
+    ), "## Model Tiering must document that neither xhigh nor max is declared by any stage"
+    assert (
+        "held in reserve as the documented best setting for coding and agentic work"
+        in section
+    ), "## Model Tiering must name xhigh as held in reserve as the best coding setting"
+    assert (
+        "prone to overthinking with diminishing returns" in section
+    ), "## Model Tiering must document max as avoided for overthinking with diminishing returns"
+
+
+def test_a09_green_model_tiering_effort_paragraph_tail_pinned():
+    """Regression guard: the effort paragraph's model-gating tail (haiku does not
+    honor effort) is pinned byte-identical to the retiered Step-2 wording."""
     content = _read("WORKFLOW.md")
     pinned = (
-        "It is model-gated: `haiku` does not honor\n"
-        "effort, so the haiku classification stages (`triage`, `prototype-identifier`,\n"
+        "It is model-gated: `haiku` does not honor effort, so the haiku "
+        "classification stages (`triage`, `prototype-identifier`, "
         "`health-checker`) carry no `effort` line."
     )
     assert pinned in content, (
-        "WORKFLOW.md ## Model Tiering effort paragraph must remain byte-identical; "
+        "WORKFLOW.md ## Model Tiering effort paragraph tail must remain byte-identical; "
         f"pinned text not found: {pinned!r}"
     )
 
 
-def test_a10_red_readme_model_table_rows_read_fable():
-    """TC-10: all 15 specified README.md model-table rows read 'fable'."""
+def test_a10_readme_fable_rows_read_fable_and_opus_rows_read_opus():
+    """The four README.md fable rows read 'fable'; the retiered rows read 'opus'."""
     content = _read("README.md")
-    offenders = []
-    for name in README_FABLE_TABLE_ROWS:
-        row = _readme_table_row(content, name)
-        if "fable" not in row:
-            offenders.append((name, row))
+    fable_offenders = [
+        (name, _readme_table_row(content, name))
+        for name in README_FABLE_TABLE_ROWS
+        if "fable" not in _readme_table_row(content, name)
+    ]
     assert (
-        offenders == []
-    ), f"README.md rows must read 'fable'; offending (name, row): {offenders!r}"
+        fable_offenders == []
+    ), f"README.md rows must read 'fable'; offending: {fable_offenders!r}"
+    opus_offenders = [
+        (name, _readme_table_row(content, name))
+        for name in README_OPUS_TABLE_ROWS
+        if "opus" not in _readme_table_row(content, name)
+    ]
+    assert (
+        opus_offenders == []
+    ), f"README.md rows must read 'opus'; offending: {opus_offenders!r}"
 
 
-def test_a11_red_readme_setup_agent_fable():
-    """TC-11: README.md's setup-agent aside prose reads "setup-agent` (fable)"."""
+def test_a11_readme_setup_agent_opus():
+    """README.md's setup-agent aside prose reads "setup-agent` (opus)" after the retier."""
     content = _read("README.md")
     assert (
-        "`setup-agent` (fable)" in content
-    ), "README.md must contain the aside prose '`setup-agent` (fable)'"
+        "`setup-agent` (opus)" in content
+    ), "README.md must contain the aside prose '`setup-agent` (opus)'"
 
 
-def test_a12_red_readme_no_opus_table_rows():
-    """TC-12: `grep -n "| opus |" README.md` returns empty."""
+def test_a12_readme_fable_table_rows_are_exactly_the_four():
+    """No README.md model-table row reads 'fable' except the four deep stages -
+    every other stage-table row must have been retiered off fable."""
     content = _read("README.md")
-    matches = [line for line in content.splitlines() if "| opus |" in line]
-    assert (
-        matches == []
-    ), f"README.md must have no '| opus |' table rows; found: {matches!r}"
+    fable_rows = [
+        line
+        for line in content.splitlines()
+        if line.startswith("|") and "| fable |" in line
+    ]
+    row_names = [line.split("|")[1].strip() for line in fable_rows]
+    assert set(row_names) == set(README_FABLE_TABLE_ROWS), (
+        f"README.md '| fable |' rows must be exactly the four deep stages; "
+        f"got {sorted(row_names)!r} expected {sorted(README_FABLE_TABLE_ROWS)!r}"
+    )
 
 
 def test_a13_green_readme_discuss_still_absent_from_model_table():
@@ -314,72 +362,61 @@ def test_a13_green_readme_discuss_still_absent_from_model_table():
     ), f"README.md must not gain a '| discuss | ... |' model-table row; found: {offenders!r}"
 
 
-def test_a14_red_adr_command_fable():
-    """TC-14: commands/adr.md:28 reads "(fable, read-only)"."""
+def test_a14_adr_command_opus():
+    """commands/adr.md reads "(opus, read-only)" after the retier moved adr-drafter
+    off fable."""
     content = _read("commands/adr.md")
     assert (
-        "(fable, read-only)" in content
-    ), "commands/adr.md must contain '(fable, read-only)'"
+        "(opus, read-only)" in content
+    ), "commands/adr.md must contain '(opus, read-only)'"
+    assert (
+        "(fable, read-only)" not in content
+    ), "commands/adr.md must no longer contain '(fable, read-only)'"
 
 
-def test_a15_red_catalog_doc_example_fable():
-    """TC-15: doctrine/CATALOG.md:37 example frontmatter reads `model: fable`."""
-    lines = (
-        (REAL_REPO_ROOT / "doctrine" / "CATALOG.md")
-        .read_text(encoding="utf-8")
-        .splitlines()
-    )
-    line_37 = lines[36] if len(lines) > 36 else ""
+def test_a15_catalog_doc_example_matches_security_reviewer_model():
+    """doctrine/CATALOG.md's schema example uses security-reviewer, so its example
+    `model:` line must track security-reviewer's real frontmatter model - opus after
+    the retier."""
+    content = _read("doctrine/CATALOG.md")
     assert re.search(
-        r"model:\s*fable", line_37
-    ), f"doctrine/CATALOG.md line 37 must read 'model: fable'; got: {line_37!r}"
+        r"^model:\s*opus\s*$", content, re.MULTILINE
+    ), "doctrine/CATALOG.md schema example must read 'model: opus'"
+    assert re.search(
+        r"^model:\s*opus\s*$", _read("agents/security-reviewer.md"), re.MULTILINE
+    ), "the doc example must match security-reviewer's real 'model: opus'"
 
 
-def test_a16_red_glossary_tier_definition_fable():
-    """TC-16: docs/GLOSSARY.md:276 tier definition reads "(haiku/sonnet/fable)"."""
+def test_a16_glossary_tier_definition_lists_opus():
+    """docs/GLOSSARY.md's tier definition enumerates the model tiers including opus
+    now that opus is a live tier."""
     content = _read("docs/GLOSSARY.md")
     assert (
-        "(haiku/sonnet/fable)" in content
-    ), "docs/GLOSSARY.md must contain the tier definition '(haiku/sonnet/fable)'"
+        "(haiku/sonnet/opus/fable)" in content
+    ), "docs/GLOSSARY.md must list the tiers as '(haiku/sonnet/opus/fable)'"
 
 
-def test_a17_red_opus_sweep_only_readme_main_session_lines():
-    """TC-17: `grep -rn "opus" agents/ commands/ doctrine/ docs/ WORKFLOW.md README.md`
-    returns matches ONLY in README.md, and only on the two out-of-scope main-session
-    lines (identified by content - each carries "high effort" - not by line number)."""
-    targets = [
-        REAL_REPO_ROOT / "agents",
-        REAL_REPO_ROOT / "commands",
-        REAL_REPO_ROOT / "doctrine",
-        REAL_REPO_ROOT / "docs",
-    ]
-    offenders = []
-    for target in targets:
-        for path in target.rglob("*.md"):
-            content = path.read_text(encoding="utf-8")
-            if "opus" in content.lower():
-                offenders.append(str(path.relative_to(REAL_REPO_ROOT)))
-    for name in ("WORKFLOW.md",):
-        content = _read(name)
-        if "opus" in content.lower():
-            offenders.append(name)
-    assert offenders == [], (
-        f"'opus' must not remain outside README.md's main-session lines; "
-        f"found it in: {offenders!r}"
-    )
-
-    readme_lines = (
-        (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    )
-    opus_lines = [line for line in readme_lines if "opus" in line.lower()]
-    assert len(opus_lines) == 2, (
-        f"README.md must mention 'opus' on exactly two lines (the main-session "
-        f"recommendation, out of scope); got: {opus_lines!r}"
-    )
-    assert all("high effort" in line.lower() for line in opus_lines), (
-        f"every README.md line mentioning 'opus' must be the main-session "
-        f"'high effort' recommendation; got: {opus_lines!r}"
-    )
+def test_a17_agent_model_sweep_fable_only_four_rest_opus():
+    """Whole-agents sweep: every agents/*.md declares a model; the only files on
+    fable are the four deep stages and the opus set equals exactly the retiered
+    stages - nothing regressed onto the wrong tier."""
+    fable_files = set()
+    opus_files = set()
+    for path in (REAL_REPO_ROOT / "agents").glob("*.md"):
+        content = path.read_text(encoding="utf-8")
+        m = re.search(r"^model:\s*(\S+)\s*$", content, re.MULTILINE)
+        assert m is not None, f"{path.name} must declare a 'model:' line"
+        model = m.group(1)
+        if model == "fable":
+            fable_files.add(path.stem)
+        elif model == "opus":
+            opus_files.add(path.stem)
+    assert fable_files == set(
+        FABLE_STAGES
+    ), f"only the four deep stages may be on fable; got {sorted(fable_files)!r}"
+    assert opus_files == set(
+        OPUS_AGENTS
+    ), f"the opus set must equal the retiered stages; got {sorted(opus_files)!r}"
 
 
 def test_a18_green_readme_main_session_opus_lines_untouched():

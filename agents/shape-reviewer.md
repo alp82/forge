@@ -1,7 +1,7 @@
 ---
 name: shape-reviewer
 description: Reviews module shape - depth, seams, decomposition, layers, and tool choice. Catches shallow wrappers, premature abstractions, leaky interfaces, layer violations, and hacky shortcuts when a proper path was reachable, using the deletion test.
-model: fable
+model: opus
 effort: high
 tools: Glob, Grep, Read, Bash
 stage:

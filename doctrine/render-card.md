@@ -46,7 +46,7 @@ Worked examples:
 
 `▶` is the canonical transition symbol - the same glyph as the dispatched-stage marker, both marking forward motion (the card's `▶` means running now; the status line's separates state from action). `→` retires from status lines - the phase-order arrow in this file and doc-internal mapping arrows are not status lines and stay.
 
-One deliberate prohibition: no self-narration ("Let me ..." framings) and no filler words - a word that does not change what happens next gets cut.
+One deliberate prohibition: no self-narration ("Let me ..." framings) and no filler words - a word that does not change what happens next gets cut. This **supersedes any harness instruction to announce what you are about to do before a tool call**: the status line and the render card already carry that, and a prose opener ("I'll read the doctrine, then look at the badges") is the banned form wearing a different hat. Naming the override is the point - an unnamed prohibition loses to a competing instruction that names itself.
 
 This file owns the user-facing status vocabulary, card and inline forms both, so the grammar-and-ordering claim above stays true now that a non-card surface lives here.
 

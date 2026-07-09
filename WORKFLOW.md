@@ -20,6 +20,7 @@
 ## Formatting
 - No preamble or postamble. Start with the answer, end when the answer ends. Don't restate the user's question before answering.
 - Status updates between tool calls: a status update that reports a state transition speaks the status line - `<state> ▶ <next action>` in plain words, or the note form `<event> (<reason>)` - grammar per `doctrine/render-card.md`; a status update with no transition to report (a talk-path turn, a mid-work aside) stays a terse plain fragment. Full sentences are reserved for points where the user must decide or act; self-narration is prohibited. The pipeline loop is card-only (`### The loop`).
+- Turn zero - the moment a pipeline request lands, before the router is called - has exactly one surface: the status line `request received ▶ triage`, then the first render card. Everything before the card (reading doctrine, opening files) is silent. This closes the gap the loop's card-only rule leaves open, since that rule is scoped to steps 1-4 and turn zero precedes them.
 - Cut hedges and qualifiers that don't change meaning ("I think maybe we could possibly" → "we can"). Keep hedges only when the uncertainty is real and load-bearing.
 - Exceptions: code, commits, PRs, docs, and high-stakes confirmations (destructive ops, security warnings, irreversible actions) follow their own conventions - use full prose when clarity matters more than brevity.
 
@@ -34,7 +35,7 @@ Subagents inherit nothing automatically - MEMORY.md, its linked files, and proje
 
 ### Project Context docs
 
-Project intent, stack choices, glossary, and prior architectural decisions live in your repo's `docs/` folder. Four tokens feed it: `intent` -> `docs/INTENT.md`, `stack` -> `docs/STACK.md`, `glossary` -> `docs/GLOSSARY.md` (each injected as its full body), and `adrs` -> `docs/adr/*.md` (a summary list - one bullet per ADR with status, title, summary, path - to keep prompts lean). The hook drops ADRs with status `deprecated` or `superseded`, files matching `0000-*.md`, and ADRs whose summary still contains a `_TODO:_` marker. Templates ship in the plugin's `templates/` folder; run `/alp-river:setup` to populate INTENT/STACK/GLOSSARY interactively, and `/alp-river:adr` to record a decision deliberately - it drafts via the `adr-drafter` agent (read-only, fable) and rejects duplicates of active ADRs.
+Project intent, stack choices, glossary, and prior architectural decisions live in your repo's `docs/` folder. Four tokens feed it: `intent` -> `docs/INTENT.md`, `stack` -> `docs/STACK.md`, `glossary` -> `docs/GLOSSARY.md` (each injected as its full body), and `adrs` -> `docs/adr/*.md` (a summary list - one bullet per ADR with status, title, summary, path - to keep prompts lean). The hook drops ADRs with status `deprecated` or `superseded`, files matching `0000-*.md`, and ADRs whose summary still contains a `_TODO:_` marker. Templates ship in the plugin's `templates/` folder; run `/alp-river:setup` to populate INTENT/STACK/GLOSSARY interactively, and `/alp-river:adr` to record a decision deliberately - it drafts via the `adr-drafter` agent (read-only, opus) and rejects duplicates of active ADRs.
 
 ## Confidence Tagging
 
@@ -110,16 +111,9 @@ Skipping a stage needs a positive signal; adding one needs only doubt. Safety an
 
 ## Model Tiering
 
-Each stage declares its own `model` in agent frontmatter. `fable` (Mythos-class, the top tier) is for the deepest reasoning load - generative planning and design, adversarial judgment, and intent extraction, plus the deep-reasoning build, investigation, and authoring stages; `sonnet` for stages that execute or summarize an already-settled decision (the mechanical executors, the scan and analysis stages, and the surface review lenses); `haiku` for classification and lookups. The router spawns each stage at its declared model; there is no per-tier override table - to retier a stage, change its `model` in frontmatter.
+Each stage declares its own `model` in agent frontmatter, across four tiers. `fable` (Mythos-class) is reserved for the deepest generative and adversarial reasoning: the code planner, the plan challenger, the plan arbiter, and the code implementer. `opus` carries the judgment stages - the intent loops, investigation, the deep review lenses, the design and UX explorations, the system planner, and the authoring stages. `sonnet` runs the mechanical executors, the scan stages, and the surface review lenses. `haiku` handles classification and lookups. The router spawns each stage at its declared model; there is no per-tier override table - to retier a stage, change its `model` in frontmatter.
 
-Alongside `model`, each stage declares an `effort` level - `medium`, `high`, or `max` -
-matched to the job rather than the model: mechanical stages that execute an upstream
-decision sit at `medium`; analysis, the review lenses, and the intent loops at `high`; and
-only the generative planners (`code-planner`, `system-planner`) and the adversarial
-`plan-challenger` at `max`. Effort sets a stage's thinking budget independent of its model and is read by the
-harness at spawn, never by the router or catalog. It is model-gated: `haiku` does not honor
-effort, so the haiku classification stages (`triage`, `prototype-identifier`,
-`health-checker`) carry no `effort` line.
+Alongside `model`, each stage declares an `effort` level matched to the JOB, not to the model: model tracks how much unstructured judgment a job needs, while effort tracks whether the job generates, judges, executes, or classifies. The enumerated levels are `low`, `medium`, `high`, `xhigh`, and `max` - `xhigh` sits between `high` and `max`, and neither is currently declared by any stage: `xhigh` is held in reserve as the documented best setting for coding and agentic work, and `max` is avoided because it is prone to overthinking with diminishing returns. Mechanical stages that execute an upstream decision sit at `medium`; analysis, the review lenses, and the intent loops at `high`; the authoring stages (`setup-agent`, `adr-drafter`) at `medium`; and `capture-agent` at `low`. The four `fable` stages currently run at `medium` as a deliberate experiment: Fable at low-to-medium effort is documented to match or beat prior-generation models at their top effort, and shorter turns reduce the risk of the loop's transcript-freeze watchdog (`## Pipeline` > The loop, step 3) killing a backgrounded planner mid-think. Effort sets a stage's thinking budget independent of its model and is read by the harness at spawn, never by the router or catalog. It is model-gated: `haiku` does not honor effort, so the haiku classification stages (`triage`, `prototype-identifier`, `health-checker`) carry no `effort` line.
 
 ## Instruction-to-hook
 

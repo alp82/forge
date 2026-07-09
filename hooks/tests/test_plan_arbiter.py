@@ -315,7 +315,7 @@ def _parse_frontmatter(text):
 
 # --- TC-C01 ---
 def test_C01_arbiter_frontmatter_model_effort_routes_tools():
-    """agents/plan-arbiter.md frontmatter: model==fable, effort==max, routes==[code],
+    """agents/plan-arbiter.md frontmatter: model==fable, effort==medium, routes==[code],
     tools list excludes Edit and Write."""
     text = _read_arbiter_md()
     fm = _parse_frontmatter(text)
@@ -324,8 +324,8 @@ def test_C01_arbiter_frontmatter_model_effort_routes_tools():
         fm.get("model") == "fable"
     ), f"plan-arbiter frontmatter model must be 'fable', got {fm.get('model')!r}"
     assert (
-        fm.get("effort") == "max"
-    ), f"plan-arbiter frontmatter effort must be 'max', got {fm.get('effort')!r}"
+        fm.get("effort") == "medium"
+    ), f"plan-arbiter frontmatter effort must be 'medium', got {fm.get('effort')!r}"
     stage = fm.get("stage", {})
     assert stage.get("routes") == [
         "code"

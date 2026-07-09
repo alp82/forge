@@ -8,7 +8,7 @@
 
 ![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)
 ![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)
-![Version](https://shieldcn.dev/badge/version-1.3.4-D97757.svg?variant=outline&size=lg)
+![Version](https://shieldcn.dev/badge/version-1.3.14-D97757.svg?variant=outline&size=lg)
 
 <br>
 
@@ -30,6 +30,11 @@
 
 The last three updates:
 
+**1.3.14**
+
+- Most steps of a run now use a lighter, cheaper model, while the most capable model stays reserved for planning and building the code, so a run costs less without losing depth where the decisions matter.
+- Each step now thinks for a length matched to its job, keeping the deepest planning and review work thorough while trimming wasted effort elsewhere.
+
 **1.3.13**
 
 - Run progress shows as compact state-arrow lines in plain words, like `plan approved ▶ starting implementation`, instead of narrated sentences.
@@ -40,12 +45,6 @@ The last three updates:
 - The core rulebook is about half its former length, so every run carries less instruction overhead and reads one contradiction-free set of rules.
 - Decision points now settle directly in chat; the separate interactive comparison page is gone.
 - The end-of-run timing summary is gone.
-
-**1.3.11**
-
-- Helper steps are no longer told to open their reply by reciting a persona motto, removing the risk of a corrupted first line in steps whose output must start with an exact marker.
-- The separate persona layer is gone: the two conversational steps - discussion and plan challenge - now carry their voice in their own instructions, and no other step gets one.
-- The decision-record summary carried in project context is now built in one pass over all record files instead of several helper processes per file.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -202,7 +201,7 @@ Reads the request, settles what you actually want, and frames the work.
 | Stage | Model | Role |
 |-------|-------|------|
 | triage | haiku | Always-on. Reads your request, picks the path, flags early risk and bug-framing. |
-| clarifier | fable | When the ask is ambiguous or under-specified, researches the area, then confirms scope and success criteria and surfaces edge cases and acceptance criteria - one loop, both altitudes. |
+| clarifier | opus | When the ask is ambiguous or under-specified, researches the area, then confirms scope and success criteria and surfaces edge cases and acceptance criteria - one loop, both altitudes. |
 
 ---
 
@@ -221,7 +220,7 @@ Surveys the ground: what to reuse, how healthy the area is, what novelty needs a
 | data-prototyper | sonnet | Tries competing schemas against real samples and writes a reference report. |
 | performance-prototyper | sonnet | Measures timing/scale-critical unknowns with a runnable and a charted report. |
 | researcher | sonnet | Pulls library, framework, and domain knowledge from the web. |
-| code-investigator | fable | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis the planner consumes. |
+| code-investigator | opus | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis the planner consumes. |
 
 ---
 
@@ -233,8 +232,8 @@ Turns settled intent into a concrete blueprint, then attacks it adversarially.
 
 | Stage | Model | Role |
 |-------|-------|------|
-| design-prototyper | fable | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the spec. |
-| ux-prototyper | fable | For multiple legitimate user flows, builds a clickable wireflow; you paste back the flow spec. |
+| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the spec. |
+| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the flow spec. |
 | code-planner | fable | Turns intent into a concrete step-by-step blueprint. |
 | plan-challenger | fable | Adversarial review of the plan: holes, failure modes, simpler alternatives. |
 | plan-arbiter | fable | On a multi-plan build, cross-reviews the competing plans; decides Adopt / Hybrid / Revise-first. |
@@ -251,7 +250,7 @@ Derives the test cases and writes them red, validated against intent before any 
 |-------|-------|------|
 | test-plan | sonnet | Derives concrete test cases from the plan's acceptance criteria. |
 | test-author | sonnet | Writes the failing (red) tests before any implementation exists. |
-| test-review | fable | Validates the red tests against intent, then releases the implementer. |
+| test-review | opus | Validates the red tests against intent, then releases the implementer. |
 
 ---
 
@@ -276,15 +275,15 @@ Scrutinizes every diff in parallel: correctness always, the rest as the change d
 
 | Lens | Model | Runs when |
 |------|-------|-----------|
-| correctness | fable | every change |
+| correctness | opus | every change |
 | simplicity | sonnet | planned builds |
-| shape | fable | logic changes |
+| shape | opus | logic changes |
 | conventions | sonnet | logic changes |
 | acceptance | sonnet | logic changes |
 | test-gap | sonnet | logic changes |
 | test-verifier | sonnet | logic changes |
 | performance | sonnet | perf surface touched |
-| security | fable | auth / secrets / permissions surface (sticky) |
+| security | opus | auth / secrets / permissions surface (sticky) |
 | ux | sonnet | UI touched |
 | accessibility | sonnet | UI touched |
 | design-consistency | sonnet | UI touched |
@@ -301,8 +300,8 @@ Records the glossary, stack, and intent updates the run surfaced, only after you
 
 | Stage | Model | Role |
 |-------|-------|------|
-| capture-agent | fable | Proposes glossary / stack / intent updates surfaced during the run; writes only after approval. |
-| adr-drafter | fable | Drafts a single ADR from a decision summary. Backs `/alp-river:adr`. |
+| capture-agent | opus | Proposes glossary / stack / intent updates surfaced during the run; writes only after approval. |
+| adr-drafter | opus | Drafts a single ADR from a decision summary. Backs `/alp-river:adr`. |
 
 ---
 
@@ -315,7 +314,7 @@ Opt-in at convergence: on a ship request, gates the forward git/gh commands, the
 | ship-gate | sonnet | Names the commit/push/PR commands and how to undo each, and waits for your go-ahead. Sticky. |
 | ship-executor | sonnet | Composes one commit, pushes the branch, opens a draft PR. Held by the ship lock until the gate clears. |
 
-*`setup-agent` (fable) is command-only - it backs `/alp-river:setup` - and is not part of any path.*
+*`setup-agent` (opus) is command-only - it backs `/alp-river:setup` - and is not part of any path.*
 
 ---
 
@@ -327,7 +326,7 @@ Changing the machine (configs, troubleshooting, CLI tooling) - leaves behind a v
 
 | Stage | Model | Role |
 |-------|-------|------|
-| system-planner | fable | Plans an OS-level change as ordered, reversible steps with backup and rollback. |
+| system-planner | opus | Plans an OS-level change as ordered, reversible steps with backup and rollback. |
 | system-executor | sonnet | Runs the plan one step at a time. Held by the safety lock before destructive steps. |
 | system-verifier | sonnet | Confirms the change actually reached its intended state. |
 | system-investigator | sonnet | Root-cause diagnosis for OS-level faults from service state, logs, and configs. |

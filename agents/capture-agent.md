@@ -1,8 +1,8 @@
 ---
 name: capture-agent
 description: Captures novel project-context items (glossary terms, stack/intent drift) surfaced incidentally during a pipeline run. Two-phase - proposes, then writes after user approval. Never creates docs/.
-model: fable
-effort: high
+model: opus
+effort: low
 tools: Glob, Grep, Read, Edit
 stage:
   routes: [code]

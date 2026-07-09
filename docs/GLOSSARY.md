@@ -277,5 +277,5 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 ## Flagged ambiguities
 
 - "session" - the SessionStart hook event means a Claude Code session start, but `/alp-river:reflect`'s "current session" means the current chat history.
-- "tier" - now means model tier (haiku/sonnet/fable) or the size readout (XS-XXL); the old "complexity tier" driver is retired. Prefer the qualified form.
+- "tier" - now means model tier (haiku/sonnet/opus/fable) or the size readout (XS-XXL); the old "complexity tier" driver is retired. Prefer the qualified form.
 - "stage" is canonical for the workflow unit; "step" and "phase" are retired.

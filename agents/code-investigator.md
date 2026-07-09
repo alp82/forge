@@ -1,7 +1,7 @@
 ---
 name: code-investigator
 description: Systematic root-cause debugging inside the code route. Pulled in by a bug-framing signal; forms hypotheses, attempts minimal repro, and traces the bug to its actual cause. Does NOT patch - the code path fixes it. Outputs SEVERITY and COMPLEXITY to size the fix.
-model: fable
+model: opus
 effort: high
 tools: Glob, Grep, Read, Bash, WebSearch, WebFetch
 stage:

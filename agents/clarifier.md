@@ -1,7 +1,7 @@
 ---
 name: clarifier
 description: The single pre-plan clarify stage. Researches the target area first (filesystem + web), then confirms direction (scope, users, success criteria, priority trade-offs) AND surfaces detail-level ambiguity (edge cases, contracts, failure modes, acceptance criteria) in one loop. Re-runs with prior rounds folded in until intent is clear without new aspects. Use when the request has multiple plausible readings, the Level 1 answer shifted scope, or restating would require recon.
-model: fable
+model: opus
 effort: high
 tools: Glob, Grep, Read, WebSearch, WebFetch
 stage:

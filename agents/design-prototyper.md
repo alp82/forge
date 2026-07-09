@@ -1,7 +1,7 @@
 ---
 name: design-prototyper
 description: Pre-plan UI visual exploration. Confirms which visual parameters are in play (color, spacing, layout, density), decides whether to host the picker in a sandbox prototype or the real page, then writes an interactive controls page where the user toggles between approaches and copies the chosen spec back into chat.
-model: fable
+model: opus
 effort: high
 tools: Glob, Grep, Read, Edit, Write, Bash, WebSearch, WebFetch
 stage:

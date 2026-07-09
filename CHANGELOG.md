@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.14 - 2026-07-09
+
+- Most steps of a run now use a lighter, cheaper model, while the most capable model stays reserved for planning and building the code, so a run costs less without losing depth where the decisions matter.
+- Each step now thinks for a length matched to its job, keeping the deepest planning and review work thorough while trimming wasted effort elsewhere.
+
 ## 1.3.13 - 2026-07-09
 
 - Run progress shows as compact state-arrow lines in plain words, like `plan approved ▶ starting implementation`, instead of narrated sentences.

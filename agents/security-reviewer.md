@@ -1,7 +1,7 @@
 ---
 name: security-reviewer
 description: Focused security review - only spawned when changes touch auth, permissions, session handling, or user input processing
-model: fable
+model: opus
 effort: high
 tools: Glob, Grep, Read, Bash, WebSearch, WebFetch
 stage:

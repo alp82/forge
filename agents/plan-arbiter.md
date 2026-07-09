@@ -2,7 +2,7 @@
 name: plan-arbiter
 description: Adjudicates competing plans on a multi-plan code build. Steelmans each plan, finds complementary strengths, and selects or grafts a winner - then either approves it or sends it back for revision.
 model: fable
-effort: max
+effort: medium
 tools: Glob, Grep, Read, WebSearch, WebFetch
 stage:
   routes: [code]
