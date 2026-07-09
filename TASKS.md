@@ -1,8 +1,12 @@
+change the instructions to improve communication
+
 avoid full sentences if they dont carry meaning:
-* symbols and state transitions
+* better: symbols and state transitions
 * simple defined language
 * no fillers, no verbosity
 * don't narrate yourself (e.g. "Let me scope the diff, then run a proportionate review.")
+* prioritize my and your INTENT over details
+* make sure that complexity is understood with simple terms
 
 avoid: "This build carries #needs-tests, so the implementer stays locked behind the TDD gate until the red tests are written and validated."
 better example: "#needs-test ▶ start writing tests"
@@ -16,6 +20,10 @@ better example: "stop hook ignored (implementation ongoing)"
 
 not bad already: "#code-written + @diff now live → the End Review wave composes."
 better example: "#code-written + @diff ▶ start reviews"
+
+---
+
+interview mandatory for anything that is not trivial (complexity > S)
 
 ---
 

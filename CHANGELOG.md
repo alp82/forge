@@ -2,6 +2,11 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.13 - 2026-07-09
+
+- Run progress shows as compact state-arrow lines in plain words, like `plan approved ▶ starting implementation`, instead of narrated sentences.
+- Side notes during a run shrink to an event plus a short reason in parentheses, like `stop hook ignored (implementation ongoing)`; full sentences appear only where a decision or action is needed.
+
 ## 1.3.12 - 2026-07-09
 
 - The core rulebook is about half its former length, so every run carries less instruction overhead and reads one contradiction-free set of rules.

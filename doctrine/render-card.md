@@ -1,6 +1,6 @@
 ## Render Card
 
-**one card grammar, and the banner is the order.** The live route card, its delta recompose line, and the milestone-status layer all speak this one vocabulary; and because every stage renders grouped under its phase banner, a rendered list can never imply an order the route does not run - the failure this grammar exists to prevent.
+**one card grammar, and the banner is the order.** The live route card, its delta recompose line, the inline status line, and the milestone-status layer all speak this one vocabulary; and because every stage renders grouped under its phase banner, a rendered list can never imply an order the route does not run - the failure this grammar exists to prevent.
 
 This file owns the GRAMMAR and the ORDERING only. Stage-to-phase MEMBERSHIP - which stage sits under which banner on each path - is README's "## Stages", so membership lives in exactly one place and never drifts between two copies.
 
@@ -29,6 +29,27 @@ Guard marker:
 
 - `[sticky]` - a safety stage never auto-dropped once triggered, so a quieted signal cannot silently remove it.
 
+## The status line
+
+**Show, don't tell.** Show the state transition; never tell the story of the mechanism. Any inline state change the loop surfaces speaks one of two forms, both in plain words:
+
+- **Transition form** - the literal template `<state> ▶ <next action>`. The left side is the state that just became true: each fired signal's or minted artifact's plain-word meaning, never the raw `#topic`/`@name` (the Layout rules ban binds status lines too); several states join with ` + `. The right side is what happens next in a few plain words, naming the intent, not stage mechanics.
+- **Note form** - `<event> (<reason>)` for a surfaced non-transition, e.g. `stop hook ignored (implementation ongoing)`.
+
+Actionable only: non-actionable events (a transient stop-hook fire, a mid-run snapshot, an ignorable warning) compress to note form; full sentences survive only where the user must decide or act (gate questions, errors needing input).
+
+Worked examples:
+
+- `tests needed ▶ writing tests`
+- `plan approved + tests ready ▶ starting implementation`
+- `code written ▶ starting reviews`
+
+`▶` is the canonical transition symbol - the same glyph as the dispatched-stage marker, both marking forward motion (the card's `▶` means running now; the status line's separates state from action). `→` retires from status lines - the phase-order arrow in this file and doc-internal mapping arrows are not status lines and stay.
+
+One deliberate prohibition: no self-narration ("Let me ..." framings) and no filler words - a word that does not change what happens next gets cut.
+
+This file owns the user-facing status vocabulary, card and inline forms both, so the grammar-and-ordering claim above stays true now that a non-card surface lives here.
+
 ## Layout rules
 
 - Phase-grouped nested list: each phase banner is a top-level bullet, rendered only when at least one of its stages is in the route.
@@ -37,10 +58,11 @@ Guard marker:
 - No raw `← #signal` on any user-facing surface - the why is carried in plain words where worth showing; the signal name is loop bookkeeping.
 - The card is never wrapped in a ``` code fence: a fence traps the emoji markers and the Plan Breakdown as raw monospace.
 
-## The three surface shapes
+## The four surface shapes
 
 - **Full route card** - a header line `path · size · N stages`, then the phase-grouped nested list of every stage with its `▶ ✓ 🔒 •` marker; at a plan-approval gate the card also carries the producer's Plan Breakdown as a short **Plan breakdown** section beneath the list.
-- **Delta recompose line** - on a plain recompose: lead with the plain why (the new signal's message in words), then `+added / -removed (now size/N)`, as one native-markdown line.
+- **Status line** - any inline state change the loop surfaces: transition or note form per `## The status line`.
+- **Delta recompose line** - on a plain recompose, an instance of the status line: `<state in plain words> ▶ +added / -removed (now size/N)`, as one native-markdown line.
 - **Milestone-status layer** - during a milestone-loop build: a `milestone k of N` header and the `🟩 🟨 🟥` list atop the per-stage markers, so the reader sees milestone progress and stage progress at once.
 
 🚀 Ship renders as a post-convergence appendix after 🔬 Review, and only on a ship request - a tail, not one of the 7 phases. The system path renders a 🖥️ System banner and the talk path a 💬 Discuss banner in place of the code-path middle phases, with per-phase membership owned by README's "## Stages".

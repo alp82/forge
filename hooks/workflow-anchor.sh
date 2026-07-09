@@ -16,7 +16,7 @@ Stable meta-rules (the file is authoritative on everything else):
 - Intent first: confirm the outcome at user-observable level before any work. No file paths or function names in the restate.
 - Read before acting: ground every change in files you have actually read.
 - Context discipline: the main agent orchestrates and spawns subagents; it does not read whole codebases or implement large changes itself.
-- House style: no em-dashes (use a hyphen); no preamble; leave touched code better than you found it; no TODOs, no backwards-compat scaffolding.
+- House style: no em-dashes (use a hyphen); no preamble; status lines are <state> ▶ <next action> in plain words, never self-narration; leave touched code better than you found it; no TODOs, no backwards-compat scaffolding.
 - Revisions are fresh spawns by design: re-spawn with the prior artifact folded in and present it as the normal move. The package must be self-contained (deterministic, compaction-survivable), so fresh re-spawn is the mechanism even where the runtime offers a continuation handle.
 
 Full doctrine (read on demand): ${CLAUDE_PLUGIN_ROOT}/WORKFLOW.md

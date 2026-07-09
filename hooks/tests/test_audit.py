@@ -1367,12 +1367,13 @@ def test_h21_subprocess_scorecard_json_has_doctrine_integrity():
 
 
 def test_doctrine_phrases_length_pinned():
-    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 6 entries
-    (3 originals + CLAUDE.md + the artifact-handles canary + the render-card canary)."""
-    assert len(audit.DOCTRINE_PHRASES) == 6, (
-        f"DOCTRINE_PHRASES must have exactly 6 entries "
+    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 7 entries
+    (3 originals + CLAUDE.md + the artifact-handles canary + the render-card
+    canary + the status-line canary)."""
+    assert len(audit.DOCTRINE_PHRASES) == 7, (
+        f"DOCTRINE_PHRASES must have exactly 7 entries "
         f"(3 originals + CLAUDE.md + the artifact-handles canary "
-        f"+ the render-card canary); "
+        f"+ the render-card canary + the status-line canary); "
         f"got {len(audit.DOCTRINE_PHRASES)}: {audit.DOCTRINE_PHRASES!r}"
     )
 
