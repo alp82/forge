@@ -20,7 +20,8 @@
 #                                   (see case arms and READ_MAP)
 #   User-aware N + Project-aware Y: health-checker, prototype-identifier,
 #                                   researcher, code-prototyper, data-prototyper,
-#                                   performance-prototyper  (user_aware=0)
+#                                   performance-prototyper, explainer-prototyper
+#                                   (user_aware=0)
 #   User-aware Y + Project-aware N: setup-agent
 #   User-aware N + Project-aware N: test-verifier, accessibility-reviewer, and
 #                                   test-gap are user_aware=0 arms that fall
@@ -80,7 +81,7 @@ case "$subagent_type" in
   design-consistency-reviewer|ux-reviewer)
     ;;
   # User-aware: no. Project-aware: yes (READ_MAP entries below).
-  health-checker|prototype-identifier|researcher|code-prototyper|data-prototyper|performance-prototyper)
+  health-checker|prototype-identifier|researcher|code-prototyper|data-prototyper|performance-prototyper|explainer-prototyper)
     user_aware=0
     ;;
   # User-aware: no. Project-aware: no. They cite doctrine, so they fall through
@@ -117,6 +118,7 @@ declare -A READ_MAP=(
   [code-prototyper]="stack"
   [data-prototyper]="stack"
   [performance-prototyper]="stack"
+  [explainer-prototyper]="stack"
   [code-planner]="intent stack glossary adrs"
   [system-planner]="stack glossary adrs"
   [system-executor]="stack glossary"

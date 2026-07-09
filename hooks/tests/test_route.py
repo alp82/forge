@@ -3722,6 +3722,42 @@ def test_gen_catalog_agent_edit_poison_leaves_committed_catalog_untouched():
     )
 
 
+def _explainer_agent_text():
+    return (
+        Path(__file__).resolve().parents[2] / "agents" / "explainer-prototyper.md"
+    ).read_text(encoding="utf-8")
+
+
+def test_explainer_prototyper_is_read_only_no_pasteback():
+    """The explainer is read-only: it declares 'NO paste-back' and offers no
+    Copy-spec button (the read-only mode prose canary)."""
+    text = _explainer_agent_text()
+    assert (
+        "NO paste-back" in text
+    ), "explainer must declare the read-only 'NO paste-back' mode"
+    assert (
+        "Copy spec" not in text and "Copy-spec" not in text
+    ), "explainer must not offer a Copy-spec paste-back button"
+
+
+def test_explainer_prototyper_is_off_route():
+    """The explainer is an off-route helper (mirrors setup-agent): its file
+    exists, its frontmatter carries NO `stage:` block, it is absent from the
+    catalog, and adding it leaves the stage count at 43."""
+    text = _explainer_agent_text()
+    assert text.startswith("---\n"), "explainer must open with a frontmatter block"
+    frontmatter = text.split("---\n", 2)[1]
+    assert (
+        "stage:" not in frontmatter
+    ), "explainer must be off-route - no `stage:` block in its frontmatter"
+    cat = _real_catalog()
+    stages = cat["stages"]
+    assert (
+        "explainer-prototyper" not in stages
+    ), "off-route explainer must not appear as a catalog stage"
+    assert len(stages) == 43, f"expected 43 stages, got {len(stages)}"
+
+
 if __name__ == "__main__":
     import traceback
 

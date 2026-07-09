@@ -944,6 +944,7 @@ def _make_doctrine_root(
     include_code_doctrine=True,
     include_claude_md=True,
     include_render_card=True,
+    include_explainer=True,
 ):
     """Build a minimal repo root in tmp_path with controlled doctrine files.
 
@@ -1006,6 +1007,17 @@ def _make_doctrine_root(
     if include_render_card:
         (doctrine_dir / "render-card.md").write_text(
             render_card_content, encoding="utf-8"
+        )
+
+    if include_explainer:
+        explainer_phrases = _get_all_phrases_for("agents/explainer-prototyper.md")
+        agents_dir = tmp_path / "agents"
+        agents_dir.mkdir(exist_ok=True)
+        explainer_content = "# explainer-prototyper\n" + "".join(
+            f"{p}\n" for p in explainer_phrases
+        )
+        (agents_dir / "explainer-prototyper.md").write_text(
+            explainer_content, encoding="utf-8"
         )
 
     if include_claude_md:
@@ -1110,6 +1122,7 @@ def test_h12_all_phrases_absent_one_fix_per_entry(tmp_path):
         code_doctrine_content="# code-doctrine\nno relevant phrases here\n",
         claude_md_content="# CLAUDE.md\nno relevant phrases here\n",
         render_card_content="# render-card\nno relevant phrases here\n",
+        include_explainer=False,
     )
     _, fixes = audit._score_doctrine_integrity(root)
     assert len(fixes) == len(audit.DOCTRINE_PHRASES), (
@@ -1367,14 +1380,15 @@ def test_h21_subprocess_scorecard_json_has_doctrine_integrity():
 
 
 def test_doctrine_phrases_length_pinned():
-    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 8 entries
+    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 9 entries
     (3 originals + CLAUDE.md + the artifact-handles canary + the render-card
-    canary + the status-line canary + the fable-fallback canary)."""
-    assert len(audit.DOCTRINE_PHRASES) == 8, (
-        f"DOCTRINE_PHRASES must have exactly 8 entries "
+    canary + the status-line canary + the fable-fallback canary + the
+    explainer ## Scope shown-not-told canary)."""
+    assert len(audit.DOCTRINE_PHRASES) == 9, (
+        f"DOCTRINE_PHRASES must have exactly 9 entries "
         f"(3 originals + CLAUDE.md + the artifact-handles canary "
         f"+ the render-card canary + the status-line canary "
-        f"+ the fable-fallback canary); "
+        f"+ the fable-fallback canary + the explainer ## Scope canary); "
         f"got {len(audit.DOCTRINE_PHRASES)}: {audit.DOCTRINE_PHRASES!r}"
     )
 
@@ -1385,6 +1399,16 @@ def test_doctrine_phrases_fable_fallback_canary_present():
     expected = ("re-spawns the stage once at `opus`", "WORKFLOW.md")
     assert expected in audit.DOCTRINE_PHRASES, (
         f"expected the fable-fallback canary {expected!r} in DOCTRINE_PHRASES; "
+        f"got {audit.DOCTRINE_PHRASES!r}"
+    )
+
+
+def test_doctrine_phrases_explainer_scope_canary_present():
+    """PHRASES-09: the explainer ## Scope shown-not-told canary tuple is pinned
+    by name - the length test alone cannot tell WHICH phrase was added."""
+    expected = ("shown, not told", "agents/explainer-prototyper.md")
+    assert expected in audit.DOCTRINE_PHRASES, (
+        f"expected the explainer ## Scope canary {expected!r} in DOCTRINE_PHRASES; "
         f"got {audit.DOCTRINE_PHRASES!r}"
     )
 

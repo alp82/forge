@@ -2,6 +2,10 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.16 - 2026-07-09
+
+- When a question is easier to grasp by seeing it - how parts fit together, how information is laid out, or a choice between options - the assistant now builds a small illustration first and asks with it in hand.
+
 ## 1.3.15 - 2026-07-09
 
 - Requests bigger than a small tweak now get a short interview before planning; a clear ask passes through with zero questions.

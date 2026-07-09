@@ -8,7 +8,7 @@
 
 ![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)
 ![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)
-![Version](https://shieldcn.dev/badge/version-1.3.15-D97757.svg?variant=outline&size=lg)
+![Version](https://shieldcn.dev/badge/version-1.3.16-D97757.svg?variant=outline&size=lg)
 
 <br>
 
@@ -30,6 +30,10 @@
 
 The last three updates:
 
+**1.3.16**
+
+- When a question is easier to grasp by seeing it - how parts fit together, how information is laid out, or a choice between options - the assistant now builds a small illustration first and asks with it in hand.
+
 **1.3.15**
 
 - Requests bigger than a small tweak now get a short interview before planning; a clear ask passes through with zero questions.
@@ -40,11 +44,6 @@ The last three updates:
 
 - Most steps of a run now use a lighter, cheaper model, while the most capable model stays reserved for planning and building the code, so a run costs less without losing depth where the decisions matter.
 - Each step now thinks for a length matched to its job, keeping the deepest planning and review work thorough while trimming wasted effort elsewhere.
-
-**1.3.13**
-
-- Run progress shows as compact state-arrow lines in plain words, like `plan approved ▶ starting implementation`, instead of narrated sentences.
-- Side notes during a run shrink to an event plus a short reason in parentheses, like `stop hook ignored (implementation ongoing)`; full sentences appear only where a decision or action is needed.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -202,6 +201,8 @@ Reads the request, settles what you actually want, and frames the work.
 |-------|-------|------|
 | triage | haiku | Always-on. Reads your request, picks the path, flags early risk and bug-framing. |
 | clarifier | opus | When the ask is ambiguous or under-specified, or simply bigger than a small tweak, researches the area, then confirms scope and success criteria and surfaces edge cases and acceptance criteria - one loop, both altitudes; exits immediately with zero questions when none are warranted. |
+
+*`explainer-prototyper` (sonnet) is an off-route helper the clarify loop spawns to build a read-only illustration before a question that's better shown than told; it is not a routed stage.*
 
 ---
 
@@ -380,9 +381,9 @@ alp-river/
 ├── .claude-plugin/         <- plugin.json (version), marketplace.json
 ├── WORKFLOW.md             <- the full router-loop doctrine
 ├── doctrine/               <- CATALOG.md (stage schema), SIGNALS.md (signal vocabulary), ...
-├── generated/catalog.json  <- compiled stage catalog (44 stages; tracked; the router reads it)
+├── generated/catalog.json  <- compiled stage catalog (43 stages; tracked; the router reads it)
 ├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, recover-state)
-├── agents/                 <- 44 stage definitions + 1 off-route utility (setup-agent)
+├── agents/                 <- 43 stage definitions + 2 off-route utilities (setup-agent, explainer-prototyper)
 ├── commands/               <- 6 slash commands
 └── templates/              <- copy into your project's docs/ for context injection
 ```

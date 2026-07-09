@@ -51,6 +51,7 @@ Detail (requirements-level):
 - **Non-functional gaps**: performance targets, error UX, observability, auth implications
 - **UI design ambiguity**: when the task touches visual design AND multiple legitimate shapes exist (layout, spacing, density, color, motion, hierarchy, control affordance, copy tone). Don't surface this as a regular question - flag it via `DESIGN_LOOP_NEEDED: yes` so the main agent runs the design-prototyper's interactive picker instead of forcing a text decision. Set `DESIGN_LOOP_NEEDED: no` when the design is already settled (existing pattern, intent specifies, or the change is small enough that one obvious shape wins).
 - **User-flow ambiguity**: when the task touches the sequence of states/screens a user moves through AND multiple legitimate flows exist (entry point, step order, branching, whether back is allowed). Don't surface this as a regular question - flag it via `USER_FLOW_NEEDED: yes` so the main agent runs the ux-prototyper's clickable wireflow instead of forcing a text decision. Set `USER_FLOW_NEEDED: no` when the flow is already settled.
+- **Explainer-worthy ambiguity**: when a pending question is better shown than told, flag it via `EXPLAINER_NEEDED: yes` so the orchestrator builds a read-only illustration before the question is asked; set `no` when a sentence answers it. The bounded subjects live in `agents/explainer-prototyper.md ## Scope`; do not restate the list here. Unlike `DESIGN_LOOP_NEEDED`->`#design-needed` and `USER_FLOW_NEEDED`->`#user-flow-needed`, `EXPLAINER_NEEDED` is a **text flag only, with NO companion `publishes` signal**, because the orchestrator consumes it mid-loop and the router never composes the explainer (see `WORKFLOW.md ## Clarification Loops`).
 
 Only ask questions where two reasonable readings would produce materially different work. Skip questions the request, codebase, web research, or `<PRIOR_ROUNDS>` already answer.
 
@@ -138,6 +139,11 @@ USER_FLOW_NEEDED: [yes | no]
 USER_FLOW_PROPOSED:
 - [flow parameter name] - [why it has multiple legitimate sequences for this task] - [candidate states/transitions, when obvious]
 (one bullet per flow parameter the ux-prototyper should let the user walk; empty list when USER_FLOW_NEEDED: no)
+
+EXPLAINER_NEEDED: [yes | no]
+EXPLAINER_TARGETS:
+- [pending question ref] - [subject: system-design | data-shape | tradeoff] - [what to illustrate] - [why better shown than told]
+(one bullet per pending question that wants a read-only explainer before it's asked; empty when EXPLAINER_NEEDED: no. Named TARGETS, not PROPOSED, on purpose: each bullet is a definite instruction the orchestrator lifts into the explainer's `<EXPLAINER_TARGET>` slot verbatim, where the `..._PROPOSED` blocks above are forward-looking suggestions their consumer may revise.)
 
 WRITES_PROPOSED:
   glossary:

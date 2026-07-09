@@ -1,11 +1,11 @@
-"""Version / changelog checks for the 1.3.15 interview + verify-gate release.
+"""Version / changelog checks for the 1.3.16 shown-not-told clarify release.
 
 Per CLAUDE.md's versioning rule, a workflow-surface change under agents/,
 commands/, hooks/, or WORKFLOW.md earns a patch bump, mirrored in both
 plugin.json and marketplace.json, plus a CHANGELOG.md entry. This file is the
 single release-version gate - it tracks the current release (it moved 1.3.6 ->
-1.3.7 -> 1.3.8 -> 1.3.9 -> 1.3.10 -> 1.3.11 -> 1.3.12 -> 1.3.13 -> 1.3.14, now
-1.3.14 -> 1.3.15).
+1.3.7 -> 1.3.8 -> 1.3.9 -> 1.3.10 -> 1.3.11 -> 1.3.12 -> 1.3.13 -> 1.3.14 ->
+1.3.15, now 1.3.15 -> 1.3.16).
 
 TC-VER-04 (soft prose-style check on the changelog entry) is intentionally
 NOT authored here - it is human judgment, not a test, per the test plan.
@@ -21,10 +21,10 @@ MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 CHANGELOG_MD = REPO_ROOT / "CHANGELOG.md"
 README_MD = REPO_ROOT / "README.md"
 
-EXPECTED_VERSION = "1.3.15"
+EXPECTED_VERSION = "1.3.16"
 
 
-def test_plugin_json_version_is_1_3_15():
+def test_plugin_json_version_is_1_3_16():
     data = json.loads(PLUGIN_JSON.read_text())
     assert data.get("version") == EXPECTED_VERSION, (
         f"expected .claude-plugin/plugin.json version == {EXPECTED_VERSION!r}, "
@@ -46,7 +46,7 @@ def test_marketplace_json_version_matches_plugin_json():
     )
 
 
-def test_changelog_has_1_3_15_entry():
+def test_changelog_has_1_3_16_entry():
     text = CHANGELOG_MD.read_text()
     assert (
         f"## {EXPECTED_VERSION}" in text
@@ -101,17 +101,17 @@ def test_changelog_and_readme_bullets_match_for_current_version():
         )
 
 
-def test_readme_latest_updates_window_is_1315_1314_1313():
+def test_readme_latest_updates_window_is_1316_1315_1314():
     """The README '## 📰 Latest updates' section keeps a window of exactly three
     entries. The dynamic tests in test_fable_tier_and_subagent_writes.py pin the
     count and the topmost version only; this one pins WHICH three remain after
-    the 1.3.15 release: 1.3.15 enters at the top, 1.3.14 and 1.3.13 stay,
-    1.3.12 drops."""
+    the 1.3.16 release: 1.3.16 enters at the top, 1.3.15 and 1.3.14 stay,
+    1.3.13 drops."""
     text = README_MD.read_text()
     m = re.search(r"## 📰 Latest updates\n(.*?)\n---", text, re.DOTALL)
     assert m is not None, "expected a '## 📰 Latest updates' section in README.md"
     versions = re.findall(r"\*\*(\d+\.\d+\.\d+)\*\*", m.group(1))
-    assert versions == ["1.3.15", "1.3.14", "1.3.13"], (
+    assert versions == ["1.3.16", "1.3.15", "1.3.14"], (
         "README Latest updates window must be exactly "
-        f"['1.3.15', '1.3.14', '1.3.13'] top-down; got {versions!r}"
+        f"['1.3.16', '1.3.15', '1.3.14'] top-down; got {versions!r}"
     )

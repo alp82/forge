@@ -366,3 +366,39 @@ def test_empty_adr_directory_yields_no_section_and_no_error(tmp_path):
     ctx = _run_injector("code-planner", str(tmp_path))
 
     assert "### ADRs" not in ctx
+
+
+# ---------------------------------------------------------------------------
+# Group F - explainer-prototyper registration guard
+# ---------------------------------------------------------------------------
+#
+# The off-route explainer must be wired into the injector as a stack-only
+# project-aware agent. Absent that wiring it falls through the terminal `*)`
+# arm to `exit 0` and receives ZERO injected context, so it would illustrate a
+# data-shape/system-design/tradeoff question against an unknown stack. A
+# non-empty payload carrying STACK.md proves it hit a real case arm (the `*)`
+# fallthrough exits before any project_context is built); the absent
+# INTENT/GLOSSARY sentinels pin the token set to exactly {stack}.
+
+
+def test_explainer_prototyper_gets_stack_only_project_context(tmp_path):
+    docs_dir = tmp_path / "docs"
+    docs_dir.mkdir(parents=True)
+    (docs_dir / "STACK.md").write_text(
+        "# Stack\nSTACK_SENTINEL_ALPHA\n", encoding="utf-8"
+    )
+    (docs_dir / "INTENT.md").write_text(
+        "# Intent\nINTENT_SENTINEL_BETA\n", encoding="utf-8"
+    )
+    (docs_dir / "GLOSSARY.md").write_text(
+        "# Glossary\nGLOSSARY_SENTINEL_GAMMA\n", encoding="utf-8"
+    )
+
+    ctx = _run_injector("explainer-prototyper", str(tmp_path))
+
+    assert ctx, "explainer-prototyper must not fall through to the zero-context exit"
+    assert "## PROJECT_CONTEXT" in ctx
+    assert "### STACK.md" in ctx
+    assert "STACK_SENTINEL_ALPHA" in ctx
+    assert "INTENT_SENTINEL_BETA" not in ctx
+    assert "GLOSSARY_SENTINEL_GAMMA" not in ctx
