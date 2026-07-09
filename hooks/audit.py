@@ -45,12 +45,6 @@ DOCTRINE_PHRASES = (
     ("est-size <= S", "WORKFLOW.md"),
     ("ONE runnable check", "doctrine/code-doctrine.md"),
     ("extend it not restate", "CLAUDE.md"),
-    (
-        "the overview comes first; the brief is details on demand, pulled never pushed.",
-        "doctrine/briefs.md",
-    ),
-    ("See it in plain words", "doctrine/briefs.md"),
-    ("See it as an interactive doc", "doctrine/briefs.md"),
     ("artifacts on disk, handles in context", "WORKFLOW.md"),
     ("one card grammar, and the banner is the order", "doctrine/render-card.md"),
 )
@@ -325,7 +319,6 @@ _MANDATED_CONTRACT_FRAGMENTS = (
     # Clarify loop (clarifier): the merged intent+requirements loop's canonical
     # protocol wording. Kept here so a future re-split can't silently re-duplicate it.
     "exit conditions for the main agent",
-    "plain-words escape on demand",
     "convergence governs the route, not a budget",
     # Visual-prototyper pair (design-, ux-prototyper): both emit browser-openable
     # spec artifacts under identical constraints inside self-contained prompts.

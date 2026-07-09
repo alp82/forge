@@ -2,6 +2,12 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.12 - 2026-07-09
+
+- The core rulebook is about half its former length, so every run carries less instruction overhead and reads one contradiction-free set of rules.
+- Decision points now settle directly in chat; the separate interactive comparison page is gone.
+- The end-of-run timing summary is gone.
+
 ## 1.3.11 - 2026-07-09
 
 - Helper steps are no longer told to open their reply by reciting a persona motto, removing the risk of a corrupted first line in steps whose output must start with an exact marker.

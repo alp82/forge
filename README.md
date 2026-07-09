@@ -30,6 +30,12 @@
 
 The last three updates:
 
+**1.3.12**
+
+- The core rulebook is about half its former length, so every run carries less instruction overhead and reads one contradiction-free set of rules.
+- Decision points now settle directly in chat; the separate interactive comparison page is gone.
+- The end-of-run timing summary is gone.
+
 **1.3.11**
 
 - Helper steps are no longer told to open their reply by reciting a persona motto, removing the risk of a corrupted first line in steps whose output must start with an exact marker.
@@ -42,12 +48,6 @@ The last three updates:
 - macOS desktop notifications containing quotes or backslashes now display correctly.
 - The repo health check no longer counts lookalike words such as "also" as an explanation.
 - Saving a non-plugin file no longer loads an unused YAML parser.
-
-**1.3.9**
-
-- Every serious build now ends with five focused always-on review checks instead of twelve overlapping ones: correctness, simplicity, shape (module structure), conventions (naming, patterns, reuse), and acceptance (the right thing got built, per the plan).
-- The performance check joins only when the change actually touches data access, loops over collections, queries, or payload assembly - clean of guesswork, it flags only costs readable from the code itself.
-- After a fix, only the checks that found the fixed problems re-run, plus the correctness check and the test suite - fix rounds get much cheaper without losing coverage.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

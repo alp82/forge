@@ -48,7 +48,7 @@ New topics are added here first, then used.
 | auth-surface | touches auth / identity / tokens | triage | security-review |
 | secrets | secrets / credentials touched | triage | security-review |
 | perms-change | permission model changes | triage | security-review |
-| risk:&lt;area&gt; | generic risk in an area | triage | cost-check, gates |
+| risk:&lt;area&gt; | generic risk in an area | triage | gates |
 | high-risk | plan is risky overall | plan | challenge |
 | destructive-op | a system action that is destructive or hard to reverse (`rm -rf`, package removal, `systemctl mask`, `dd`, partition ops) | triage, system-planner | safety-gate |
 | irreversible | a system action with no clean rollback | triage, system-planner | safety-gate |
@@ -61,7 +61,7 @@ New topics are added here first, then used.
 | duplication | new code duplicates existing | reuse-scan, conventions lens | plan, fixer |
 | dead-code | removable code found | health-check | cleanup |
 | missing-infra:&lt;x&gt; | needed infra absent | reuse-scan | research, prototype |
-| unhealthy | touched area is low-health | health-check | cleanup gate |
+| unhealthy | touched area is low-health | health-check | orchestrator (cleanup-first recommendation) |
 | domain:integration | a prototyping target is an external API / SDK / integration | prototype-identifier | code-prototyper |
 | domain:data | a prototyping target is a schema / data model / transformation | prototype-identifier | data-prototyper |
 | domain:performance | a prototyping target is timing / scale-critical | prototype-identifier | performance-prototyper |
@@ -77,7 +77,7 @@ New topics are added here first, then used.
 | user-flow-needed | user-flow / state-sequence exploration required | clarify | ux-prototyper |
 | ux-flow-locked | user-flow spec captured | ux-prototyper | plan |
 | plan-ready | a plan artifact exists and is awaiting approval - arms the plan-gate lock on both implementers | code-planner, system-planner | code-implementer's plan-gate lock (while), system-executor's plan-gate lock (while) |
-| plan-challenged | plan survived challenge | challenge | after-plan gate |
+| plan-challenged | plan survived challenge | challenge | orchestrator |
 | critiques-ready | every competing plan has been critiqued; the arbiter may now adjudicate (multi-plan code build only) | orchestrator | plan-arbiter |
 | code-written | a diff exists | implement, fixer, system-executor | correctness-reviewer |
 | milestone-diverged | the remaining milestone breakdown is wrong; re-split forward | code-implementer | plan-challenger |
@@ -119,10 +119,8 @@ implementer runs straight off `@confirmed-intent` with no plan.
 
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|
-| est-size:&lt;tier&gt; | advisory upfront size estimate, read off the request shape | triage | cost gate (advisory only - never picks stages) |
-| size-crossed:&lt;tier&gt; | route grew past a tier line | router | cost-check |
+| est-size:&lt;tier&gt; | advisory upfront size estimate, read off the request shape | triage | orchestrator - small-planned-build auto-release only (WORKFLOW.md ## Locks, Release policy) |
 | approved, scope-down, abandon | user gate verdict | gate stages | orchestrator |
-| cleanup-first | health gate decision | health gate | orchestrator |
 | safety-approved | user cleared a destructive/irreversible system action | safety-gate | system-executor's lock |
 | plan-approved | the plan cleared its approval gate, releasing both implementers' plan-gate lock | plan-challenger (code path, single-plan terminal gate); plan-arbiter (code path, multi-plan adjudication); orchestrator (system / small planned build, where no in-route stage publishes it) - never owed on the `#direct-impl` short path, which carries no plan gate | code-implementer's lock, system-executor's lock |
 
@@ -137,6 +135,6 @@ On a multi-plan code build the per-plan critique-only challengers do NOT publish
 
 ## Convergence
 
-A route is **done** when no live signal triggers an unrun stage and every lens is `clean`.
+A route is **done** per `WORKFLOW.md` `## Convergence`: empty route, empty `held`, every lens `clean`.
 There is no budget; an oscillation guard surfaces a `scope-shift` that re-fires without
 ever resolving. See `doctrine/CATALOG.md` and the design note `project-river-dynamic-workflow`.

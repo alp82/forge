@@ -67,10 +67,6 @@ Each question's `header` must fit within 12 characters. Aim for noun phrases or 
 - "How should the API treat empty input arrays?" -> `Empty input`
 - "Confirm: returns the bare array, not a wrapped object?" -> `Return shape`
 
-## Plain-words escape on demand
-
-On the direction/confirm `QUESTIONS` picker you MAY add the escape `See it in plain words` as ONE option (the QUESTION budget stays 4; one option slot). A question already at 4 substantive options cannot also carry it. Picking it makes the orchestrator re-render the confirmed intent (or the open clarify decision) inline in plain before->after WHAT/WHY form and re-emit this picker, so the gate stays here; the last line of that plain view offers the interactive doc via the surface's paste-back token. Scope it to WHAT/WHY altitude - in-scope vs out-of-scope outcomes, never implementation HOW. The orchestrator re-renders from your output; you are read-only and never write the file (see the briefs doctrine in your DOCTRINE block and the Concise Surfacing Contract).
-
 ## Input
 
 ```

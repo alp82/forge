@@ -13,7 +13,7 @@ new <APPROVED_PLAN> consumers (outside the fence so the catalog stays byte-ident
 stays out of the 2 inline carve-outs, and the audit fragment exempts the by-design
 repetition while doctrine integrity holds at 100.
 
-Conventions mirror test_briefs.py: REAL_REPO_ROOT via Path(__file__).resolve().parents[2];
+Conventions mirror test_audit.py: REAL_REPO_ROOT via Path(__file__).resolve().parents[2];
 insert hooks/ on sys.path; import audit and check_catalog; RED/GREEN-labeled test names.
 """
 

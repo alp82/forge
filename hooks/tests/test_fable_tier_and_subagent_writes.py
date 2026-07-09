@@ -25,7 +25,7 @@ plan's own ## Testing section (grep sweeps, `pytest hooks/tests/`,
 checklist the verifier stage runs directly - duplicating all of it as
 permanent prose-assertion tests would bloat the suite for no durable value.
 
-Conventions mirror test_briefs.py / test_artifact_handles.py: REAL_REPO_ROOT via
+Conventions mirror test_artifact_handles.py: REAL_REPO_ROOT via
 Path(__file__).resolve().parents[2]; insert hooks/ on sys.path; import audit and
 check_catalog.
 """
@@ -54,10 +54,9 @@ def _locate(content, marker, from_pos=0):
 
     A `#`-prefixed marker is treated as a heading and matched only at the START
     of a line (many WORKFLOW.md headings are also cross-referenced inline
-    elsewhere in prose, e.g. "the same ... follow (`doctrine/briefs.md:15`,
-    ### Artifact handles)" - a plain substring search would lock onto that
-    inline mention instead of the real heading). A non-heading marker is
-    matched as a plain substring.
+    elsewhere in prose, e.g. "decides-vs-performs (### Artifact handles)" - a
+    plain substring search would lock onto that inline mention instead of the
+    real heading). A non-heading marker is matched as a plain substring.
     """
     if marker.startswith("#"):
         m = re.compile(r"^" + re.escape(marker), re.MULTILINE).search(content, from_pos)
@@ -808,51 +807,6 @@ def test_d10_red_artifact_handles_milestone_paragraph_collapsed():
     ), "### Artifact handles must mention re-split in the collapsed milestone paragraph"
 
 
-def test_d11_red_briefs_scoping_clause_bounds_precedent_to_briefs_dir():
-    """TC-50: doctrine/briefs.md "Who writes the brief" gains a scoping clause
-    bounding the orchestrator-writes-the-doc precedent to .briefs/ render
-    artifacts only, cross-referencing WORKFLOW.md."""
-    content = _read("doctrine/briefs.md")
-    section = _section(content, "## Who writes the brief", "## Brief trigger")
-    assert (
-        ".briefs/" in section
-    ), "doctrine/briefs.md 'Who writes the brief' must scope the precedent to .briefs/"
-    assert ".alp-river/" in section, (
-        "doctrine/briefs.md 'Who writes the brief' must note .alp-river/ writes are "
-        "performed by subagents (out of the precedent's scope)"
-    )
-    assert (
-        "WORKFLOW.md" in section
-    ), "doctrine/briefs.md 'Who writes the brief' must cross-reference WORKFLOW.md"
-
-
-def test_d12_green_briefs_canary_labels_untouched():
-    """TC-51 (canary regression): the two pinned labels remain textually untouched."""
-    content = _read("doctrine/briefs.md")
-    assert (
-        "See it in plain words" in content
-    ), "doctrine/briefs.md must still carry the pinned label 'See it in plain words'"
-    assert (
-        "See it as an interactive doc" in content
-    ), "doctrine/briefs.md must still carry the pinned label 'See it as an interactive doc'"
-
-
-def test_d13_red_orchestrator_writes_the_doc_precedent_scoped_to_briefs():
-    """TC-52 (acceptance criterion 6, direct): the 'orchestrator-writes-the-doc'
-    precedent no longer appears in WORKFLOW.md (both .alp-river/ call-sites
-    repointed), and still appears in doctrine/briefs.md (its one true home)."""
-    workflow = _read("WORKFLOW.md")
-    briefs = _read("doctrine/briefs.md")
-    assert "orchestrator-writes-the-doc" not in workflow, (
-        "WORKFLOW.md must no longer claim the 'orchestrator-writes-the-doc' precedent "
-        "for .alp-river/ writes (both loop step 4 and ### Artifact handles repoint it)"
-    )
-    assert "orchestrator-writes-the-doc" in briefs, (
-        "doctrine/briefs.md must still carry the 'orchestrator-writes-the-doc' precedent "
-        "(scoped to .briefs/ render artifacts)"
-    )
-
-
 # ---------------------------------------------------------------------------
 # Group E - recover-run-state.sh reword
 # ---------------------------------------------------------------------------
@@ -1025,7 +979,6 @@ def test_f09_red_readme_latest_updates_topmost_and_last_three():
 #   TC-64  pytest hooks/tests/                    (full suite green)
 #   TC-65  hooks/tests/test_audit.py               (doctrine-integrity canaries intact)
 #   TC-66  hooks/tests/test_artifact_handles.py    (green after ### Artifact handles rewrite)
-#   TC-67  hooks/tests/test_briefs.py              (green after briefs.md scoping clause)
 #   TC-68  python3 hooks/check_catalog.py          (clean) - pinned above as test_b13
 #   TC-69  python3 hooks/audit.py                  (exits 0, doctrine-integrity unchanged)
 #   TC-70  git diff --stat generated/catalog.json  (no change) - see TC-31 note above

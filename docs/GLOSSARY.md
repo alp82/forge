@@ -142,10 +142,6 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Definition:** The `[likely]` / `[unsure]` markers subagents append to claims they can't ground in evidence.
 **Avoid:** "uncertainty markers", "hedging".
 
-### Run-timing readout
-**Definition:** The one-time card the orchestrator renders at convergence showing a run's total wall-clock time and a per-phase (and per-milestone, when the milestone loop ran) breakdown. See `doctrine/render-card.md`.
-**Avoid:** "timer", "profiler", "stopwatch".
-
 ## Context injection
 
 ### Context injection slots

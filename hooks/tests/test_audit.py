@@ -927,9 +927,9 @@ def _get_phrase_for(relpath):
 def _get_all_phrases_for(relpath):
     """Return ALL canary phrases paired to relpath from audit.DOCTRINE_PHRASES (dynamic).
 
-    Used where a file owns more than one pinned phrase (e.g. doctrine/briefs.md after RC4
-    gains a second label entry).  Returns a list so callers can join them all into a
-    single content string that satisfies every checker.
+    Used where a file owns more than one pinned phrase (e.g. WORKFLOW.md carries both
+    est-size canaries plus the artifact-handles leitwort).  Returns a list so callers
+    can join them all into a single content string that satisfies every checker.
     """
     return [phrase for phrase, rel in audit.DOCTRINE_PHRASES if rel == relpath]
 
@@ -939,12 +939,10 @@ def _make_doctrine_root(
     workflow_content=None,
     code_doctrine_content=None,
     claude_md_content=None,
-    briefs_content=None,
     render_card_content=None,
     include_workflow=True,
     include_code_doctrine=True,
     include_claude_md=True,
-    include_briefs=True,
     include_render_card=True,
 ):
     """Build a minimal repo root in tmp_path with controlled doctrine files.
@@ -984,16 +982,6 @@ def _make_doctrine_root(
             # If no CLAUDE.md entry exists yet, write a placeholder (will fail
             # phrase checks, which is correct for a not-yet-implemented test).
             claude_md_content = "# CLAUDE.md\n(placeholder - no canary phrase found)\n"
-    if briefs_content is None:
-        # Build content that includes ALL briefs leitworts dynamically.
-        # After RC4 there are two entries for doctrine/briefs.md; joining them
-        # all ensures the green-path root (test_h03) scores 100 regardless of
-        # how many phrases doctrine/briefs.md carries.
-        leitworts = _get_all_phrases_for("doctrine/briefs.md")
-        if leitworts:
-            briefs_content = "# Briefs\n" + "".join(f"{lw}\n" for lw in leitworts)
-        else:
-            briefs_content = "# briefs\n(placeholder - no leitwort phrase found)\n"
     if render_card_content is None:
         # Build content that includes ALL render-card phrases dynamically.
         rc_phrases = _get_all_phrases_for("doctrine/render-card.md")
@@ -1015,8 +1003,6 @@ def _make_doctrine_root(
         (doctrine_dir / "code-doctrine.md").write_text(
             code_doctrine_content, encoding="utf-8"
         )
-    if include_briefs:
-        (doctrine_dir / "briefs.md").write_text(briefs_content, encoding="utf-8")
     if include_render_card:
         (doctrine_dir / "render-card.md").write_text(
             render_card_content, encoding="utf-8"
@@ -1115,106 +1101,14 @@ def test_h07_all_phrases_absent_score_zero(tmp_path):
     assert score == 0, f"all phrases absent: expected score 0, got {score}"
 
 
-def test_h12_all_phrases_absent_exactly_five_fixes(tmp_path):
-    """H-12: all required phrases absent -> one problem string per table entry (5 entries)."""
+def test_h12_all_phrases_absent_one_fix_per_entry(tmp_path):
+    """H-12: all required phrases absent -> one problem string per DOCTRINE_PHRASES
+    entry (dynamic - no hardcoded count)."""
     root = _make_doctrine_root(
         tmp_path,
         workflow_content="# WORKFLOW\nno relevant phrases here\n",
         code_doctrine_content="# code-doctrine\nno relevant phrases here\n",
         claude_md_content="# CLAUDE.md\nno relevant phrases here\n",
-        briefs_content="# briefs\nno relevant phrases here\n",
-        render_card_content="# render-card\nno relevant phrases here\n",
-    )
-    _, fixes = audit._score_doctrine_integrity(root)
-    assert len(fixes) == len(audit.DOCTRINE_PHRASES), (
-        f"all phrases absent: expected one fix per pinned phrase "
-        f"({len(audit.DOCTRINE_PHRASES)}), got {len(fixes)}: {fixes!r}"
-    )
-
-
-# ---------------------------------------------------------------------------
-# RC4 - Group H additions: DOCTRINE_PHRASES matched-pair label pin for briefs.md
-# ---------------------------------------------------------------------------
-# These tests are RED until audit.py DOCTRINE_PHRASES gains both:
-#   ("See it in plain words", "doctrine/briefs.md")
-#   ("See it as an interactive doc", "doctrine/briefs.md")
-
-
-# --- RC4-H01 ---
-def test_rc4_h01_doctrine_phrases_contains_both_briefs_labels():
-    """DOCTRINE_PHRASES contains BOTH 'See it in plain words' and 'See it as an interactive doc'
-    entries paired to 'doctrine/briefs.md'."""
-    phrases_by_file = {(phrase, rel) for phrase, rel in audit.DOCTRINE_PHRASES}
-    assert (
-        "See it in plain words",
-        "doctrine/briefs.md",
-    ) in phrases_by_file, (
-        "DOCTRINE_PHRASES must contain ('See it in plain words', 'doctrine/briefs.md'); "
-        f"current entries: {list(audit.DOCTRINE_PHRASES)}"
-    )
-    assert (
-        "See it as an interactive doc",
-        "doctrine/briefs.md",
-    ) in phrases_by_file, (
-        "DOCTRINE_PHRASES must contain ('See it as an interactive doc', 'doctrine/briefs.md'); "
-        f"current entries: {list(audit.DOCTRINE_PHRASES)}"
-    )
-
-
-# --- RC4-H02a ---
-def test_rc4_h02a_missing_see_it_in_plain_words_caught(tmp_path):
-    """A synthetic doctrine root whose briefs.md OMITS 'See it in plain words' -> score 0
-    with a fix naming that missing label."""
-    # Provide all briefs phrases EXCEPT 'See it in plain words'
-    all_briefs = _get_all_phrases_for("doctrine/briefs.md")
-    partial = [p for p in all_briefs if p != "See it in plain words"]
-    if not partial:
-        # If DOCTRINE_PHRASES doesn't have either label yet (RED state), the test
-        # must still fail (assert below catches the missing label in DOCTRINE_PHRASES).
-        partial = ["(placeholder - label not yet in DOCTRINE_PHRASES)"]
-    briefs_content = "# Briefs\n" + "".join(f"{p}\n" for p in partial)
-    root = _make_doctrine_root(tmp_path, briefs_content=briefs_content)
-    score, fixes = audit._score_doctrine_integrity(root)
-    assert (
-        score == 0
-    ), f"briefs.md missing 'See it in plain words': expected score 0, got {score}"
-    matched = [f for f in fixes if "See it in plain words" in f]
-    assert (
-        matched
-    ), f"a fix must name the missing label 'See it in plain words'; got fixes={fixes!r}"
-
-
-# --- RC4-H02b ---
-def test_rc4_h02b_missing_see_it_as_interactive_doc_caught(tmp_path):
-    """A synthetic doctrine root whose briefs.md OMITS 'See it as an interactive doc' -> score 0
-    with a fix naming that missing label."""
-    all_briefs = _get_all_phrases_for("doctrine/briefs.md")
-    partial = [p for p in all_briefs if p != "See it as an interactive doc"]
-    if not partial:
-        partial = ["(placeholder - label not yet in DOCTRINE_PHRASES)"]
-    briefs_content = "# Briefs\n" + "".join(f"{p}\n" for p in partial)
-    root = _make_doctrine_root(tmp_path, briefs_content=briefs_content)
-    score, fixes = audit._score_doctrine_integrity(root)
-    assert (
-        score == 0
-    ), f"briefs.md missing 'See it as an interactive doc': expected score 0, got {score}"
-    matched = [f for f in fixes if "See it as an interactive doc" in f]
-    assert (
-        matched
-    ), f"a fix must name the missing label 'See it as an interactive doc'; got fixes={fixes!r}"
-
-
-# --- RC4-H03 ---
-def test_rc4_h03_h12_invariant_holds_with_two_briefs_entries(tmp_path):
-    """The test_h12 invariant (len(fixes) == len(DOCTRINE_PHRASES)) still holds after
-    the two briefs entries are added: with all phrases absent the fixture yields exactly
-    len(DOCTRINE_PHRASES) fix strings."""
-    root = _make_doctrine_root(
-        tmp_path,
-        workflow_content="# WORKFLOW\nno relevant phrases here\n",
-        code_doctrine_content="# code-doctrine\nno relevant phrases here\n",
-        claude_md_content="# CLAUDE.md\nno relevant phrases here\n",
-        briefs_content="# briefs\nno relevant phrases here\n",
         render_card_content="# render-card\nno relevant phrases here\n",
     )
     _, fixes = audit._score_doctrine_integrity(root)
@@ -1473,13 +1367,12 @@ def test_h21_subprocess_scorecard_json_has_doctrine_integrity():
 
 
 def test_doctrine_phrases_length_pinned():
-    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 9 entries
-    (3 originals + CLAUDE.md + briefs overview + the two RC4 briefs labels +
-    the artifact-handles canary + the render-card canary)."""
-    assert len(audit.DOCTRINE_PHRASES) == 9, (
-        f"DOCTRINE_PHRASES must have exactly 9 entries "
-        f"(3 originals + CLAUDE.md + briefs overview + the two RC4 briefs labels "
-        f"+ the artifact-handles canary + the render-card canary); "
+    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 6 entries
+    (3 originals + CLAUDE.md + the artifact-handles canary + the render-card canary)."""
+    assert len(audit.DOCTRINE_PHRASES) == 6, (
+        f"DOCTRINE_PHRASES must have exactly 6 entries "
+        f"(3 originals + CLAUDE.md + the artifact-handles canary "
+        f"+ the render-card canary); "
         f"got {len(audit.DOCTRINE_PHRASES)}: {audit.DOCTRINE_PHRASES!r}"
     )
 
