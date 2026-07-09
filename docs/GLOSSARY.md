@@ -64,6 +64,10 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 **Definition:** The finish-line check (`hooks/verify-build.py`) that runs the project's real build or type-check when Claude tries to finish, blocking on a broken build so a compile error in a file no test imports cannot slip through. Twin of the **test gate** (`hooks/verify-tests.py`). Both fire on the Stop event, run in parallel, fall back to a silent pass when their tool is absent, and cap at one retry per session.
 **Avoid:** confusing with **Gate** (a workflow stage whose output is a user decision) - the build and test gates are Stop hooks, not stages.
 
+### Red window
+**Definition:** The span between test-author landing deliberately-failing TDD tests and code-implementer/fixer turning them green; verification gates must skip inside it. Decided by `red_window()` in `hooks/verify_shared.py` via two branches - agent (SubagentStop: code-implementer/fixer stopping closes it, every other stage leaves it open) and state (Stop: a live `run-state.json` whose `live` signals lack `code-written` leaves it open). Replaces the retired `live_run_exemption()`.
+**Avoid:** "live-run exemption" (the retired name), "TDD window".
+
 ### Triage
 **Definition:** The always-on seed stage. Reads the request, publishes the path and opening signals (`ambiguous`, `bug`, risk sniffs, an advisory `est-size`); the router composes from there.
 **Avoid:** "classifier" (retired), "router" (triage seeds, the router composes).

@@ -145,7 +145,8 @@
         ],
         "subscribes": [
           "ambiguous",
-          "reshape"
+          "reshape",
+          "needs-interview"
         ]
       }
     },
@@ -1271,6 +1272,7 @@
           "intent-confirmed",
           "direct-impl",
           "ambiguous",
+          "needs-interview",
           "bug",
           "novel-domain",
           "needs-tests",

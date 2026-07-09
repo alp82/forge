@@ -10,7 +10,7 @@ stage:
     input: ['@request']
     output: ['@confirmed-intent', '@clarified-intent']
   signals:
-    subscribes: ['#ambiguous', '#reshape']
+    subscribes: ['#ambiguous', '#reshape', '#needs-interview']
     publishes: ['#intent-confirmed', '#clarified', '#design-needed', '#user-flow-needed', '#scope-shift']
 ---
 

@@ -1106,6 +1106,51 @@ def test_real_catalog_clarifier_publishes_user_flow_needed():
     ), "clarifier must publish user-flow-needed"
 
 
+# ---------------------------------------------------------------------------
+# NEEDS-INTERVIEW (mandatory interview above trivial)
+# RED until triage publishes needs-interview + clarifier subscribes it + regen
+# ---------------------------------------------------------------------------
+
+
+def test_real_catalog_needs_interview_pulls_clarifier_on_code():
+    """A non-trivial code ask (needs-interview live) composes the clarifier for a
+    structured interview before planning."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"code", "needs-interview"},
+        available={"request", "triage-read", "confirmed-intent"},
+    )
+    assert (
+        "clarifier" in res["route"]
+    ), "clarifier must be in route when needs-interview is live on the code path"
+
+
+def test_real_catalog_needs_interview_pulls_clarifier_on_system():
+    """Same on the system path: needs-interview pulls the clarifier."""
+    cat = _real_catalog()
+    res = route.compute_route(
+        cat,
+        {"system", "needs-interview"},
+        available={"request", "triage-read", "confirmed-intent"},
+    )
+    assert (
+        "clarifier" in res["route"]
+    ), "clarifier must be in route when needs-interview is live on the system path"
+
+
+def test_real_catalog_needs_interview_publish_subscribe_coverage():
+    """Publish/subscribe coverage: triage publishes needs-interview and the
+    clarifier subscribes it (mirrors the user-flow-needed coverage style)."""
+    stages = _real_catalog()["stages"]
+    assert (
+        "needs-interview" in stages["triage"]["signals"]["publishes"]
+    ), "triage must publish needs-interview"
+    assert (
+        "needs-interview" in stages["clarifier"]["signals"]["subscribes"]
+    ), "clarifier must subscribe needs-interview"
+
+
 # --- TC-P21 ---
 def test_real_catalog_code_planner_optional_ux_spec():
     """code-planner accepts ux-spec as an optional input (merge-path catalog contract)."""

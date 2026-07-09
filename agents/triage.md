@@ -19,6 +19,7 @@ stage:
       - '#intent-confirmed'
       - '#direct-impl'
       - '#ambiguous'
+      - '#needs-interview'
       - '#bug'
       - '#novel-domain'
       # logic (review-depth + test axes)
@@ -56,6 +57,8 @@ Publish exactly the signals that fit, each with a one-line message saying why:
 On the `code` path, publish `needs-tests` only when the change carries real logic - anything that adds or changes a branch, loop, or computation. It pulls the TDD chain and holds the implementer until tests are validated. A change with no new logic (docs, comments, config values, version bumps, copy edits, formatting, dependency-list edits) gets no `needs-tests`. Its absence no longer routes the short path on its own - the trivial short path now needs the explicit `direct-impl` marker below. `needs-tests` applies only on `code` - never on `sketch`, `talk`, or `system` (the system path gates on safety, not tests).
 
 On the `code` path, publish `significant-build` on a non-trivial change - multi-file work, an `est-size` of L or larger, a large single-file rewrite, or a novel domain. It is the review-depth axis: it pulls Scout (reuse-scanner, health-checker, prototype-identifier) and the deep Review lenses. It is independent of `needs-tests` - a change can carry real logic without being a big build, and vice versa - and it is `code`-only; the `system` path always confirms before execution, so it needs no `significant-build`.
+
+On the `code` or `system` path, publish `needs-interview` whenever the ask is non-trivial - `est-size` of M or larger, or no `est-size` published (an unsized ask defaults to interviewed, per asymmetric rigor). It pulls the clarifier for one structured interview before any plan; a clear ask exits that interview with zero questions. Independent of `ambiguous`; never on `talk`/`sketch`; by construction it never co-fires with `direct-impl` (which requires `est-size` S or smaller).
 
 On a clear ask, also emit `@confirmed-intent` as the one-line read of the request - the artifact a clear run's downstream stages consume without the clarifier. A clear `system` ask always publishes `intent-confirmed`. A clear `code` ask publishes EITHER `intent-confirmed` (route through planning) OR `direct-impl` (skip the plan, go straight to the implementer) - never both, decided by the trivial test below.
 

@@ -1367,14 +1367,42 @@ def test_h21_subprocess_scorecard_json_has_doctrine_integrity():
 
 
 def test_doctrine_phrases_length_pinned():
-    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 7 entries
+    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 8 entries
     (3 originals + CLAUDE.md + the artifact-handles canary + the render-card
-    canary + the status-line canary)."""
-    assert len(audit.DOCTRINE_PHRASES) == 7, (
-        f"DOCTRINE_PHRASES must have exactly 7 entries "
+    canary + the status-line canary + the fable-fallback canary)."""
+    assert len(audit.DOCTRINE_PHRASES) == 8, (
+        f"DOCTRINE_PHRASES must have exactly 8 entries "
         f"(3 originals + CLAUDE.md + the artifact-handles canary "
-        f"+ the render-card canary + the status-line canary); "
+        f"+ the render-card canary + the status-line canary "
+        f"+ the fable-fallback canary); "
         f"got {len(audit.DOCTRINE_PHRASES)}: {audit.DOCTRINE_PHRASES!r}"
+    )
+
+
+def test_doctrine_phrases_fable_fallback_canary_present():
+    """PHRASES-07: the fable-fallback canary tuple is pinned by name - the
+    length test alone cannot tell WHICH phrase was added."""
+    expected = ("re-spawns the stage once at `opus`", "WORKFLOW.md")
+    assert expected in audit.DOCTRINE_PHRASES, (
+        f"expected the fable-fallback canary {expected!r} in DOCTRINE_PHRASES; "
+        f"got {audit.DOCTRINE_PHRASES!r}"
+    )
+
+
+def test_fable_fallback_phrase_matches_workflow_md_byte_for_byte():
+    """PHRASES-08: WORKFLOW.md § Model Tiering actually contains the canary
+    substring byte-for-byte - both halves (pinned tuple + doctrine text), or
+    the canary silently checks nothing."""
+    workflow = (Path(__file__).resolve().parents[2] / "WORKFLOW.md").read_text(
+        encoding="utf-8"
+    )
+    start = workflow.find("## Model Tiering")
+    assert start != -1, "expected a '## Model Tiering' section in WORKFLOW.md"
+    end = workflow.find("## Instruction-to-hook", start)
+    section = workflow[start:end] if end != -1 else workflow[start:]
+    assert "re-spawns the stage once at `opus`" in section, (
+        "WORKFLOW.md § Model Tiering must contain the fable-fallback canary "
+        "phrase 're-spawns the stage once at `opus`' byte-for-byte"
     )
 
 

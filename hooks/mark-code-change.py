@@ -3,8 +3,8 @@
 
 Drops both change markers (tests + build) when the edited file is a real project
 file - inside the payload's cwd and not under the workflow's own .alp-river/
-scratch dir. The Stop verifiers gate on these markers, so a chat-only turn (no
-Edit/Write) leaves them absent and the end-of-turn checks skip.
+scratch dir. The Stop and SubagentStop verifiers gate on these markers, so a
+chat-only turn (no Edit/Write) leaves them absent and the end-of-turn checks skip.
 
 Marker existence is the whole signal; content is irrelevant. Always exits 0 and
 never prints (PostToolUse stdout would be parsed). Fail-open: any unparseable

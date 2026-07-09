@@ -22,6 +22,7 @@ New topics are added here first, then used.
 | request-received | a new turn arrived | orchestrator seed | triage |
 | ambiguous | request has unresolved readings | triage, clarify | clarify |
 | reshape | user redirected intent | orchestrator | clarify |
+| needs-interview | the ask is non-trivial (est-size above S, or absent) - interview before planning; a clear ask exits in one round with zero questions | triage | clarify |
 | intent-confirmed | outcome locked, route through planning - on a clear `code` ask triage publishes this OR `direct-impl`, never both | triage, clarify | planner |
 | direct-impl | trivial `code` change (single-file, `est-size <= S`, no new logic) - skip the plan, go straight to the implementer | triage | code-implementer |
 | novel-domain | unfamiliar problem area | triage | research |

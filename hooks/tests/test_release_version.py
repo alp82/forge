@@ -1,11 +1,11 @@
-"""Version / changelog checks for the 1.3.14 model-retier release.
+"""Version / changelog checks for the 1.3.15 interview + verify-gate release.
 
 Per CLAUDE.md's versioning rule, a workflow-surface change under agents/,
 commands/, hooks/, or WORKFLOW.md earns a patch bump, mirrored in both
 plugin.json and marketplace.json, plus a CHANGELOG.md entry. This file is the
 single release-version gate - it tracks the current release (it moved 1.3.6 ->
-1.3.7 -> 1.3.8 -> 1.3.9 -> 1.3.10 -> 1.3.11 -> 1.3.12 -> 1.3.13, now
-1.3.13 -> 1.3.14).
+1.3.7 -> 1.3.8 -> 1.3.9 -> 1.3.10 -> 1.3.11 -> 1.3.12 -> 1.3.13 -> 1.3.14, now
+1.3.14 -> 1.3.15).
 
 TC-VER-04 (soft prose-style check on the changelog entry) is intentionally
 NOT authored here - it is human judgment, not a test, per the test plan.
@@ -21,10 +21,10 @@ MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 CHANGELOG_MD = REPO_ROOT / "CHANGELOG.md"
 README_MD = REPO_ROOT / "README.md"
 
-EXPECTED_VERSION = "1.3.14"
+EXPECTED_VERSION = "1.3.15"
 
 
-def test_plugin_json_version_is_1_3_14():
+def test_plugin_json_version_is_1_3_15():
     data = json.loads(PLUGIN_JSON.read_text())
     assert data.get("version") == EXPECTED_VERSION, (
         f"expected .claude-plugin/plugin.json version == {EXPECTED_VERSION!r}, "
@@ -46,7 +46,7 @@ def test_marketplace_json_version_matches_plugin_json():
     )
 
 
-def test_changelog_has_1_3_14_entry():
+def test_changelog_has_1_3_15_entry():
     text = CHANGELOG_MD.read_text()
     assert (
         f"## {EXPECTED_VERSION}" in text
@@ -65,3 +65,53 @@ def test_readme_version_badge_matches_plugin_json():
     assert (
         m.group(1) == EXPECTED_VERSION
     ), f"expected README.md version badge == {EXPECTED_VERSION!r}, got {m.group(1)!r}"
+
+
+def test_changelog_and_readme_bullets_match_for_current_version():
+    """CHANGELOG.md and README.md's 'Latest updates' block are meant to carry the
+    same bullets for the current release. Nothing else compares the bullet TEXT
+    (only headings/version numbers are pinned elsewhere), so a future release
+    could edit one and not the other and stay green. Read the version from
+    plugin.json rather than hardcoding it, so this test keeps working release
+    over release."""
+    version = json.loads(PLUGIN_JSON.read_text()).get("version")
+
+    changelog_text = CHANGELOG_MD.read_text()
+    changelog_match = re.search(
+        rf"## {re.escape(version)}[^\n]*\n(.*?)(?:\n## |\Z)",
+        changelog_text,
+        re.DOTALL,
+    )
+    assert (
+        changelog_match is not None
+    ), f"expected a '## {version}' entry in CHANGELOG.md"
+    changelog_bullets = re.findall(r"^- (.+)$", changelog_match.group(1), re.MULTILINE)
+    assert changelog_bullets, f"expected bullets under the '## {version}' entry"
+
+    readme_text = README_MD.read_text()
+    readme_match = re.search(
+        r"## 📰 Latest updates\n(.*?)\n---", readme_text, re.DOTALL
+    )
+    assert readme_match is not None, "expected a '## 📰 Latest updates' section"
+
+    for bullet in changelog_bullets:
+        assert bullet in readme_match.group(1), (
+            f"CHANGELOG.md bullet for {version} not found verbatim in README.md "
+            f"'Latest updates' block: {bullet!r}"
+        )
+
+
+def test_readme_latest_updates_window_is_1315_1314_1313():
+    """The README '## 📰 Latest updates' section keeps a window of exactly three
+    entries. The dynamic tests in test_fable_tier_and_subagent_writes.py pin the
+    count and the topmost version only; this one pins WHICH three remain after
+    the 1.3.15 release: 1.3.15 enters at the top, 1.3.14 and 1.3.13 stay,
+    1.3.12 drops."""
+    text = README_MD.read_text()
+    m = re.search(r"## 📰 Latest updates\n(.*?)\n---", text, re.DOTALL)
+    assert m is not None, "expected a '## 📰 Latest updates' section in README.md"
+    versions = re.findall(r"\*\*(\d+\.\d+\.\d+)\*\*", m.group(1))
+    assert versions == ["1.3.15", "1.3.14", "1.3.13"], (
+        "README Latest updates window must be exactly "
+        f"['1.3.15', '1.3.14', '1.3.13'] top-down; got {versions!r}"
+    )

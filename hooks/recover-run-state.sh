@@ -50,10 +50,10 @@ runs_dir="${project_cwd}/.alp-river/runs"
 # G3 is not here - it is the resume-vs-startup dispatch at the call site that
 # decides WHICH file to pass in (own dir vs. freshest-scan).
 candidate_ok() {
-  # Twin: hooks/verify_shared.py live_run_exemption() applies these guards in
-  # Python; change both together. One divergence: junk RIVER_STATE_MAX_AGE_SECONDS
-  # - this shell defaults only on unset/empty, the Python side also falls back to
-  # 86400 on junk.
+  # Twin: hooks/verify_shared.py red_window() (run-state branch) applies these
+  # guards in Python; change both together. One divergence: junk
+  # RIVER_STATE_MAX_AGE_SECONDS - this shell defaults only on unset/empty, the
+  # Python side also falls back to 86400 on junk.
   local f="$1"
   [ -f "$f" ] || return 1
   jq -e '.schema_version == 1 and has("route") and has("cwd") and has("mid_run_stage")' "$f" >/dev/null 2>&1 || return 1

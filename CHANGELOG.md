@@ -2,6 +2,12 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.15 - 2026-07-09
+
+- Requests bigger than a small tweak now get a short interview before planning; a clear ask passes through with zero questions.
+- Test and build checks now run at the end of the turn once a build's code is complete; a run abandoned before that can still keep them off, for at most a day.
+- When the strongest planning model is unavailable and the failure is visible, the affected step retries once on the next-best model and notes the swap.
+
 ## 1.3.14 - 2026-07-09
 
 - Most steps of a run now use a lighter, cheaper model, while the most capable model stays reserved for planning and building the code, so a run costs less without losing depth where the decisions matter.

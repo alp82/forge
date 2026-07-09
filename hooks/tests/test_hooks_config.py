@@ -94,3 +94,63 @@ def test_auto_format_entry_is_async_with_timeout_30():
     assert (
         entry.get("timeout") == 30
     ), f'auto-format.sh entry must retain "timeout": 30; got {entry!r}'
+
+
+# ---------------------------------------------------------------------------
+# TC-HOOKS-04: SubagentStop group registers both verify scripts
+# ---------------------------------------------------------------------------
+
+
+def test_subagent_stop_group_registers_both_verify_scripts():
+    """The SubagentStop group exists with the pinned agent-type matcher and
+    registers both gate scripts with the pinned numeric timeouts (130 for
+    verify-tests, 190 for verify-build - mirroring the Stop group)."""
+    config = _load()
+    groups = config["hooks"].get("SubagentStop")
+    assert groups, "hooks.json must have a SubagentStop group"
+    group = next(
+        (g for g in groups if g.get("matcher") == "(.*:)?(code-implementer|fixer)"),
+        None,
+    )
+    assert group is not None, (
+        "expected a SubagentStop group with the literal matcher "
+        f"'(.*:)?(code-implementer|fixer)'; got {groups!r}"
+    )
+    hooks = group["hooks"]
+    tests_entry = next(
+        (h for h in hooks if "verify-tests.py" in h.get("command", "")), None
+    )
+    build_entry = next(
+        (h for h in hooks if "verify-build.py" in h.get("command", "")), None
+    )
+    assert (
+        tests_entry is not None
+    ), f"SubagentStop group must register verify-tests.py; got {hooks!r}"
+    assert (
+        build_entry is not None
+    ), f"SubagentStop group must register verify-build.py; got {hooks!r}"
+    assert (
+        tests_entry.get("timeout") == 130
+    ), f"verify-tests.py SubagentStop entry must carry timeout 130; got {tests_entry!r}"
+    assert (
+        build_entry.get("timeout") == 190
+    ), f"verify-build.py SubagentStop entry must carry timeout 190; got {build_entry!r}"
+
+
+def test_subagent_stop_group_present_alongside_stop_group():
+    """The Stop group still exists with its two verify entries next to the new
+    SubagentStop group - a regression guard against a careless top-level key
+    replace."""
+    config = _load()
+    assert "SubagentStop" in config["hooks"], "SubagentStop group must exist"
+    stop_groups = config["hooks"].get("Stop")
+    assert stop_groups, "the Stop group must still exist alongside SubagentStop"
+    stop_commands = [
+        h.get("command", "") for g in stop_groups for h in g.get("hooks", [])
+    ]
+    assert any(
+        "verify-tests.py" in c for c in stop_commands
+    ), f"Stop group must still register verify-tests.py; got {stop_commands!r}"
+    assert any(
+        "verify-build.py" in c for c in stop_commands
+    ), f"Stop group must still register verify-build.py; got {stop_commands!r}"

@@ -124,6 +124,23 @@
         ]
       }
     ],
+    "SubagentStop": [
+      {
+        "matcher": "(.*:)?(code-implementer|fixer)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/verify-tests.py",
+            "timeout": 130
+          },
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/verify-build.py",
+            "timeout": 190
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",

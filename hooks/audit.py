@@ -48,6 +48,7 @@ DOCTRINE_PHRASES = (
     ("artifacts on disk, handles in context", "WORKFLOW.md"),
     ("one card grammar, and the banner is the order", "doctrine/render-card.md"),
     ("<state> ▶ <next action>", "doctrine/render-card.md"),
+    ("re-spawns the stage once at `opus`", "WORKFLOW.md"),
 )
 
 # Catalog stages that mark a present quality gate (test chain + review lenses).

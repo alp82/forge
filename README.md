@@ -8,7 +8,7 @@
 
 ![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)
 ![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)
-![Version](https://shieldcn.dev/badge/version-1.3.14-D97757.svg?variant=outline&size=lg)
+![Version](https://shieldcn.dev/badge/version-1.3.15-D97757.svg?variant=outline&size=lg)
 
 <br>
 
@@ -30,6 +30,12 @@
 
 The last three updates:
 
+**1.3.15**
+
+- Requests bigger than a small tweak now get a short interview before planning; a clear ask passes through with zero questions.
+- Test and build checks now run at the end of the turn once a build's code is complete; a run abandoned before that can still keep them off, for at most a day.
+- When the strongest planning model is unavailable and the failure is visible, the affected step retries once on the next-best model and notes the swap.
+
 **1.3.14**
 
 - Most steps of a run now use a lighter, cheaper model, while the most capable model stays reserved for planning and building the code, so a run costs less without losing depth where the decisions matter.
@@ -39,12 +45,6 @@ The last three updates:
 
 - Run progress shows as compact state-arrow lines in plain words, like `plan approved ▶ starting implementation`, instead of narrated sentences.
 - Side notes during a run shrink to an event plus a short reason in parentheses, like `stop hook ignored (implementation ongoing)`; full sentences appear only where a decision or action is needed.
-
-**1.3.12**
-
-- The core rulebook is about half its former length, so every run carries less instruction overhead and reads one contradiction-free set of rules.
-- Decision points now settle directly in chat; the separate interactive comparison page is gone.
-- The end-of-run timing summary is gone.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -201,7 +201,7 @@ Reads the request, settles what you actually want, and frames the work.
 | Stage | Model | Role |
 |-------|-------|------|
 | triage | haiku | Always-on. Reads your request, picks the path, flags early risk and bug-framing. |
-| clarifier | opus | When the ask is ambiguous or under-specified, researches the area, then confirms scope and success criteria and surfaces edge cases and acceptance criteria - one loop, both altitudes. |
+| clarifier | opus | When the ask is ambiguous or under-specified, or simply bigger than a small tweak, researches the area, then confirms scope and success criteria and surfaces edge cases and acceptance criteria - one loop, both altitudes; exits immediately with zero questions when none are warranted. |
 
 ---
 
