@@ -30,6 +30,12 @@
 
 The last three updates:
 
+**1.3.11**
+
+- Helper steps are no longer told to open their reply by reciting a persona motto, removing the risk of a corrupted first line in steps whose output must start with an exact marker.
+- The separate persona layer is gone: the two conversational steps - discussion and plan challenge - now carry their voice in their own instructions, and no other step gets one.
+- The decision-record summary carried in project context is now built in one pass over all record files instead of several helper processes per file.
+
 **1.3.10**
 
 - The git safety guard now checks only commands actually being run, so commit messages and echoed text that merely mention a blocked command pass, read-only `git stash list`/`show` are allowed, and a machine without the jq tool gets a logged warning instead of every command being refused.
@@ -42,10 +48,6 @@ The last three updates:
 - Every serious build now ends with five focused always-on review checks instead of twelve overlapping ones: correctness, simplicity, shape (module structure), conventions (naming, patterns, reuse), and acceptance (the right thing got built, per the plan).
 - The performance check joins only when the change actually touches data access, loops over collections, queries, or payload assembly - clean of guesswork, it flags only costs readable from the code itself.
 - After a fix, only the checks that found the fixed problems re-run, plus the correctness check and the test suite - fix rounds get much cheaper without losing coverage.
-
-**1.3.8**
-
-- An unclear request is now clarified in a single question-and-answer loop that keeps going until the goal is genuinely clear, instead of two separate loops that each stopped at a fixed number of rounds.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -385,7 +387,6 @@ alp-river/
 ├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, recover-state)
 ├── agents/                 <- 44 stage definitions + 1 off-route utility (setup-agent)
 ├── commands/               <- 6 slash commands
-├── psychology/             <- per-agent voice / persona overrides
 └── templates/              <- copy into your project's docs/ for context injection
 ```
 

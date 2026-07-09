@@ -128,26 +128,35 @@ GRADUATED_AGENT_EFFORT = {
     "design-prototyper": "high",
 }
 
-# README.md model-table line numbers that must read "fable" (1-indexed).
-# Re-pinned at 1.3.10: the README "Latest updates" section rolled (1.3.10 in,
-# 1.3.7 out), shifting everything below it by +2 lines.
-README_FABLE_TABLE_LINES = (
-    205,
-    224,
-    236,
-    237,
-    238,
-    239,
-    240,
-    254,
-    266,
-    279,
-    281,
-    287,
-    304,
-    305,
-    330,
+# Leading names of README.md model-table rows that must read "fable". Content
+# anchored (row located by its leading `| name |` cell) so the assertion
+# survives README edits above these rows.
+README_FABLE_TABLE_ROWS = (
+    "clarifier",
+    "code-investigator",
+    "design-prototyper",
+    "ux-prototyper",
+    "code-planner",
+    "plan-challenger",
+    "plan-arbiter",
+    "test-review",
+    "code-implementer",
+    "correctness",
+    "shape",
+    "security",
+    "capture-agent",
+    "adr-drafter",
+    "system-planner",
 )
+
+
+def _readme_table_row(content, name):
+    """Locate a README.md table row by its leading `| name |` cell and return
+    the full row text, so callers can assert on the row's other cells without
+    pinning a line number."""
+    m = re.search(r"^\|\s*" + re.escape(name) + r"\s*\|.*$", content, re.MULTILINE)
+    assert m is not None, f"README.md table row for {name!r} not found"
+    return m.group(0)
 
 
 def test_a01_red_no_model_opus_remains_in_agents():
@@ -265,25 +274,24 @@ def test_a09_green_model_tiering_effort_paragraph_unchanged():
 
 
 def test_a10_red_readme_model_table_rows_read_fable():
-    """TC-10: all 15 specified README.md model-table lines read 'fable'."""
-    lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
+    """TC-10: all 15 specified README.md model-table rows read 'fable'."""
+    content = _read("README.md")
     offenders = []
-    for lineno in README_FABLE_TABLE_LINES:
-        text = lines[lineno - 1] if lineno - 1 < len(lines) else ""
-        if "fable" not in text:
-            offenders.append((lineno, text))
+    for name in README_FABLE_TABLE_ROWS:
+        row = _readme_table_row(content, name)
+        if "fable" not in row:
+            offenders.append((name, row))
     assert (
         offenders == []
-    ), f"README.md lines must read 'fable'; offending (lineno, text): {offenders!r}"
+    ), f"README.md rows must read 'fable'; offending (name, row): {offenders!r}"
 
 
-def test_a11_red_readme_line_313_setup_agent_fable():
-    """TC-11: README.md line 318 prose reads "setup-agent (fable)"."""
-    lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    line_318 = lines[317] if len(lines) > 317 else ""
+def test_a11_red_readme_setup_agent_fable():
+    """TC-11: README.md's setup-agent aside prose reads "setup-agent` (fable)"."""
+    content = _read("README.md")
     assert (
-        "setup-agent" in line_318 and "(fable)" in line_318
-    ), f"README.md line 318 must read 'setup-agent (fable)'; got: {line_318!r}"
+        "`setup-agent` (fable)" in content
+    ), "README.md must contain the aside prose '`setup-agent` (fable)'"
 
 
 def test_a12_red_readme_no_opus_table_rows():
@@ -338,8 +346,8 @@ def test_a16_red_glossary_tier_definition_fable():
 
 def test_a17_red_opus_sweep_only_readme_main_session_lines():
     """TC-17: `grep -rn "opus" agents/ commands/ doctrine/ docs/ WORKFLOW.md README.md`
-    returns matches ONLY in README.md, and only at the two out-of-scope main-session
-    lines (73, 77)."""
+    returns matches ONLY in README.md, and only on the two out-of-scope main-session
+    lines (identified by content - each carries "high effort" - not by line number)."""
     targets = [
         REAL_REPO_ROOT / "agents",
         REAL_REPO_ROOT / "commands",
@@ -364,27 +372,30 @@ def test_a17_red_opus_sweep_only_readme_main_session_lines():
     readme_lines = (
         (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
     )
-    opus_linenos = [
-        i + 1 for i, line in enumerate(readme_lines) if "opus" in line.lower()
-    ]
-    assert opus_linenos == [73, 77], (
-        f"README.md must mention 'opus' only on lines 73 and 77 (main-session "
-        f"recommendation, out of scope); got lines: {opus_linenos!r}"
+    opus_lines = [line for line in readme_lines if "opus" in line.lower()]
+    assert len(opus_lines) == 2, (
+        f"README.md must mention 'opus' on exactly two lines (the main-session "
+        f"recommendation, out of scope); got: {opus_lines!r}"
+    )
+    assert all("high effort" in line.lower() for line in opus_lines), (
+        f"every README.md line mentioning 'opus' must be the main-session "
+        f"'high effort' recommendation; got: {opus_lines!r}"
     )
 
 
 def test_a18_green_readme_main_session_opus_lines_untouched():
-    """TC-18 (negative / scope boundary, regression guard): README.md lines 73 and
-    77 (main-session Opus recommendation) are NOT touched by this change."""
-    lines = (REAL_REPO_ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    line_73 = lines[72] if len(lines) > 72 else ""
-    line_77 = lines[76] if len(lines) > 76 else ""
+    """TC-18 (negative / scope boundary, regression guard): README.md's
+    main-session Opus recommendation prose is NOT touched by this change."""
+    content = _read("README.md")
     assert (
-        "Opus at high effort" in line_73
-    ), f"README.md:73 must still say 'Opus at high effort'; got: {line_73!r}"
+        "Set your main session model to **Opus at high effort**" in content
+    ), "README.md must still say 'Set your main session model to **Opus at high effort**'"
     assert (
-        "Opus at high effort" in line_77
-    ), f"README.md:77 must still say 'Opus at high effort'; got: {line_77!r}"
+        "Run the main session on a top-tier model like Opus at high effort." in content
+    ), (
+        "README.md must still say 'Run the main session on a top-tier model like "
+        "Opus at high effort.'"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -984,23 +995,23 @@ def test_f08_red_changelog_1_3_5_entry_no_writer_identity_bullet():
 
 
 def test_f09_red_readme_latest_updates_topmost_and_last_three():
-    """README.md ## 📰 Latest updates has the newest release (**1.3.9**) topmost,
-    matching the section's existing style, and keeps exactly the last three
-    entries."""
+    """Re-pinned at 1.3.11: README.md ## 📰 Latest updates keeps exactly the last
+    three entries with the shipped plugin.json version topmost - the durable form
+    (matching test_f05's re-pin) of the original 'gains a **1.3.9** entry at the
+    top' contract, which went stale once 1.3.9 rolled to the window's tail."""
+    version = json.loads(
+        (REAL_REPO_ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
+    )["version"]
     content = _read("README.md")
     section = _section(content, "## 📰 Latest updates", "Full history in")
-    assert (
-        "**1.3.9**" in section
-    ), "README.md ## 📰 Latest updates must gain a '**1.3.9**' entry"
-    first_entry_idx = section.index("**1.3.9**")
-    other_entry_match = re.search(r"\*\*1\.3\.\d+\*\*", section[first_entry_idx + 1 :])
-    assert (
-        other_entry_match is not None and other_entry_match.start() > 0
-    ), "the '**1.3.9**' entry must be the first (topmost) entry in Latest updates"
-    entries = re.findall(r"\*\*1\.3\.\d+\*\*", section)
+    entries = re.findall(r"\*\*(\d+\.\d+\.\d+)\*\*", section)
     assert (
         len(entries) == 3
     ), f"Latest updates must keep exactly the last three entries; found {entries!r}"
+    assert entries[0] == version, (
+        f"the topmost Latest updates entry must match plugin.json version "
+        f"{version!r}; got {entries[0]!r}"
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -26,9 +26,9 @@ This rule binds this repo's own changes - it governs how alp-river is authored, 
 
 ## Leitwort usage
 
-A leitwort is a leading word: a short, memorable phrase an agent restates in its own reasoning to steer its own behavior. When authoring an agent, persona, or doctrine stage, anchor its core stance on one, and prefer a phrase with trained lineage the model already carries ("deletion test", "tracer bullet", "test seams", "YAGNI ladder", "name the danger") over a coined one.
+A leitwort is a leading word: a short, memorable phrase an agent restates in its own reasoning to steer its own behavior. When authoring an agent or doctrine stage, anchor its core stance on one, and prefer a phrase with trained lineage the model already carries ("deletion test", "tracer bullet", "test seams", "YAGNI ladder", "name the danger") over a coined one.
 
 1. **Anchor over enumerate.** Give a stage one named leitwort and let its checklist of concerns hang off that anchor as supporting detail; a flat list with no anchor is the weakest form.
-2. **Reinforce it.** A leitwort used once is inert. Recur it through the file, and where the agent acts have it restate the phrase in its own voice so the words enter the reasoning trace - the `## Anchor` line each `psychology/` persona carries is the canonical example, vocalized via the directive in `hooks/user-context-injector.sh`.
+2. **Reinforce it.** A leitwort used once is inert. Recur it at the points where the agent acts - the anchors woven through `agents/plan-challenger.md` and `agents/discuss.md` are the canonical example.
 3. **One concept, one name.** Naming the same idea two ways across stages dilutes both; pick the canonical phrase and reuse it verbatim.
 4. **Keep it earned.** A job that reads fine as a literal instruction stays literal; a forced or fluffy coinage with no trained association tickles nothing and just spends words.

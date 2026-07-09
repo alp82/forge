@@ -36,11 +36,10 @@
 
 MEMORY.md + linked files don't transfer to subagents automatically - they inherit nothing. Neither do project-level docs.
 
-The alp-river plugin's **PreToolUse(Agent) hook** (`user-context-injector`) handles all three. It prepends up to three blocks to the Agent prompt:
+The alp-river plugin's **PreToolUse(Agent) hook** (`user-context-injector`) handles both. It prepends up to two blocks to the Agent prompt:
 
 - `## USER_CONTEXT` - MEMORY.md + linked files (durable user preferences and feedback).
 - `## PROJECT_CONTEXT` - matching slices of the project's `docs/` folder (intent, stack, glossary, ADRs).
-- `## PSYCHOLOGY` - the persona block resolved per-agent via `psychology/agent-map.json` (opt-in voice and disposition shaping).
 
 The two axes are independent. User-aware status does not determine project-aware status, and vice versa.
 
@@ -172,8 +171,7 @@ authors); `sonnet` for the stages that execute
 or summarize an already-settled decision (the mechanical executors, the scan and
 analysis stages, and the surface review lenses); `haiku` for classification and lookups.
 The router spawns each stage at its declared model; there is no per-tier
-override table. Swap a specific agent's voice under `alpRiver.psychologyOverrides`, or
-change its `model` in frontmatter.
+override table; to retier a stage, change its `model` in frontmatter.
 
 Alongside `model`, each stage declares an `effort` level - `medium`, `high`, or `max` -
 matched to the job rather than the model: mechanical stages that execute an upstream

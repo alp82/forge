@@ -2892,51 +2892,6 @@ def test_every_reviewer_contract_agent_is_wired():
     )
 
 
-_INJECTOR_PY = Path(__file__).resolve().parents[1] / "user-context-injector.sh"
-
-
-def _run_injector(subagent_type, cwd):
-    """Drive user-context-injector.sh the way Claude Code does: an Agent PreToolUse
-    payload on stdin. Returns the additionalContext string (empty on silent exit)."""
-    payload = json.dumps(
-        {
-            "tool_name": "Agent",
-            "tool_input": {"subagent_type": subagent_type},
-            "cwd": cwd,
-        }
-    )
-    proc = subprocess.run(
-        ["bash", str(_INJECTOR_PY)],
-        input=payload,
-        capture_output=True,
-        text=True,
-        env={
-            **os.environ,
-            "CLAUDE_PLUGIN_ROOT": str(_INJECTOR_PY.resolve().parents[1]),
-        },
-    )
-    assert proc.returncode == 0, f"injector must exit 0, stderr={proc.stderr!r}"
-    if not proc.stdout.strip():
-        return ""
-    out = json.loads(proc.stdout)
-    return out.get("hookSpecificOutput", {}).get("additionalContext", "") or out.get(
-        "additionalContext", ""
-    )
-
-
-def test_injected_psychology_block_carries_anchor_and_vocalize_directive():
-    """The psychology block for a persona-wired agent ships both the persona's verbatim
-    Anchor line and the generic directive telling the agent to vocalize it. security-reviewer
-    maps to the defender persona."""
-    ctx = _run_injector("security-reviewer", str(Path.cwd()))
-    assert (
-        "Harden the seams. Find the abuse case first." in ctx
-    ), "defender's verbatim Anchor line must ship in the psychology block"
-    assert (
-        "restate your Anchor above in your own voice" in ctx
-    ), "the vocalize directive must ship once in the psychology block"
-
-
 # ---------------------------------------------------------------------------
 # RC4: _extract_fenced_block (## Output (strict)), catalog.output_template, check_catalog canary
 # ---------------------------------------------------------------------------

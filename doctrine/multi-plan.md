@@ -35,11 +35,6 @@ A lens rides in as a `<PLANNING_LENS>` slot in the planner's input (an optional 
 on `code-planner`). The orchestrator fills it per spawn, so each of the N parallel `code-planner`
 spawns gets a different lens.
 
-The lens **cannot ride on psychology.** The psychology block resolves per agent-name
-(`psychology/agent-map.json`, one persona per name), so all N `code-planner` spawns would share
-one persona - there is no per-spawn psychology channel. The per-spawn variation has to be a data
-input, which is exactly what the `<PLANNING_LENS>` slot is.
-
 ## Critique-only versus terminal challenger
 
 `plan-challenger` runs in one of two modes, selected by an optional `?critique-only` input:

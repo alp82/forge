@@ -17,9 +17,9 @@ Eight self-contained work orders that slim the alp-river pipeline: fewer spawns,
 - [x] Task 3 - Make the trivial path trivial
 - [x] Task 4 - Consolidate the review wave 12 -> 5 lenses; shrink fixer blast radius
 - [ ] Task 5 - Doctrine diet
-- [ ] Task 6 - Injector diet
+- [x] Task 6 - Injector diet
 - [x] Task 7 - Merge interviewer + requirements-clarifier
-- [ ] Task 8 - Guard/hook bug fixes
+- [x] Task 8 - Guard/hook bug fixes
 
 ## Task 1 - Delete the run-state-writer agent
 

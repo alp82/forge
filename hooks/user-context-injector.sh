@@ -1,22 +1,16 @@
 #!/usr/bin/env bash
-# PreToolUse(Agent) hook: auto-inject DOCTRINE, USER_CONTEXT, PROJECT_CONTEXT, and PSYCHOLOGY into subagents.
+# PreToolUse(Agent) hook: auto-inject DOCTRINE, USER_CONTEXT, and PROJECT_CONTEXT into subagents.
 #
 # DOCTRINE: shared review/code-quality rules from the plugin's doctrine/ folder,
 #           gated per-agent by DOCTRINE_MAP. Assembled FIRST so it leads the payload.
 # USER_CONTEXT: MEMORY.md + every linked markdown file for the current project.
 # PROJECT_CONTEXT: docs/INTENT.md, docs/STACK.md, docs/GLOSSARY.md (full bodies)
 #                  plus a summary list of docs/adr/*.md, gated per-agent by READ_MAP.
-# PSYCHOLOGY: opt-in persona block resolved per-agent via psychology/agent-map.json.
-#             Per-project overrides are read from .claude/settings.local.json under
-#             alpRiver.psychologyOverrides.<agent>; set to a persona name to swap, or
-#             omit to accept the sidecar default. Fails open on missing/corrupted files.
 #
-# The four axes are independent:
+# The three axes are independent:
 #   Doctrine-aware = agent has a DOCTRINE_MAP entry → receives `## DOCTRINE`, assembled first.
 #   User-aware  = agent is listed in the case statement below → receives USER_CONTEXT.
 #   Project-aware = agent has an entry in READ_MAP → receives PROJECT_CONTEXT.
-#   Psychology = agent has an entry in psychology/agent-map.json (or a project override)
-#               → receives PSYCHOLOGY block.
 #
 # An agent can be user-aware only, project-aware only, both, or neither:
 #   User-aware Y + Project-aware Y: most agents - clarifier, planner,
@@ -153,8 +147,8 @@ declare -A READ_MAP=(
 
 # DOCTRINE_MAP: per-agent doctrine slices, resolved to doctrine/<token>.md.
 # Single source of truth for doctrine routing - an agent appears here only if its
-# definition cites that doctrine. Independent of the user-aware, project-aware, and
-# psychology axes (see the header).
+# definition cites that doctrine. Independent of the user-aware and project-aware
+# axes (see the header).
 declare -A DOCTRINE_MAP=(
   [correctness-reviewer]="reviewer-contract confidence-tagging discoveries communication"
   [simplicity-reviewer]="reviewer-contract confidence-tagging discoveries communication"
@@ -188,114 +182,105 @@ summarize_adrs() {
   local adr_dir="$1"
   [ -d "$adr_dir" ] || return 0
 
-  local out=""
-  local f
+  local files=()
+  local f base
   for f in "$adr_dir"/*.md; do
     [ -e "$f" ] || continue
-    local base
-    base=$(basename "$f")
+    base="${f##*/}"
     case "$base" in
       0000-*.md)
         continue
         ;;
     esac
-
-    # Single awk pass extracts status, title, and a short summary. Prefers the
-    # first paragraph under `## Summary`; falls back to the first paragraph after
-    # the H1 title when no Summary heading is present.
-    local extracted
-    extracted=$(awk '
-      BEGIN {
-        fm = 0; fm_done = 0
-        status = ""; title = ""
-        pre = ""; pre_lines = 0; pre_done = 0
-        post = ""; post_lines = 0; in_summary = 0
-      }
-      NR == 1 && /^---[[:space:]]*$/ { fm = 1; next }
-      fm && !fm_done && /^---[[:space:]]*$/ { fm_done = 1; next }
-      fm && !fm_done {
-        if (match($0, /^[[:space:]]*status[[:space:]]*:[[:space:]]*/)) {
-          status = substr($0, RSTART + RLENGTH)
-          gsub(/^["'"'"']|["'"'"']$/, "", status)
-          gsub(/[[:space:]]+$/, "", status)
-        }
-        next
-      }
-      title == "" && /^#[[:space:]]+/ {
-        title = $0
-        sub(/^#[[:space:]]+/, "", title)
-        sub(/^[0-9]+[.\-][[:space:]]+/, "", title)
-        sub(/^[0-9]+[[:space:]]+-[[:space:]]+/, "", title)
-        gsub(/[[:space:]]+$/, "", title)
-        next
-      }
-      title == "" { next }
-      /^##[[:space:]]+[Ss]ummary[[:space:]]*$/ {
-        in_summary = 1
-        post = ""; post_lines = 0
-        next
-      }
-      in_summary {
-        if ($0 ~ /^#/) { in_summary = 0 }
-        else if ($0 ~ /^[[:space:]]*$/) {
-          if (post_lines > 0) in_summary = 0
-        }
-        else if (post_lines < 3) {
-          if (post == "") post = $0
-          else post = post " " $0
-          post_lines++
-        }
-      }
-      !pre_done && pre_lines < 3 {
-        if ($0 ~ /^[[:space:]]*$/) {
-          if (pre_lines > 0) pre_done = 1
-        }
-        else if ($0 ~ /^#/) { pre_done = 1 }
-        else {
-          if (pre == "") pre = $0
-          else pre = pre " " $0
-          pre_lines++
-        }
-      }
-      END {
-        summary = (post != "") ? post : pre
-        gsub(/[[:space:]]+/, " ", summary)
-        gsub(/^[[:space:]]+|[[:space:]]+$/, "", summary)
-        printf "%s\t%s\t%s", status, title, summary
-      }
-    ' "$f")
-
-    local status title summary
-    status=$(printf '%s' "$extracted" | cut -f1)
-    title=$(printf '%s' "$extracted" | cut -f2)
-    summary=$(printf '%s' "$extracted" | cut -f3)
-
-    case "$status" in
-      deprecated|superseded)
-        continue
-        ;;
-    esac
-
-    case "$summary" in
-      *_TODO:_*)
-        continue
-        ;;
-    esac
-
-    [ -z "$status" ] && status="unknown status"
-    if [ -z "$title" ]; then
-      title="${base%.md}"
-    fi
-
-    local stem="${base%.md}"
-    local num="${stem%%-*}"
-
-    out+="- ADR-${num}: ${title} [${status}]"
-    [ -n "$summary" ] && out+=" - ${summary}"
-    out+=" (docs/adr/${base})"$'\n'
+    files+=("$f")
   done
+  [ "${#files[@]}" -gt 0 ] || return 0
 
-  printf '%s' "$out"
+  # Single awk pass over all ADR files: a per-file state machine extracts
+  # status, title, and a short summary (first paragraph under `## Summary`,
+  # falling back to the first paragraph after the H1 title), flushing one
+  # bullet per file at the next FNR==1 boundary and at END. Portable POSIX
+  # awk: a zero-length file never fires FNR==1 and yields no bullet.
+  awk '
+    function reset_state() {
+      fm = 0; fm_done = 0
+      status = ""; title = ""
+      pre = ""; pre_lines = 0; pre_done = 0
+      post = ""; post_lines = 0; in_summary = 0
+    }
+    function flush_record() {
+      if (!seen) return
+      if (status == "deprecated" || status == "superseded") return
+      summary_final = (post != "") ? post : pre
+      gsub(/[[:space:]]+/, " ", summary_final)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", summary_final)
+      if (index(summary_final, "_TODO:_")) return
+      if (status == "") status = "unknown status"
+      if (title == "") title = stem
+      idx = index(stem, "-")
+      num = idx ? substr(stem, 1, idx - 1) : stem
+      line = "- ADR-" num ": " title " [" status "]"
+      if (summary_final != "") line = line " - " summary_final
+      print line " (docs/adr/" base ")"
+    }
+    BEGIN { seen = 0 }
+    FNR == 1 {
+      if (seen) flush_record()
+      reset_state()
+      seen = 1
+      n = split(FILENAME, parts, "/")
+      base = parts[n]
+      stem = base
+      sub(/\.md$/, "", stem)
+    }
+    FNR == 1 && /^---[[:space:]]*$/ { fm = 1; next }
+    fm && !fm_done && /^---[[:space:]]*$/ { fm_done = 1; next }
+    fm && !fm_done {
+      if (match($0, /^[[:space:]]*status[[:space:]]*:[[:space:]]*/)) {
+        status = substr($0, RSTART + RLENGTH)
+        gsub(/^["'"'"']|["'"'"']$/, "", status)
+        gsub(/[[:space:]]+$/, "", status)
+      }
+      next
+    }
+    title == "" && /^#[[:space:]]+/ {
+      title = $0
+      sub(/^#[[:space:]]+/, "", title)
+      sub(/^[0-9]+[.\-][[:space:]]+/, "", title)
+      sub(/^[0-9]+[[:space:]]+-[[:space:]]+/, "", title)
+      gsub(/[[:space:]]+$/, "", title)
+      next
+    }
+    title == "" { next }
+    /^##[[:space:]]+[Ss]ummary[[:space:]]*$/ {
+      in_summary = 1
+      post = ""; post_lines = 0
+      next
+    }
+    in_summary {
+      if ($0 ~ /^#/) { in_summary = 0 }
+      else if ($0 ~ /^[[:space:]]*$/) {
+        if (post_lines > 0) in_summary = 0
+      }
+      else if (post_lines < 3) {
+        if (post == "") post = $0
+        else post = post " " $0
+        post_lines++
+      }
+    }
+    !pre_done && pre_lines < 3 {
+      if ($0 ~ /^[[:space:]]*$/) {
+        if (pre_lines > 0) pre_done = 1
+      }
+      else if ($0 ~ /^#/) { pre_done = 1 }
+      else {
+        if (pre == "") pre = $0
+        else pre = pre " " $0
+        pre_lines++
+      }
+    }
+    END { flush_record() }
+  ' "${files[@]}"
 }
 
 # Build USER_CONTEXT from MEMORY.md and its linked .md files.
@@ -413,64 +398,11 @@ ${dbody}"
   fi
 fi
 
-# Resolve the optional psychology block for this agent.
-# Returns the rendered block on stdout, or empty when the agent is unmapped,
-# the override resolves to nothing, or the persona file is missing (fail open).
-# The block is the persona file body followed by a generic directive telling the
-# agent to vocalize its Anchor line.
-resolve_persona() {
-  local agent="$1"
-  local cwd="$2"
-
-  local map_file="$plugin_root/psychology/agent-map.json"
-  local settings_file="$cwd/.claude/settings.local.json"
-
-  # Per-project override. Type guard discards non-string values; "none"/empty
-  # fall through to the sidecar default (no per-project suppression).
-  local persona_name=""
-  if [ -f "$settings_file" ]; then
-    persona_name=$(jq -r --arg a "$agent" \
-      '.alpRiver.psychologyOverrides[$a] | select(type == "string") // empty' \
-      "$settings_file" 2>/dev/null || true)
-    if [ "$persona_name" = "none" ]; then
-      persona_name=""
-    fi
-  fi
-
-  # Fall back to the sidecar default when no usable override was found.
-  if [ -z "$persona_name" ]; then
-    if [ -f "$map_file" ]; then
-      if ! persona_name=$(jq -r --arg a "$agent" '.[$a] // empty' "$map_file" 2>/dev/null); then
-        echo "alp-river: warning: failed to parse psychology/agent-map.json" >&2
-        return 0
-      fi
-    fi
-  fi
-
-  [ -z "$persona_name" ] && return 0
-
-  local persona_file="$plugin_root/psychology/${persona_name}.md"
-  [ -f "$persona_file" ] || return 0
-
-  # Display name: hyphens-to-spaces, lowercase whole string, then uppercase first character.
-  local lowered first rest display_name
-  lowered=$(echo "$persona_name" | tr '-' ' ' | tr '[:upper:]' '[:lower:]')
-  first="${lowered:0:1}"
-  rest="${lowered:1}"
-  display_name="${first^^}${rest}"
-
-  printf '## PSYCHOLOGY: %s\n' "$display_name"
-  cat "$persona_file"
-  printf '\nBefore acting, restate your Anchor above in your own voice as the opening line of your response, then proceed.\n'
-}
-
-psychology_context=$(resolve_persona "$subagent_type" "$project_cwd")
-
-# Combine DOCTRINE, USER_CONTEXT, PROJECT_CONTEXT, and PSYCHOLOGY into one
+# Combine DOCTRINE, USER_CONTEXT, and PROJECT_CONTEXT into one
 # additionalContext payload by sequential-append (doctrine first). Non-empty
 # blocks join with "\n\n---\n\n".
 assembled=""
-for block in "$doctrine_context" "$user_context" "$project_context" "$psychology_context"; do
+for block in "$doctrine_context" "$user_context" "$project_context"; do
   [ -z "$block" ] && continue
   if [ -z "$assembled" ]; then
     assembled="$block"

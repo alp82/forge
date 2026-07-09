@@ -149,7 +149,7 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 ## Context injection
 
 ### Context injection slots
-**Definition:** Auto-injected payloads the PreToolUse(Agent) hook (`hooks/user-context-injector.sh`) prepends to subagent prompts: `USER_CONTEXT` (slice of `MEMORY.md` plus linked files), `PROJECT_CONTEXT` (slice of `docs/` - intent, stack, glossary, ADRs), and `PSYCHOLOGY` (persona per `psychology/agent-map.json`).
+**Definition:** Auto-injected payloads the PreToolUse(Agent) hook (`hooks/user-context-injector.sh`) prepends to subagent prompts: `USER_CONTEXT` (slice of `MEMORY.md` plus linked files) and `PROJECT_CONTEXT` (slice of `docs/` - intent, stack, glossary, ADRs).
 **Avoid:** "context" alone (overloaded with LLM context window).
 
 ### Doctrine slice
@@ -159,10 +159,6 @@ Canonical terms for this project. Agents read this to avoid renaming the same co
 ### DOCTRINE_MAP
 **Definition:** The bash associative array in `hooks/user-context-injector.sh` mapping each agent to the doctrine slice tokens it receives. An agent appears only if its definition cites that doctrine (cite=receive).
 **Avoid:** "config map".
-
-### Psychology
-**Definition:** Opt-in persona block injected via `psychology/agent-map.json` that shapes a subagent's voice.
-**Avoid:** "personality", "prompt prefix".
 
 ### ADR
 **Definition:** Architectural decision record produced by the `adr-drafter` stage and stored under `docs/adr/`.

@@ -19,13 +19,13 @@ Claude Code plugin runtime (hooks events + Agent tool + slash command dispatch).
 ## State and storage
 
 File-system only - no database.
-- **Constraint:** Per-project flags stored in consumer's `.claude/settings.local.json` (e.g., `alpRiver.skipSetup`, `alpRiver.psychologyOverrides`); per-project memory lives in `~/.claude/projects/<encoded-cwd>/memory/MEMORY.md`; canonical project context lives in the consumer's `docs/{INTENT,STACK,GLOSSARY}.md`; never write to consumer source files outside the pipeline.
+- **Constraint:** Per-project flags stored in consumer's `.claude/settings.local.json` (e.g., `alpRiver.skipSetup`); per-project memory lives in `~/.claude/projects/<encoded-cwd>/memory/MEMORY.md`; canonical project context lives in the consumer's `docs/{INTENT,STACK,GLOSSARY}.md`; never write to consumer source files outside the pipeline.
 - **Why:** Plugin runs alongside arbitrary consumer projects - durable state belongs in Claude Code's standard locations, project context belongs in the consumer's repo.
 
 ## Testing
 
-Internal pytest suite under `hooks/tests/` (695 tests), run via `uv run --no-project --with pyyaml --with pytest pytest hooks/tests/`; the Stop hook (`verify-tests.py`) additionally runs the consumer project's tests after pipeline runs.
-- **Constraint:** `verify-tests.py` must remain stdlib-Python-portable (standard library only, no third-party deps, runs on a plain `python3`) and tolerate consumer repos with no test command; some tests pin absolute README line numbers, so README edits above the pinned region carry a re-pin tax.
+Internal pytest suite under `hooks/tests/` (730 tests), run via `uv run --no-project --with pyyaml --with pytest pytest hooks/tests/`; the Stop hook (`verify-tests.py`) additionally runs the consumer project's tests after pipeline runs.
+- **Constraint:** `verify-tests.py` must remain stdlib-Python-portable (standard library only, no third-party deps, runs on a plain `python3`) and tolerate consumer repos with no test command; README-fact tests anchor by content (named table rows, verbatim phrases), not absolute line numbers - keep new ones content-anchored. Every version bump touches README.md by design: a gate test pins the Latest-updates topmost entry to plugin.json's version, so the window rolls each release.
 - **Why:** The plugin's behavior is mostly Markdown content and hook glue - the internal suite guards the hook glue, and the test-of-record is still the pipeline running end-to-end against a real project.
 
 ## Plugin content conventions

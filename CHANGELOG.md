@@ -2,6 +2,12 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.3.11 - 2026-07-09
+
+- Helper steps are no longer told to open their reply by reciting a persona motto, removing the risk of a corrupted first line in steps whose output must start with an exact marker.
+- The separate persona layer is gone: the two conversational steps - discussion and plan challenge - now carry their voice in their own instructions, and no other step gets one.
+- The decision-record summary carried in project context is now built in one pass over all record files instead of several helper processes per file.
+
 ## 1.3.10 - 2026-07-08
 
 - The git safety guard now checks only commands actually being run, so commit messages and echoed text that merely mention a blocked command pass, read-only `git stash list`/`show` are allowed, and a machine without the jq tool gets a logged warning instead of every command being refused.

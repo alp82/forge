@@ -10,7 +10,7 @@ Alp River is a Claude Code plugin that adds a complexity-aware staged pipeline t
 
 Primary: developers using Claude Code on their own projects who want a disciplined, multi-stage workflow without hand-rolling it every time. They install Alp River once via `/plugin install`, then describe what they want (in plain text or via `/alp-river:go`); the pipeline scales depth to the task and pauses at well-defined seams for confirmation.
 
-Secondary: workflow tinkerers who want to swap personas, override grades in natural language, or read the pipeline source to learn the contract.
+Secondary: workflow tinkerers who want to override grades in natural language or read the pipeline source to learn the contract.
 
 ## Success criteria
 
