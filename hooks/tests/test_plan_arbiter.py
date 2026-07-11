@@ -266,14 +266,14 @@ def test_B05_check_flags_orphan_when_seeds_absent():
 
 
 # --- TC-B06 ---
-def test_B06_catalog_has_43_stages():
-    """After the review-wave consolidation (12 lenses -> 5 always-on) and the
-    interviewer + requirements-clarifier merge into clarifier, the catalog must
-    have 43 stages."""
+def test_B06_catalog_has_41_stages():
+    """After the review-wave consolidation (12 lenses -> 5 always-on), the
+    interviewer + requirements-clarifier merge into clarifier, and the
+    capture-agent + adr-drafter removal, the catalog must have 41 stages."""
     cat = _real_catalog()
     assert (
-        len(cat["stages"]) == 43
-    ), f"expected 43 stages after the review-wave consolidation and clarifier merge, got {len(cat['stages'])}"
+        len(cat["stages"]) == 41
+    ), f"expected 41 stages after the capture-agent and adr-drafter removal, got {len(cat['stages'])}"
 
 
 # --- TC-B07 ---
@@ -524,18 +524,6 @@ def test_D01_injector_has_plan_arbiter_case_arm():
         "user-context-injector.sh must have plan-arbiter as a recognized case arm "
         "(matching pattern: plan-arbiter followed by | or ))"
     )
-
-
-# --- TC-D02 ---
-def test_D02_read_map_has_non_empty_plan_arbiter_entry():
-    """READ_MAP in user-context-injector.sh has a non-empty [plan-arbiter]= entry."""
-    text = _injector_text()
-    # Match lines like: [plan-arbiter]="intent stack glossary adrs"
-    pattern = re.compile(r'\[plan-arbiter\]="([^"]+)"')
-    m = pattern.search(text)
-    assert m, "READ_MAP must have a [plan-arbiter]= entry in user-context-injector.sh"
-    value = m.group(1).strip()
-    assert value, "READ_MAP [plan-arbiter]= entry must be non-empty"
 
 
 # --- TC-D03 ---

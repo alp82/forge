@@ -8,7 +8,7 @@
 
 ![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)
 ![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)
-![Version](https://shieldcn.dev/badge/version-1.3.16-D97757.svg?variant=outline&size=lg)
+![Version](https://shieldcn.dev/badge/version-1.4.0-D97757.svg?variant=outline&size=lg)
 
 <br>
 
@@ -30,6 +30,13 @@
 
 The last three updates:
 
+**1.4.0**
+
+- The guided project-docs setup is gone: no more setup interview, no INTENT/STACK/GLOSSARY files injected into steps, and no session-start nudge to create them.
+- The end-of-run capture step that proposed glossary and stack updates is gone.
+- The architecture-decision-record command and its drafting step are gone.
+- The crash-recovery state file written every turn is gone; after a compaction the workflow pointer is re-anchored and progress is reconciled from the working tree. One honest edge: a deliberately-red test turn that ends mid-run can now block once at the end-of-turn check before the retry cap lets it through.
+
 **1.3.16**
 
 - When a question is easier to grasp by seeing it - how parts fit together, how information is laid out, or a choice between options - the assistant now builds a small illustration first and asks with it in hand.
@@ -39,11 +46,6 @@ The last three updates:
 - Requests bigger than a small tweak now get a short interview before planning; a clear ask passes through with zero questions.
 - Test and build checks now run at the end of the turn once a build's code is complete; a run abandoned before that can still keep them off, for at most a day.
 - When the strongest planning model is unavailable and the failure is visible, the affected step retries once on the next-best model and notes the swap.
-
-**1.3.14**
-
-- Most steps of a run now use a lighter, cheaper model, while the most capable model stays reserved for planning and building the code, so a run costs less without losing depth where the decisions matter.
-- Each step now thinks for a length matched to its job, keeping the deepest planning and review work thorough while trimming wasted effort elsewhere.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 
@@ -105,7 +107,7 @@ flowchart TD
 
 The spine of a code route, in the order it runs:
 
-`🔎 Intent → 🧭 Scout → 📐 Blueprint → 🧪 Tests → 🔨 Build → 🔬 Review → 📓 Document`
+`🔎 Intent → 🧭 Scout → 📐 Blueprint → 🧪 Tests → 🔨 Build → 🔬 Review`
 
 ### Where you stay in the loop
 
@@ -293,19 +295,6 @@ Scrutinizes every diff in parallel: correctness always, the rest as the change d
 
 ---
 
-### 📓 Document
-
-Records the glossary, stack, and intent updates the run surfaced, only after you approve.
-
-*A new term the run coined is proposed for the glossary - written only on your OK.*
-
-| Stage | Model | Role |
-|-------|-------|------|
-| capture-agent | opus | Proposes glossary / stack / intent updates surfaced during the run; writes only after approval. |
-| adr-drafter | opus | Drafts a single ADR from a decision summary. Backs `/alp-river:adr`. |
-
----
-
 ### 🚀 Ship
 
 Opt-in at convergence: on a ship request, gates the forward git/gh commands, then commits, pushes, and opens a draft PR.
@@ -314,8 +303,6 @@ Opt-in at convergence: on a ship request, gates the forward git/gh commands, the
 |-------|-------|------|
 | ship-gate | sonnet | Names the commit/push/PR commands and how to undo each, and waits for your go-ahead. Sticky. |
 | ship-executor | sonnet | Composes one commit, pushes the branch, opens a draft PR. Held by the ship lock until the gate clears. |
-
-*`setup-agent` (opus) is command-only - it backs `/alp-river:setup` - and is not part of any path.*
 
 ---
 
@@ -365,8 +352,6 @@ Trying an idea fast - leaves behind a throwaway runnable in `.prototypes/`, rela
 
 ```
 /alp-river:go        Run the workflow. Triage routes the request; the router composes the stages it needs.
-/alp-river:setup     Set up project-context docs (INTENT/STACK/GLOSSARY) in docs/ via guided interview.
-/alp-river:adr       Manually draft and write an architectural decision record.
 /alp-river:review    Review specified files for quality, bugs, duplication, and dead code.
 /alp-river:reflect   Reflect on the current session to surface workflow friction worth tuning.
 /alp-river:audit     Self-audit the plugin and report a health scorecard with top fixes.
@@ -381,11 +366,10 @@ alp-river/
 ├── .claude-plugin/         <- plugin.json (version), marketplace.json
 ├── WORKFLOW.md             <- the full router-loop doctrine
 ├── doctrine/               <- CATALOG.md (stage schema), SIGNALS.md (signal vocabulary), ...
-├── generated/catalog.json  <- compiled stage catalog (43 stages; tracked; the router reads it)
-├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context, recover-state)
-├── agents/                 <- 43 stage definitions + 2 off-route utilities (setup-agent, explainer-prototyper)
-├── commands/               <- 6 slash commands
-└── templates/              <- copy into your project's docs/ for context injection
+├── generated/catalog.json  <- compiled stage catalog (41 stages; tracked; the router reads it)
+├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context)
+├── agents/                 <- 41 stage definitions + 1 off-route utility (explainer-prototyper)
+└── commands/               <- 4 slash commands
 ```
 
 ---
@@ -413,7 +397,7 @@ Two **locks** hold a step until it is safe to proceed:
 - **TDD lock** on the code implementer - on a logic change, code can't start until the red tests are validated. Trivial changes skip it.
 - **safety lock** on the system executor - a destructive or irreversible step is held until the safety gate gets your go-ahead.
 
-**Convergence** - done when no signal triggers an unrun stage and every review lens is clean. Reviewer findings feed the fixer automatically. A SessionStart hook injects a small essentials block plus a pointer to `WORKFLOW.md`; after `/compact` it re-anchors that pointer and restores the canonical run state so the router resumes deterministically.
+**Convergence** - done when no signal triggers an unrun stage and every review lens is clean. Reviewer findings feed the fixer automatically. A SessionStart hook injects a small essentials block plus a pointer to `WORKFLOW.md`; after `/compact` it re-anchors that pointer so the router resumes deterministically.
 
 ---
 

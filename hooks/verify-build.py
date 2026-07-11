@@ -12,9 +12,9 @@ non-blocking pass-through. For rust/go this checks the compile-error class
 (cargo check / go build -o /dev/null) - it does not assert artifact parity.
 
 Fires at SubagentStop when an implementation stage (code-implementer / fixer)
-stops and at Stop at end of turn once code has landed or when no run is live; the
-red window (verify_shared.red_window) keeps deliberately-red TDD turns from ever
-blocking - see verify_shared for both branches and both fail directions.
+stops and at Stop at end of turn whenever code changed; at SubagentStop the red
+window (verify_shared.red_window) keeps deliberately-red TDD turns from ever
+blocking - see verify_shared.
 
 Stdlib only. Always exits 0 (Claude hook contract). A failing build is signalled
 by a single JSON block on stdout; every pass/skip branch prints nothing. Building

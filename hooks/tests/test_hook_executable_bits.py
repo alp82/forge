@@ -11,10 +11,9 @@ CONTRACT:
     bash .../x.sh) does not need the bit; the interpreter is the executable.
     Those are correctly skipped here.
 
-This is the cheap canary for the class of bug where recover-run-state.sh
-shipped as 100644 and the SessionStart recovery hook silently never ran.
-Against that state this test is RED for recover-run-state.sh; flipping the
-tracked mode to 100755 makes it GREEN.
+This is the cheap canary for the class of bug where a directly-exec'd hook
+ships as 100644 and silently never runs at its event - flipping the tracked
+mode to 100755 makes it GREEN.
 """
 
 import json

@@ -16,7 +16,7 @@ Verifies the invariants a composed route relies on:
 
 Runnable standalone (`python3 hooks/check_catalog.py`, exits 1 on any problem) and imported
 by the router tests. External seeds are values that enter a route from outside any stage -
-the orchestrator seed, user/gate decisions, or the /alp-river:adr command - listed below.
+the orchestrator seed or user/gate decisions - listed below.
 """
 
 import json
@@ -28,12 +28,11 @@ CATALOG = ROOT / "generated" / "catalog.json"
 # The four routing paths a stage's `routes` may name.
 PATHS = ("talk", "sketch", "code", "system")
 
-# Signals that enter from outside any stage (orchestrator seed, user/gate decision, the
-# /alp-river:adr command) - subscribing to one is not an orphan.
+# Signals that enter from outside any stage (orchestrator seed, user/gate decision) -
+# subscribing to one is not an orphan.
 SEED_SIGNALS = {
     "request-received",
     "reshape",
-    "design-decision",
     # Multi-plan adjudication trigger - enters the route from outside any stage; the
     # orchestrator seeds it (atomic co-publish, see doctrine/multi-plan.md). Same basis as
     # request-received/reshape: orchestrator-sourced, no in-catalog publisher.
@@ -44,13 +43,11 @@ SEED_SIGNALS = {
     # ship-gate publisher; `ship-requested` via triage - neither needs a seed.)
     "ship-ready",
 }
-# Artifacts seeded the same way - `request` is THE seed; `decision-summary` rides in on the
-# /alp-river:adr command (or a design gate that records a decision); `competing-plans` and
+# Artifacts seeded the same way - `request` is THE seed; `competing-plans` and
 # `plan-critiques` are orchestrator-sourced on a multi-plan run - values that enter a route
 # from outside any stage; the orchestrator seeds these (see doctrine/multi-plan.md).
 SEED_ARTIFACTS = {
     "request",
-    "decision-summary",
     "competing-plans",
     "plan-critiques",
 }
@@ -184,7 +181,7 @@ def check(catalog):
         pubs = s["signals"]["publishes"]
         # A reviewer emits a bare `findings` data output AND reports via clean/findings:* - the
         # Reviewer Contract shape. Stages that publish a findings:* signal but emit a different
-        # artifact (researcher, plan-challenger, system-verifier, adr-drafter) are not reviewers.
+        # artifact (researcher, plan-challenger, system-verifier) are not reviewers.
         is_reviewer = "findings" in s["data"]["output"] and (
             "clean" in pubs or _family_match("findings", pubs)
         )

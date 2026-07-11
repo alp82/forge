@@ -58,62 +58,6 @@
         ]
       }
     },
-    "adr-drafter": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "decision-summary"
-          ]
-        },
-        "output": [
-          "adr-draft"
-        ]
-      },
-      "input_template": "<DECISION_TITLE>{short title for the ADR, e.g. \"Use HTTP-only session cookies for auth\"}</DECISION_TITLE>\n<DECISION_SUMMARY>{1-3 sentences capturing the choice and the constraint it locks in}</DECISION_SUMMARY>\n<SOURCE>{free-text origin - e.g. \"manual /alp-river:adr entry by user on 2026-05-16\"}</SOURCE>\n<EXTRA_CONTEXT>{optional - additional context the user wants reflected in the Context section, or \"none\"}</EXTRA_CONTEXT>\n",
-      "name": "adr-drafter",
-      "output_template": "VERDICT: drafted\n\nPROPOSED_FILENAME: NNNN-{kebab-title}.md\n(NNNN is \"next-free\" - the orchestrator computes the actual sequence; you propose the kebab-title slug only. Use \"NNNN\" as the literal placeholder.)\n\nDRAFT:\n---\nstatus: proposed\ndate: {today YYYY-MM-DD}\n---\n\n# NNNN - {Title}\n\n## Summary\n\n{1-3 sentences - the choice and the constraint it locks in}\n\n## Context\n\n{Forces at play - constraints from INTENT.md / STACK.md, prior commitments, what bounded the choice. Cite source files when you lift text. Include EXTRA_CONTEXT verbatim when present.}\n\n## Decision\n\nWe will {state the choice as a directive}. {Explain why. List alternatives that lost and why, or note \"no credible alternative considered\" when that's the truth.}\n\n## Consequences\n\n{What this forces on future work. Both sides - what becomes possible / cheap, what becomes hard / locked in.}\n\nSOURCE_RECORDED: {echo of <SOURCE> input - the orchestrator may add this to the file's tail or commit message}\n",
-      "routes": [
-        "code",
-        "talk"
-      ],
-      "signals": {
-        "publishes": [
-          "findings:adr",
-          "scope-shift"
-        ],
-        "subscribes": [
-          "design-decision"
-        ]
-      }
-    },
-    "capture-agent": {
-      "data": {
-        "input": {
-          "optional": [],
-          "required": [
-            "diff"
-          ]
-        },
-        "output": [
-          "discoveries-captured"
-        ]
-      },
-      "input_template": "<PHASE>{1 | 2}</PHASE>\n<AGGREGATED_DISCOVERIES>\n{concatenation of every non-empty DISCOVERIES block emitted by upstream agents this run, with source agent name on each block; \"none\" if every block was empty}\n</AGGREGATED_DISCOVERIES>\n<APPROVALS>\n{Phase 2 only - the user's per-item decisions; \"n/a\" on Phase 1}\n\nPer-bucket verb sets:\n- glossary: \"BUCKET.INDEX: accept | edit: <new text> | reject\"\n- stack_drift, intent_drift: \"BUCKET.INDEX: accept-as-drift | edit: <new text> | reject\"\n</APPROVALS>\n",
-      "name": "capture-agent",
-      "output_template": "",
-      "routes": [
-        "code"
-      ],
-      "signals": {
-        "publishes": [
-          "scope-shift"
-        ],
-        "subscribes": [
-          "significant-build"
-        ]
-      }
-    },
     "clarifier": {
       "data": {
         "input": {

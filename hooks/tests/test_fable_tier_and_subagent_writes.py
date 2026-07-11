@@ -5,11 +5,9 @@ Source plan: .alp-river/artifacts/plan-fable-tier-and-subagent-writes.md
 Two orthogonal changes bundled in one release:
   (1) Fable graduation - every `model: opus` agent (20 files) plus every prose
       reference to "opus" as the top model tier moves to `model: fable`.
-  (2) `.alp-river/` writes leave the orchestrator - a new off-route run-state
-      writer subagent owned the per-turn run-state.json write (that agent has
-      since been deleted: the orchestrator now writes the snapshot with its
-      native Write tool - Group B pins the deletion), and `code-planner`
-      (producer-writes) owns the plan-<slug>.md write.
+  (2) `.alp-river/` plan-artifact writes: `code-planner` (producer-writes) owns
+      the plan-<slug>.md write; Group B pins the deletion of the old off-route
+      snapshot-writer agent.
   (3) Release stamp - 1.3.2 -> 1.3.3, plugin.json + marketplace.json + CHANGELOG.md
       + README "Latest updates".
 
@@ -101,8 +99,7 @@ FABLE_STAGES = (
 # ("model moves to fable; effort must NOT move") is dead: this map now guards the
 # post-retier model+effort pairing - fable reserved for the four deep stages at
 # medium, everything else moved to opus at its job-matched effort (analysis, the
-# review lenses, and the intent loops at high; the authoring stages at medium;
-# capture at low).
+# review lenses, and the intent loops at high).
 RETIERED_STAGE_TIERS = {
     "code-planner": ("fable", "medium"),
     "plan-challenger": ("fable", "medium"),
@@ -118,9 +115,6 @@ RETIERED_STAGE_TIERS = {
     "discuss": ("opus", "high"),
     "design-prototyper": ("opus", "high"),
     "ux-prototyper": ("opus", "high"),
-    "setup-agent": ("opus", "medium"),
-    "adr-drafter": ("opus", "medium"),
-    "capture-agent": ("opus", "low"),
 }
 
 # The stages that must now declare model: opus - the retiered agents whose model
@@ -149,8 +143,6 @@ README_OPUS_TABLE_ROWS = (
     "ux-prototyper",
     "test-review",
     "system-planner",
-    "capture-agent",
-    "adr-drafter",
     "correctness",
     "shape",
     "security",
@@ -242,18 +234,6 @@ def test_a05_red_fixer_body_overrides_to_fable():
     ), "agents/fixer.md must no longer contain 'overrides to opus'"
 
 
-def test_a06_workflow_adr_drafter_descriptor_opus():
-    """WORKFLOW.md's adr-drafter descriptor reads "(read-only, opus)" after the
-    retier moved adr-drafter off fable."""
-    content = _read("WORKFLOW.md")
-    assert (
-        "(read-only, opus)" in content
-    ), "WORKFLOW.md must describe adr-drafter as '(read-only, opus)'"
-    assert (
-        "(read-only, fable)" not in content
-    ), "WORKFLOW.md must no longer describe adr-drafter as '(read-only, fable)'"
-
-
 def test_a07_model_tiering_names_all_four_tiers_and_job_matched_effort():
     """## Model Tiering names all four active tiers (fable, opus, sonnet, haiku),
     states effort is matched to the job, and reserves fable for the deep
@@ -326,14 +306,6 @@ def test_a10_readme_fable_rows_read_fable_and_opus_rows_read_opus():
     ), f"README.md rows must read 'opus'; offending: {opus_offenders!r}"
 
 
-def test_a11_readme_setup_agent_opus():
-    """README.md's setup-agent aside prose reads "setup-agent` (opus)" after the retier."""
-    content = _read("README.md")
-    assert (
-        "`setup-agent` (opus)" in content
-    ), "README.md must contain the aside prose '`setup-agent` (opus)'"
-
-
 def test_a12_readme_fable_table_rows_are_exactly_the_four():
     """No README.md model-table row reads 'fable' except the four deep stages -
     every other stage-table row must have been retiered off fable."""
@@ -362,18 +334,6 @@ def test_a13_green_readme_discuss_still_absent_from_model_table():
     ), f"README.md must not gain a '| discuss | ... |' model-table row; found: {offenders!r}"
 
 
-def test_a14_adr_command_opus():
-    """commands/adr.md reads "(opus, read-only)" after the retier moved adr-drafter
-    off fable."""
-    content = _read("commands/adr.md")
-    assert (
-        "(opus, read-only)" in content
-    ), "commands/adr.md must contain '(opus, read-only)'"
-    assert (
-        "(fable, read-only)" not in content
-    ), "commands/adr.md must no longer contain '(fable, read-only)'"
-
-
 def test_a15_catalog_doc_example_matches_security_reviewer_model():
     """doctrine/CATALOG.md's schema example uses security-reviewer, so its example
     `model:` line must track security-reviewer's real frontmatter model - opus after
@@ -385,15 +345,6 @@ def test_a15_catalog_doc_example_matches_security_reviewer_model():
     assert re.search(
         r"^model:\s*opus\s*$", _read("agents/security-reviewer.md"), re.MULTILINE
     ), "the doc example must match security-reviewer's real 'model: opus'"
-
-
-def test_a16_glossary_tier_definition_lists_opus():
-    """docs/GLOSSARY.md's tier definition enumerates the model tiers including opus
-    now that opus is a live tier."""
-    content = _read("docs/GLOSSARY.md")
-    assert (
-        "(haiku/sonnet/opus/fable)" in content
-    ), "docs/GLOSSARY.md must list the tiers as '(haiku/sonnet/opus/fable)'"
 
 
 def test_a17_agent_model_sweep_fable_only_four_rest_opus():
@@ -443,21 +394,6 @@ def test_a18_green_readme_main_session_opus_lines_untouched():
 # it asserts is gone from the rest of the repo.
 NEEDLE = "run-state-" "writer"
 
-RUN_STATE_SCHEMA_KEYS = (
-    "schema_version",
-    "run_id",
-    "cwd",
-    "route",
-    "live",
-    "available",
-    "ran",
-    "premises",
-    "mid_run_stage",
-    "pending_gate",
-    "pending_gate_question",
-    "artifact_index",
-)
-
 
 def test_b01_agent_file_deleted():
     """The off-route snapshot-writer agent file no longer exists - the agent is
@@ -491,46 +427,6 @@ def test_b02_repo_tracked_grep_clean():
         f"repo-wide grep for the agent-name needle must find no matches outside "
         f"{allowed!r}; offending paths: {sorted(offenders)!r}"
     )
-
-
-def test_b09b_run_state_schema_sync_canary():
-    """Schema-sync drift canary: WORKFLOW.md's brace-delimited step-4 snapshot
-    schema keys equal RUN_STATE_SCHEMA_KEYS exactly, and the recovery hook's
-    validate-on-read `has("...")` field checks are a non-empty subset of the
-    same schema keys. This trips if a future edit adds/removes a schema key in
-    only one of the two locations."""
-    workflow = _read("WORKFLOW.md")
-    schema_match = re.search(r"\{([a-z_, ]+)\}", workflow)
-    assert (
-        schema_match is not None
-    ), "WORKFLOW.md must contain the brace-delimited step-4 snapshot schema list"
-    workflow_keys = {k.strip() for k in schema_match.group(1).split(",")}
-    assert workflow_keys == set(RUN_STATE_SCHEMA_KEYS), (
-        "WORKFLOW.md's schema keys must set-equal RUN_STATE_SCHEMA_KEYS; "
-        f"workflow={sorted(workflow_keys)!r} expected={sorted(RUN_STATE_SCHEMA_KEYS)!r}"
-    )
-
-    hook_content = _read("hooks/recover-run-state.sh")
-    hook_fields = set(re.findall(r'has\("([a-z_]+)"\)', hook_content))
-    assert hook_fields, (
-        'hooks/recover-run-state.sh must contain at least one has("...") '
-        "validate-on-read field check"
-    )
-    assert hook_fields <= set(RUN_STATE_SCHEMA_KEYS), (
-        'hooks/recover-run-state.sh\'s has("...") field checks must be a subset '
-        f"of RUN_STATE_SCHEMA_KEYS; hook_fields={sorted(hook_fields)!r} "
-        f"expected_superset={sorted(RUN_STATE_SCHEMA_KEYS)!r}"
-    )
-
-
-def test_b12_green_injector_not_wired_to_run_state_writer():
-    """TC-30 (regression guard, true both before and after this change):
-    hooks/user-context-injector.sh is not special-cased for the deleted
-    off-route snapshot-writer agent - it falls through the terminal `*)` case."""
-    content = _read("hooks/user-context-injector.sh")
-    assert (
-        NEEDLE not in content
-    ), f"hooks/user-context-injector.sh must not special-case {NEEDLE!r}"
 
 
 def test_b13_green_check_catalog_exits_clean():
@@ -657,154 +553,9 @@ def test_c06_green_output_data_contract_unchanged():
 # ---------------------------------------------------------------------------
 
 
-def _loop_step4_section():
-    content = _read("WORKFLOW.md")
-    return _section(content, "4. **Update.**", "Repeat until **convergence**")
-
-
-def _durability_section():
-    content = _read("WORKFLOW.md")
-    return _section(content, "## Durability", "## Locks")
-
-
 def _artifact_handles_section():
     content = _read("WORKFLOW.md")
     return _section(content, "### Artifact handles", "## Revision Contract")
-
-
-def test_d01_loop_step4_orchestrator_native_write():
-    """TC-40 (retargeted): loop step 4 states the orchestrator's own native
-    Write (not a dispatch) as the HARD REQUIRED step-4 action, and no longer
-    names the deleted agent."""
-    section = _loop_step4_section()
-    assert (
-        "native Write" in section
-    ), "loop step 4 must name the orchestrator's native Write"
-    assert (
-        "HARD REQUIRED step-4 action" in section
-    ), "loop step 4 must still name the write as the HARD REQUIRED step-4 action"
-    assert (
-        NEEDLE not in section
-    ), f"loop step 4 must no longer name the deleted {NEEDLE} agent"
-
-
-def test_d02_loop_step4_read_first_overwrite_no_dispatch_caveats():
-    """TC-41 / TC-53 (retargeted): the read-first-then-overwrite note now
-    addresses the orchestrator directly, and every dispatch-era caveat
-    (fire-and-forget, background handle, watchdog, DISPATCHES language) is
-    gone."""
-    section = _loop_step4_section()
-    assert (
-        "Read it once first" in section
-    ), "loop step 4 must instruct the orchestrator to Read it once first"
-    assert (
-        "full overwrite" in section
-    ), "loop step 4 must instruct writing the full overwrite"
-    assert (
-        "fire-and-forget" not in section
-    ), "loop step 4 must no longer state the write is fire-and-forget"
-    assert (
-        "run_in_background: true" not in section
-    ), "loop step 4 must no longer document Agent(run_in_background: true)"
-    assert (
-        "no handle" not in section.lower()
-    ), "loop step 4 must no longer carry the 'no handle' dispatch caveat"
-    assert (
-        "no watchdog" not in section.lower()
-    ), "loop step 4 must no longer carry the 'no watchdog' dispatch caveat"
-    assert (
-        "DISPATCHES" not in section
-    ), "loop step 4 must no longer name a dispatch (DISPATCHES) for the persist step"
-
-
-def test_d03_loop_step4_escaping_sentence_names_orchestrator():
-    """TC-42 (retargeted): escaping-burden sentence reads "the orchestrator
-    authors this JSON" (the agent-attributed phrasing is gone with the
-    dispatch)."""
-    section = _loop_step4_section()
-    assert (
-        "the orchestrator authors this JSON" in section
-    ), "loop step 4 must read 'the orchestrator authors this JSON'"
-    assert (NEEDLE + " authors this JSON") not in section, (
-        f"loop step 4 must no longer attribute JSON-authoring to the deleted "
-        f"{NEEDLE} agent"
-    )
-
-
-def test_d04_green_loop_step4_schema_and_scoping_sentences_preserved():
-    """TC-43 (regression guard): schema/types/no-written_at/path/durability-scoping
-    sentences are preserved verbatim."""
-    section = _loop_step4_section()
-    pinned = (
-        "{schema_version, run_id, cwd, route, live, available, ran, premises, "
-        "mid_run_stage, pending_gate, pending_gate_question, artifact_index}"
-    )
-    assert (
-        pinned in section
-    ), f"loop step 4 must preserve the verbatim schema block {pinned!r}"
-    assert (
-        "There is no `written_at` field, freshness is the FILE's mtime, set by the OS on each write."
-        in section
-    ), "loop step 4 must preserve the no-written_at sentence verbatim"
-    assert (
-        "<cwd>/.alp-river/runs/<run-id>/run-state.json" in section
-    ), "loop step 4 must preserve the per-run write path verbatim"
-    assert (
-        "Durability rests on this write being a hard step-4 action AND on "
-        "`already_run`/`live`/`available` accuracy" in section
-    ), "loop step 4 must preserve the durability-scoping sentence verbatim"
-
-
-def test_d05_loop_step4_failed_write_best_effort():
-    """TC-44 (retargeted): rewritten step 4 carries the best-effort failed-Write
-    policy with no retry clause - the next turn's hard step-4 write
-    supersedes - and no longer carries any dispatch-era retry/ownership
-    language."""
-    section = _loop_step4_section()
-    assert (
-        "the next turn's hard step-4 write supersedes it" in section
-    ), "loop step 4 must state the next turn's hard step-4 write supersedes a failed write"
-    assert (
-        "paid deliberately" not in section
-    ), "loop step 4 must no longer carry the 'paid deliberately' dispatch-trade sentence"
-    assert (
-        "re-dispatches" not in section
-    ), "loop step 4 must no longer mention re-dispatching a failed write"
-    assert (
-        "NEVER writes or edits" not in section
-    ), "loop step 4 must no longer contain the removed 'NEVER writes or edits' prohibition"
-
-
-def test_d06_durability_orchestrator_own_write_tool_not_dispatch():
-    """TC-45 (retargeted): ## Durability states the orchestrator writes the
-    snapshot with its own Write tool as the HARD REQUIRED step-4 action, no
-    longer naming a dispatch to the deleted agent."""
-    section = _durability_section()
-    assert (
-        "writes the snapshot with its own Write tool" in section
-    ), "## Durability must state the orchestrator writes the snapshot with its own Write tool"
-    assert (
-        "HARD REQUIRED step-4 action" in section
-    ), "## Durability must still name the write as the HARD REQUIRED step-4 action"
-    assert ("dispatches the `" + NEEDLE) not in section, (
-        f"## Durability must no longer say the orchestrator dispatches the "
-        f"deleted {NEEDLE} subagent"
-    )
-    assert (
-        NEEDLE not in section
-    ), f"## Durability must no longer mention the deleted {NEEDLE} agent anywhere"
-
-
-def test_d07_durability_where_to_persist():
-    """TC-46 (retargeted): "...where to point the writer" reworded to "...where
-    to persist" now that the orchestrator itself is the writer."""
-    section = _durability_section()
-    assert (
-        "where to persist" in section
-    ), "## Durability must read '...where to persist'"
-    assert (
-        "where to point the writer" not in section
-    ), "## Durability must no longer read 'where to point the writer'"
 
 
 def test_d08_red_artifact_handles_decides_vs_performs_split():
@@ -842,45 +593,6 @@ def test_d10_red_artifact_handles_milestone_paragraph_collapsed():
     assert (
         "re-split" in section
     ), "### Artifact handles must mention re-split in the collapsed milestone paragraph"
-
-
-# ---------------------------------------------------------------------------
-# Group E - recover-run-state.sh reword
-# ---------------------------------------------------------------------------
-
-
-def test_e01_recover_hook_names_orchestrator_write():
-    """TC-54 (retargeted): the injected context string names the
-    orchestrator's own Write tool for the run-state snapshot, still
-    references loop step 4, and no longer names the deleted agent."""
-    content = _read("hooks/recover-run-state.sh")
-    assert (
-        "write the canonical run-state snapshot with your own Write tool" in content
-    ), (
-        "hooks/recover-run-state.sh must inject a context string naming the "
-        "orchestrator's own Write tool for the run-state snapshot"
-    )
-    assert (
-        "loop step 4" in content
-    ), "hooks/recover-run-state.sh injected context must still reference loop step 4"
-    assert (
-        NEEDLE not in content
-    ), f"hooks/recover-run-state.sh must no longer name the deleted {NEEDLE} agent"
-
-
-def test_e02_green_write_path_fragment_unchanged():
-    """TC-55 (regression guard): the computed write_path expression and the
-    .alp-river/runs/<sid>/run-state.json path fragment are unchanged."""
-    content = _read("hooks/recover-run-state.sh")
-    assert (
-        'write_path="${project_cwd}/.alp-river/runs/${session_id}/run-state.json"'
-        in content
-    ), "hooks/recover-run-state.sh write_path computation must remain byte-identical"
-
-
-# TC-56 (hooks/tests/test_recover_run_state.py::test_rr_writepath_always_emitted
-# passes after the reword) is exercised by the existing regression suite -
-# it is not duplicated here; running `pytest hooks/tests/` covers it.
 
 
 # ---------------------------------------------------------------------------

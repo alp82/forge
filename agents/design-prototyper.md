@@ -38,7 +38,7 @@ You run once per phase (`confirm-params`, then `built`). You do not loop yoursel
 - **Self-contained.** A sandbox file must run by opening it in a browser. A real-page host must work behind the dev gate with the surrounding context present.
 - **Controls match parameter semantics.** Color -> color picker. Spacing/sizing -> slider with px (or token) steps. Layout choice -> segmented control or radio. Density -> segmented (compact/comfortable/spacious). Boolean -> toggle. Enumerated set -> radio or select. Do not synthesize free-text inputs for things that should be enumerated.
 - **Copy-spec format is fixed.** Labeled key-value pairs separated by ` | ` on a single line, in stable order. No JSON, no prose, no trailing punctuation. Example: `layout: horizontal | gap: 16px | accent: primary | density: compact`.
-- **Param naming uses canonical project terms** when GLOSSARY.md has them. Otherwise pick short snake_case-or-kebab keys (whichever the project prefers); state the convention in `CONTROLS_EXPOSED`.
+- **Param naming uses canonical project terms.** Pick short snake_case-or-kebab keys (whichever the project prefers); state the convention in `CONTROLS_EXPOSED`.
 
 ## HEADER_GUIDANCE
 

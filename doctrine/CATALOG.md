@@ -86,6 +86,6 @@ stage:
 
 ## Non-route agents
 
-Command-only agents carry no `stage:` block on purpose - `setup-agent` (the
-`/alp-river:setup` command) is invoked directly, not composed into a route, so the
+Off-route agents carry no `stage:` block on purpose - `explainer-prototyper` is
+spawned directly as an in-loop helper, not composed into a route, so the
 generator skips it. That absence is intentional, not a missing contract.

@@ -137,6 +137,53 @@ def test_subagent_stop_group_registers_both_verify_scripts():
     ), f"verify-build.py SubagentStop entry must carry timeout 190; got {build_entry!r}"
 
 
+# ---------------------------------------------------------------------------
+# TC-HOOKS-05: SessionStart group runs inject-workflow.sh on every matcher
+# ---------------------------------------------------------------------------
+
+
+def test_session_start_group_runs_inject_workflow_on_every_matcher():
+    """SessionStart wires inject-workflow.sh on every matcher, plus the
+    gitignore guard on startup/resume. recover-run-state.sh stays removed
+    (gone with docs/ADR/run-state). startup and resume run inject-workflow.sh
+    then ensure-gitignore.sh; clear and compact run only inject-workflow.sh."""
+    config = _load()
+    groups = config["hooks"].get("SessionStart")
+    assert groups, "hooks.json must have a SessionStart group"
+
+    matchers = {g.get("matcher") for g in groups}
+    assert matchers == {
+        "startup",
+        "resume",
+        "clear",
+        "compact",
+    }, f"expected exactly the startup/resume/clear/compact matchers; got {matchers!r}"
+
+    expected = {
+        "startup": [
+            "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
+            "${CLAUDE_PLUGIN_ROOT}/hooks/ensure-gitignore.sh",
+        ],
+        "resume": [
+            "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
+            "${CLAUDE_PLUGIN_ROOT}/hooks/ensure-gitignore.sh",
+        ],
+        "clear": ["${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh"],
+        "compact": ["${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh"],
+    }
+    for group in groups:
+        matcher = group.get("matcher")
+        commands = [h.get("command", "") for h in group.get("hooks", [])]
+        assert commands == expected[matcher], (
+            f"SessionStart matcher {matcher!r} must run exactly "
+            f"{expected[matcher]!r}; got commands={commands!r}"
+        )
+        assert not any("recover-run-state.sh" in c for c in commands), (
+            f"SessionStart matcher {matcher!r} must not register "
+            f"recover-run-state.sh; got commands={commands!r}"
+        )
+
+
 def test_subagent_stop_group_present_alongside_stop_group():
     """The Stop group still exists with its two verify entries next to the new
     SubagentStop group - a regression guard against a careless top-level key

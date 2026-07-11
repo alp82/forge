@@ -39,7 +39,7 @@ SIGNALS_PUBLISHED: [#clean OR #findings:<lens> - see Published-signal line below
 
 The `SIGNALS_PUBLISHED:` line is the LAST line inside the `## Output (strict)` fence, before DISCOVERIES when present. The orchestrator reads it for convergence (`WORKFLOW.md` ## Convergence) instead of inferring `clean` from VERDICT prose.
 
-**Reviewer discriminator (load-bearing precondition):** check_catalog identifies a stage as a reviewer - and thus subject to the SIGNALS_PUBLISHED canary - when its data output is the bare artifact `findings` AND it publishes `clean` or a `findings:*` lens. A stage publishing a `findings:*` signal but emitting a different artifact (researcher, plan-challenger, system-verifier, adr-drafter) is not a reviewer and carries no SIGNALS_PUBLISHED line.
+**Reviewer discriminator (load-bearing precondition):** check_catalog identifies a stage as a reviewer - and thus subject to the SIGNALS_PUBLISHED canary - when its data output is the bare artifact `findings` AND it publishes `clean` or a `findings:*` lens. A stage publishing a `findings:*` signal but emitting a different artifact (researcher, plan-challenger, system-verifier) is not a reviewer and carries no SIGNALS_PUBLISHED line.
 
 ### Published-signal line
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SessionStart hook (startup / resume): keep the plugin's transient .alp-river/
-# run-state directory out of version control. It does two independent things:
+# artifacts directory out of version control. It does two independent things:
 #   1. Idempotently appends ".alp-river/" to the repo-root .gitignore when no
 #      matching line exists (creating the file if absent).
 #   2. If .alp-river is already tracked by git, it injects a turn-1 instruction
@@ -12,7 +12,7 @@
 # emit_session_context) or nothing. ALWAYS exits 0; never crashes, never
 # non-zero. All writes are guarded with || true.
 
-set -uo pipefail  # -e omitted: this hook MUST exit 0; grep/git ls-files non-zero exits are normal control flow (mirror recover-run-state.sh:21).
+set -uo pipefail  # -e omitted: this hook MUST exit 0; grep/git ls-files non-zero exits are normal control flow.
 
 # Source the co-located workflow-anchor.sh so the dev-tree hook always gets the
 # dev-tree helper, regardless of what CLAUDE_PLUGIN_ROOT points at in a session.
@@ -21,13 +21,12 @@ helper="${hook_dir}/workflow-anchor.sh"
 [ -f "$helper" ] || exit 0
 source "$helper"
 
-# Keep the same CLAUDE_PLUGIN_ROOT default as recover-run-state.sh so it resolves
-# correctly when running directly (tests).
+# Default CLAUDE_PLUGIN_ROOT so it resolves correctly when running directly (tests).
 : "${CLAUDE_PLUGIN_ROOT:="$(cd "${hook_dir}/.." && pwd)"}"
 
 input=$(cat 2>/dev/null || true)
 
-# .cwd // empty with $PWD fallback (recover-run-state.sh:34-40 pattern).
+# .cwd // empty with $PWD fallback.
 project_cwd=$(echo "$input" | jq -r '.cwd // empty' 2>/dev/null || true)
 [ -z "$project_cwd" ] && project_cwd="$PWD"
 
@@ -49,12 +48,12 @@ else
     printf '\n' >> "$gitignore" || true
   fi
   printf '.alp-river/\n' >> "$gitignore" || true
-  context="## .gitignore updated"$'\n\n'"Added \`.alp-river/\` to \`${gitignore}\` so this tool's transient run-state directory stays out of version control."
+  context="## .gitignore updated"$'\n\n'"Added \`.alp-river/\` to \`${gitignore}\` so this tool's transient artifacts directory stays out of version control."
 fi
 
 # Block 2: tracked detection.
 if [ -n "$(git -C "$root" ls-files -- .alp-river 2>/dev/null || true)" ]; then
-  instruction="## .alp-river is tracked by git"$'\n\n'"The \`.alp-river\` directory holds transient run state and should not be committed. On turn 1, before anything else, tell the user and surface this exact command for them to run (do not run it yourself; git rm is user-only): \`git rm -r --cached .alp-river && git commit -m \"chore: stop tracking .alp-river run state\"\`. If this context was compacted away, ignore it silently."
+  instruction="## .alp-river is tracked by git"$'\n\n'"The \`.alp-river\` directory holds transient plan artifacts and should not be committed. On turn 1, before anything else, tell the user and surface this exact command for them to run (do not run it yourself; git rm is user-only): \`git rm -r --cached .alp-river && git commit -m \"chore: stop tracking .alp-river artifacts\"\`. If this context was compacted away, ignore it silently."
   if [ -n "$context" ]; then
     context="${context}"$'\n\n'"${instruction}"
   else

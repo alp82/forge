@@ -2,6 +2,15 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.4.0 - 2026-07-11
+
+The plugin slims down: four side systems are removed so a run carries only the pipeline itself - user memory injection, per-step doctrine, the on-disk plan handle, and the session-start gitignore guard stay.
+
+- The guided project-docs setup is gone: no more setup interview, no INTENT/STACK/GLOSSARY files injected into steps, and no session-start nudge to create them.
+- The end-of-run capture step that proposed glossary and stack updates is gone.
+- The architecture-decision-record command and its drafting step are gone.
+- The crash-recovery state file written every turn is gone; after a compaction the workflow pointer is re-anchored and progress is reconciled from the working tree. One honest edge: a deliberately-red test turn that ends mid-run can now block once at the end-of-turn check before the retry cap lets it through.
+
 ## 1.3.16 - 2026-07-09
 
 - When a question is easier to grasp by seeing it - how parts fit together, how information is laid out, or a choice between options - the assistant now builds a small illustration first and asks with it in hand.

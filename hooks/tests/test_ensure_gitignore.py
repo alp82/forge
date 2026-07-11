@@ -14,10 +14,8 @@ CONTRACT:
       turn-1 instruction naming the exact command `git rm -r --cached .alp-river`
       - the hook NEVER executes that command itself.
   - stdout is EITHER empty OR one valid JSON object carrying
-    hookSpecificOutput.additionalContext (STDOUT-pure, mirrors recover-run-state.sh).
-  - `.cwd` missing/empty falls back to $PWD (recover-run-state.sh:34-40 pattern).
-
-All tests are RED until the implementer creates hooks/ensure-gitignore.sh.
+    hookSpecificOutput.additionalContext (STDOUT-pure).
+  - `.cwd` missing/empty falls back to $PWD.
 """
 
 import json
@@ -57,10 +55,10 @@ def commit_tracked_alp_river_file(tmp):
     .gitignore already ignores .alp-river/ - reproducing the "tracked despite
     being ignored" state some scenarios require (a plain `git add .` would
     silently skip an ignored path and never enter it into the index)."""
-    d = tmp / ".alp-river" / "runs" / "x"
+    d = tmp / ".alp-river" / "artifacts"
     d.mkdir(parents=True, exist_ok=True)
-    f = d / "run-state.json"
-    f.write_text("{}", encoding="utf-8")
+    f = d / "plan-x.md"
+    f.write_text("plan", encoding="utf-8")
     subprocess.run(
         ["git", "-C", str(tmp), "add", "-f", "."], check=True, capture_output=True
     )
@@ -407,42 +405,6 @@ def test_eg_13_unwritable_gitignore_still_exits_zero():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def test_eg_14_exit_code_always_zero_across_scenarios():
-    """EG-14: cross-cutting invariant - every scenario type (non-git, fresh repo,
-    pre-existing gitignore, tracked file present) returns 0, asserted as a
-    standalone check independent of stdout-content assertions."""
-    scenarios = []
-
-    tmp_plain = Path(tempfile.mkdtemp())
-    scenarios.append(("plain-dir", tmp_plain, lambda t: None))
-
-    tmp_fresh = Path(tempfile.mkdtemp())
-    scenarios.append(("fresh-repo", tmp_fresh, init_git_repo))
-
-    def existing_gitignore(t):
-        init_git_repo(t)
-        (t / ".gitignore").write_text(".alp-river/\n", encoding="utf-8")
-
-    tmp_existing = Path(tempfile.mkdtemp())
-    scenarios.append(("existing-gitignore", tmp_existing, existing_gitignore))
-
-    def tracked_file(t):
-        init_git_repo(t)
-        commit_tracked_alp_river_file(t)
-
-    tmp_tracked = Path(tempfile.mkdtemp())
-    scenarios.append(("tracked-file", tmp_tracked, tracked_file))
-
-    try:
-        for label, tmp, setup in scenarios:
-            setup(tmp)
-            r = run_hook(cwd_field=str(tmp))
-            assert_exit0(r, f"EG-14[{label}]")
-    finally:
-        for _, tmp, _ in scenarios:
-            shutil.rmtree(tmp, ignore_errors=True)
-
-
 def test_eg_15_stdout_purity_across_output_scenarios():
     """EG-15: in every scenario that produces output, stdout is exactly the
     legal hookSpecificOutput.additionalContext JSON - no stray echo/debug text
@@ -569,7 +531,7 @@ def _has_ensure_gitignore_entry(hook_list):
 def test_eg_18_registered_in_session_start_startup():
     """EG-18: SessionStart.startup contains a command-type entry invoking
     ${CLAUDE_PLUGIN_ROOT}/hooks/ensure-gitignore.sh with timeout 5, positioned
-    after the existing recover-run-state.sh entry."""
+    after the existing inject-workflow.sh entry."""
     config = json.loads(HOOKS_JSON.read_text(encoding="utf-8"))
     startup_hooks = _session_start_matcher(config, "startup")
     entry = _has_ensure_gitignore_entry(startup_hooks)
@@ -584,23 +546,23 @@ def test_eg_18_registered_in_session_start_startup():
     ), f"EG-18: expected timeout 5, got {entry.get('timeout')!r}"
 
     commands = [h.get("command", "") for h in startup_hooks]
-    recover_idx = next(
-        (i for i, c in enumerate(commands) if "recover-run-state.sh" in c), None
+    inject_idx = next(
+        (i for i, c in enumerate(commands) if "inject-workflow.sh" in c), None
     )
     ensure_idx = next(
         (i for i, c in enumerate(commands) if "ensure-gitignore.sh" in c), None
     )
     assert (
-        recover_idx is not None and ensure_idx is not None
-    ), "EG-18: both recover-run-state.sh and ensure-gitignore.sh must be present"
+        inject_idx is not None and ensure_idx is not None
+    ), "EG-18: both inject-workflow.sh and ensure-gitignore.sh must be present"
     assert (
-        ensure_idx > recover_idx
-    ), "EG-18: ensure-gitignore.sh must be positioned after recover-run-state.sh"
+        ensure_idx > inject_idx
+    ), "EG-18: ensure-gitignore.sh must be positioned after inject-workflow.sh"
 
 
 def test_eg_19_registered_in_session_start_resume():
     """EG-19: SessionStart.resume contains the same ensure-gitignore.sh entry,
-    also positioned after recover-run-state.sh."""
+    also positioned after inject-workflow.sh."""
     config = json.loads(HOOKS_JSON.read_text(encoding="utf-8"))
     resume_hooks = _session_start_matcher(config, "resume")
     entry = _has_ensure_gitignore_entry(resume_hooks)
@@ -615,18 +577,18 @@ def test_eg_19_registered_in_session_start_resume():
     ), f"EG-19: expected timeout 5, got {entry.get('timeout')!r}"
 
     commands = [h.get("command", "") for h in resume_hooks]
-    recover_idx = next(
-        (i for i, c in enumerate(commands) if "recover-run-state.sh" in c), None
+    inject_idx = next(
+        (i for i, c in enumerate(commands) if "inject-workflow.sh" in c), None
     )
     ensure_idx = next(
         (i for i, c in enumerate(commands) if "ensure-gitignore.sh" in c), None
     )
     assert (
-        recover_idx is not None and ensure_idx is not None
-    ), "EG-19: both recover-run-state.sh and ensure-gitignore.sh must be present"
+        inject_idx is not None and ensure_idx is not None
+    ), "EG-19: both inject-workflow.sh and ensure-gitignore.sh must be present"
     assert (
-        ensure_idx > recover_idx
-    ), "EG-19: ensure-gitignore.sh must be positioned after recover-run-state.sh"
+        ensure_idx > inject_idx
+    ), "EG-19: ensure-gitignore.sh must be positioned after inject-workflow.sh"
 
 
 def test_eg_20_not_registered_on_clear_or_compact():

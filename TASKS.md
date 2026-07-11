@@ -1,3 +1,5 @@
+
+
 question asking can be bad
 
 we want:
@@ -6,6 +8,10 @@ we want:
 * reference to eventual prototypes
 * extra resources + context if needed
 * it to have properly researched via explore and web search subagents
+
+---
+
+README overhaul
 
 ---
 

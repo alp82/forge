@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sourced by inject-workflow.sh and recover-run-state.sh - not run directly.
+# Sourced by inject-workflow.sh - not run directly.
 # Provides the small SessionStart context (essentials + a pointer to WORKFLOW.md)
 # and the shared hookSpecificOutput emitter. WORKFLOW.md holds the full doctrine;
 # this anchor stays well under the harness 10k-char per-output cap so it is never
@@ -31,45 +31,5 @@ emit_session_context() {
     printf '%s\n' "$encoded"
   else
     printf '%s\n' "$ctx"
-  fi
-}
-
-# Shared size budget for the SessionStart context emitters. The harness caps each
-# hook output near 10k chars, so total output is kept under CEILING. Room for the
-# truncation marker (plus its leading blank-line separator) is reserved UP FRONT:
-# append_block measures every candidate against EFFECTIVE_CEILING, never CEILING,
-# so the moment any block is dropped or shortened the caller can stamp TRUNC_MARKER
-# at the very end and it is guaranteed to fit under CEILING. EFFECTIVE_CEILING
-# subtracts the marker length, the 2-char "\n\n" separator, and MARKER_SLACK=8 - a
-# small safety margin that absorbs separator/rounding so the marker never spills
-# past CEILING. The marker therefore appears when, and only when, something was
-# truncated (never silently dropped).
-CEILING=9000
-TRUNC_MARKER='[canonical state truncated to fit the session-start size limit - the full version is in the pre-compaction transcript]'
-MARKER_SLACK=8
-EFFECTIVE_CEILING=$(( CEILING - ${#TRUNC_MARKER} - 2 - MARKER_SLACK ))
-
-# Append "heading\nbody" to the global $out within EFFECTIVE_CEILING, separating
-# from any prior block with a blank line. An empty heading appends the body
-# directly (no heading line). When the candidate does not fit whole, emit as much
-# body as the prefix leaves room for and set the global $truncated so the caller
-# stamps TRUNC_MARKER once at the end.
-append_block() {
-  local heading="$1" body="$2"
-  [ -z "$body" ] && return 0
-  local sep=""
-  [ -n "$out" ] && sep=$'\n\n'
-  local prefix="${sep}"
-  [ -n "$heading" ] && prefix="${sep}${heading}"$'\n'
-  local candidate="${prefix}${body}"
-  local remaining=$(( EFFECTIVE_CEILING - ${#out} ))
-  if (( ${#candidate} <= remaining )); then
-    out+="$candidate"
-    return 0
-  fi
-  truncated=1
-  local budget_for_body=$(( remaining - ${#prefix} ))
-  if (( budget_for_body > 0 )); then
-    out+="${prefix}${body:0:budget_for_body}"
   fi
 }

@@ -92,8 +92,7 @@ in the catalog that never runs as a normal route member; seeding matches how eve
 orchestrator-sourced value enters (the request seed, the gate decisions).
 
 This arbiter is the FIRST stage to declare **orchestrator-sourced** values as seeds. It is a new
-precedent: until now the seeds were the request seed, user/gate decisions, and the `/alp-river:adr`
-command. It is NOT modeled on `#milestones-complete` - that orchestrator-emitted signal is in
+precedent: until now the seeds were the request seed and user/gate decisions. It is NOT modeled on `#milestones-complete` - that orchestrator-emitted signal is in
 neither seed list (no stage subscribes it as a required trigger or requires it as input, so it
 never needed a seed entry). The arbiter's inputs do need seed entries because the arbiter
 subscribes and requires them, and the seed grounds are the orchestrator-source basis, stated above.

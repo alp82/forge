@@ -28,13 +28,12 @@ New topics are added here first, then used.
 | novel-domain | unfamiliar problem area | triage | research |
 | bug | a defect to diagnose before fixing - pairs with `code` or `system`, never its own path | triage | code-investigator, system-investigator |
 | needs-tests | a code change carrying real logic (`code` path only) - the TDD axis | triage, correctness-reviewer | test-plan, test-gap, test-verifier, the implementer's TDD lock (test-author joins via `#test-cases-ready`) |
-| significant-build | a serious `code` build - full Review depth plus Scout (`code` path only) - the review-depth axis | triage, correctness-reviewer | reuse-scanner, health-checker, prototype-identifier, plan-challenger, capture-agent, the deep Review lenses (acceptance, shape, conventions) |
+| significant-build | a serious `code` build - full Review depth plus Scout (`code` path only) - the review-depth axis | triage, correctness-reviewer | reuse-scanner, health-checker, prototype-identifier, plan-challenger, the deep Review lenses (acceptance, shape, conventions) |
 
 ## shape / structure
 
 | topic | meaning | published by | subscribed by |
 |---|---|---|---|
-| design-decision | a design choice to record as an ADR | /alp-river:adr command (external seed) | adr-drafter |
 | new-pattern | introduces a new pattern | plan | challenge, shape |
 | new-export, new-seam | new public surface | plan, implement | shape |
 | boundary-change | module boundaries move | implement | shape |

@@ -3,13 +3,11 @@
 
 These drive the SAME two gate scripts, but with payloads that carry
 `"hook_event_name": "SubagentStop"` plus an `"agent_type"`. At SubagentStop the
-red window is read off the STOPPING AGENT alone (not run-state): a
-code-implementer or fixer stop closes the window (verify now), and every other
-stage - test-author, reviewers, planners, unknown, or an empty agent_type -
-leaves it open (skip, so deliberately-red TDD tests never block). Scope-stripped
-membership: a plugin-scoped `alp-river:fixer` reduces to `fixer`. The agent
-branch deliberately IGNORES run-state, because at the instant an implementer
-stops the orchestrator has not yet published code-written.
+red window is read off the STOPPING AGENT alone: a code-implementer or fixer
+stop closes the window (verify now), and every other stage - test-author,
+reviewers, planners, unknown, or an empty agent_type - leaves it open (skip, so
+deliberately-red TDD tests never block). Scope-stripped membership: a
+plugin-scoped `alp-river:fixer` reduces to `fixer`.
 
 The retry marker is EVENT-NAMESPACED: a SubagentStop gate keys its retry cap off
 `<retry_prefix>-sub-<session_id>` (e.g. /tmp/.claude-test-verify-sub-<sid>),
@@ -35,15 +33,12 @@ Three recorded facts about this gate (probe-only, not asserted here):
 """
 
 import json
-import os
 import shutil
 import tempfile
-import time
 import uuid
 from pathlib import Path
 
 from verify_gate_helpers import arm_change_marker, run_hook
-from verify_gate_helpers import write_run_state as _write_run_state
 
 VERIFY_TESTS_PY = Path(__file__).resolve().parents[1] / "verify-tests.py"
 VERIFY_BUILD_PY = Path(__file__).resolve().parents[1] / "verify-build.py"
@@ -193,22 +188,16 @@ def test_subagent_fixer_and_plugin_scoped_writer_stops_block():
                     m.unlink()
 
 
-def test_subagent_implementer_stop_ignores_live_run_state():
-    """An implementer SubagentStop STILL blocks even with a live non-converged
-    run-state (no code-written) present - the agent branch reads the stopping
-    agent_type, never run-state, so it fires mid-run exactly where the old blanket
-    exemption suppressed it."""
+def test_subagent_implementer_stop_mid_run_blocks():
+    """An implementer SubagentStop blocks mid-run on a failing dir - the window
+    is read off the stopping agent_type alone, so a writer stop always
+    verifies."""
     assert shutil.which("npm"), "npm required to drive the failing tests"
     session_id = str(uuid.uuid4())
     change_marker = arm_change_marker(TESTS_CHANGE_PREFIX, session_id)
     sub_retry = _tests_sub_retry(session_id)
     test_dir = _make_failing_tests_dir()
     try:
-        state_file = _write_run_state(
-            test_dir, session_id, live=["code", "needs-tests"]
-        )
-        t = time.time()
-        os.utime(state_file, (t, t))
         result = run_hook(
             VERIFY_TESTS_PY,
             _subagent_payload(session_id, test_dir, agent_type="code-implementer"),
@@ -216,7 +205,7 @@ def test_subagent_implementer_stop_ignores_live_run_state():
         assert result.returncode == 0, f"got {result.returncode}"
         parsed = json.loads(result.stdout)
         assert parsed.get("decision") == "block", (
-            "the agent branch must ignore run-state and block on a failing dir; "
+            "a writer stop must verify and block on a failing dir; "
             f"got {result.stdout!r}"
         )
     finally:

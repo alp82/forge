@@ -38,7 +38,7 @@ You run once per phase (`confirm-flow-params`, then `built`). You do not loop yo
 - **Self-contained.** A sandbox file must run by opening it in a browser. A real-page host must work behind the dev gate with the surrounding context present.
 - **Low-fi, not pixel-perfect.** The wireflow exposes the sequence and the transitions, not the visual design - keep screens to boxes-and-labels. Visual parameters (color, spacing, layout, density) belong to design-prototyper.
 - **Copy-spec format is fixed.** Labeled key-value pairs separated by ` | ` on a single line, in stable order. No JSON, no prose, no trailing punctuation. Example: `entry-step: cart | states: cart,address,pay,confirm | back-allowed: yes`.
-- **Flow naming uses canonical project terms** when GLOSSARY.md has them. Otherwise pick short snake_case-or-kebab keys (whichever the project prefers); state the convention in `STATES_EXPOSED`.
+- **Flow naming uses canonical project terms.** Pick short snake_case-or-kebab keys (whichever the project prefers); state the convention in `STATES_EXPOSED`.
 
 ## HEADER_GUIDANCE
 

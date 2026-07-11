@@ -811,7 +811,6 @@ _EXCLUSION_SET = {
     "test-gap",
     "test-verifier",
     "ux-reviewer",
-    "capture-agent",
     "reuse-scanner",
     "health-checker",
     "clarifier",
@@ -844,13 +843,13 @@ _DEEP_LENSES = {
 
 
 # --- TC-I01 / TC-P01 ---
-def test_real_catalog_has_43_stages_no_skip_tests():
-    """Catalog has 43 stages and skip-tests is absent (44 after the review-wave
-    consolidation, then -2 +1 for the interviewer + requirements-clarifier merge
-    into clarifier)."""
+def test_real_catalog_has_41_stages_no_skip_tests():
+    """Catalog has 41 stages and skip-tests is absent (43 after the review-wave
+    consolidation and the clarifier merge, then -2 for the capture-agent and
+    adr-drafter removal)."""
     cat = _real_catalog()
     stages = cat["stages"]
-    assert len(stages) == 43, f"expected 43 stages, got {len(stages)}"
+    assert len(stages) == 41, f"expected 41 stages, got {len(stages)}"
     assert "skip-tests" not in stages, "skip-tests must NOT exist in migrated catalog"
 
 
@@ -1564,8 +1563,8 @@ def test_real_catalog_route_held_disjoint():
 
 
 # --- TC-I12 ---
-def test_real_catalog_8_movers_subscribe_significant_build():
-    """The 8 stages gated on significant-build each subscribe significant-build and
+def test_real_catalog_7_movers_subscribe_significant_build():
+    """The 7 stages gated on significant-build each subscribe significant-build and
     do NOT subscribe needs-tests.
 
     3 TDD chain stages (test-plan, test-gap, test-verifier) stay on needs-tests - they
@@ -1574,7 +1573,6 @@ def test_real_catalog_8_movers_subscribe_significant_build():
     """
     _MOVERS = {
         "acceptance-reviewer",
-        "capture-agent",
         "conventions-reviewer",
         "health-checker",
         "plan-challenger",
@@ -1589,7 +1587,7 @@ def test_real_catalog_8_movers_subscribe_significant_build():
         subs = s["signals"]["subscribes"]
         assert (
             "significant-build" in subs
-        ), f"{name} must subscribe significant-build (8-mover), got {subs}"
+        ), f"{name} must subscribe significant-build (7-mover), got {subs}"
         assert (
             "needs-tests" not in subs
         ), f"{name} must NOT subscribe needs-tests after migration, got {subs}"
@@ -1653,7 +1651,7 @@ def test_real_catalog_significant_build_deep_lenses_on_code_written():
 def test_real_catalog_needs_tests_pulls_only_tdd_chain():
     """needs-tests (without significant-build) pulls ONLY the TDD chain stages.
 
-    test-plan, test-gap, test-verifier are in route; the 8 movers are NOT triggered
+    test-plan, test-gap, test-verifier are in route; the 7 movers are NOT triggered
     by needs-tests alone.
     """
     cat = _real_catalog()
@@ -1669,7 +1667,6 @@ def test_real_catalog_needs_tests_pulls_only_tdd_chain():
         ), f"{stage} must be in route when needs-tests is live (TDD chain)"
     _MOVERS = {
         "acceptance-reviewer",
-        "capture-agent",
         "conventions-reviewer",
         "health-checker",
         "plan-challenger",
@@ -2414,20 +2411,6 @@ def test_real_catalog_test_chain_templates_nonempty():
         assert (
             expected_tag in tmpl
         ), f"{name}: input_template must contain {expected_tag}, got {tmpl!r}"
-
-
-# --- RC3-B04 ---
-def test_real_catalog_adr_drafter_template_nonempty_with_tag():
-    """adr-drafter's ## Inputs heading renamed to ## Input; template is non-empty
-    and contains <DECISION_TITLE>."""
-    cat = _real_catalog()
-    tmpl = cat["stages"]["adr-drafter"]["input_template"]
-    assert (
-        tmpl
-    ), "adr-drafter: input_template must be non-empty after RC3 heading rename"
-    assert (
-        "<DECISION_TITLE>" in tmpl
-    ), f"adr-drafter: input_template must contain <DECISION_TITLE>, got {tmpl!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -3273,7 +3256,7 @@ def test_check_catalog_reviewer_family_findings_signal():
 # --- RC4-C07 ---
 def test_check_catalog_non_reviewer_publishing_findings_lens_not_flagged():
     """Discriminator narrowing: a stage that publishes a findings:* signal but whose data
-    output is NOT bare `findings` (a non-reviewer like plan-challenger/researcher/adr-drafter)
+    output is NOT bare `findings` (a non-reviewer like plan-challenger/researcher)
     is NOT flagged by the SIGNALS_PUBLISHED canary, even with an empty output_template.
     """
     stage = S(
@@ -3741,9 +3724,9 @@ def test_explainer_prototyper_is_read_only_no_pasteback():
 
 
 def test_explainer_prototyper_is_off_route():
-    """The explainer is an off-route helper (mirrors setup-agent): its file
-    exists, its frontmatter carries NO `stage:` block, it is absent from the
-    catalog, and adding it leaves the stage count at 43."""
+    """The explainer is an off-route helper (the canonical off-route agent): its
+    file exists, its frontmatter carries NO `stage:` block, it is absent from
+    the catalog."""
     text = _explainer_agent_text()
     assert text.startswith("---\n"), "explainer must open with a frontmatter block"
     frontmatter = text.split("---\n", 2)[1]
@@ -3755,7 +3738,7 @@ def test_explainer_prototyper_is_off_route():
     assert (
         "explainer-prototyper" not in stages
     ), "off-route explainer must not appear as a catalog stage"
-    assert len(stages) == 43, f"expected 43 stages, got {len(stages)}"
+    assert len(stages) == 41, f"expected 41 stages, got {len(stages)}"
 
 
 if __name__ == "__main__":

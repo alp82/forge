@@ -13,8 +13,8 @@ Look back at the current session and surface only **big wins and big fails** wor
 the main agent surfaces the items below directly), (2) the memory audit, (3) capture. The two
 memory-write parts (`## Memory`, `## Capture`) are the only paths that touch memory, and each
 runs as a two-phase write: Phase 1 PROPOSAL -> per-item user approval -> Phase 2 WRITE,
-executed by the main agent directly (not a capture-agent spawn - capture-agent writes docs/
-only, never memory). The optional focus hint scopes the session-reflection part only. Both
+executed by the main agent directly - no subagent spawn touches memory. The optional
+focus hint scopes the session-reflection part only. Both
 memory-write parts follow the memory conventions in `doctrine/MEMORY-CONVENTIONS.md`.
 
 ## Severity bar
@@ -56,7 +56,7 @@ Captured patterns surfaced this session are deduped and proposed for persistence
 as part of /reflect.
 
 **Dedup before write.** Before any captured pattern is written, dedup it against MEMORY.md
-and its linked topic files by semantic equivalence (mirroring capture-agent's dedup). A
+and its linked topic files by semantic equivalence. A
 pattern already present - even under different wording - is dropped. A surviving pattern is
 classified absorb-into-existing (extend an existing memory) vs create-new.
 

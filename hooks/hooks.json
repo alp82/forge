@@ -11,11 +11,6 @@
           },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/recover-run-state.sh",
-            "timeout": 10
-          },
-          {
-            "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/ensure-gitignore.sh",
             "timeout": 5
           }
@@ -28,11 +23,6 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
             "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/recover-run-state.sh",
-            "timeout": 10
           },
           {
             "type": "command",
@@ -56,8 +46,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/recover-run-state.sh",
-            "timeout": 10
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
+            "timeout": 5
           }
         ]
       }

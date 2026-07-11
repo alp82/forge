@@ -309,7 +309,6 @@ def _is_cross_reference(line):
 # NOTE: naked-substring matches - a doctrine reword without updating this list silently re-flags these as duplicates.
 _MANDATED_CONTRACT_FRAGMENTS = (
     # Input Template Contract: required-slot parse + error stop.
-    "first step every invocation: parse required slots",
     "first step: parse required slots",
     "first step: parse `<confirmed_intent>`",
     "first step: parse `<system_plan>`",

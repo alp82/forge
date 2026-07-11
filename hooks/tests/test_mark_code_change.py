@@ -13,9 +13,8 @@ CONTRACT:
       * tool_name is "Edit" or "Write"
       * tool_input.file_path is present and resolves to a path INSIDE cwd
       * the resolved (symlink-following) path does not have ".alp-river" as
-        an exact path component (a project's own run-state scratch dir is
-        excluded so the gate doesn't self-trigger on the workflow's own
-        bookkeeping writes)
+        an exact path component (the workflow's own artifact dir is excluded
+        so the gate doesn't self-trigger on its own bookkeeping writes)
     Markers: /tmp/.claude-code-changed-tests-<session_id>
              /tmp/.claude-code-changed-build-<session_id>
     Both markers arm together (Edit and Write arm identically; there is no
@@ -143,7 +142,7 @@ def test_write_under_cwd_arms_both_markers_identically_to_edit():
 
 
 # ---------------------------------------------------------------------------
-# TC-MCC-03: file under <cwd>/.alp-river/runs/... -> excluded, no markers
+# TC-MCC-03: file under <cwd>/.alp-river/artifacts/... -> excluded, no markers
 # ---------------------------------------------------------------------------
 
 
@@ -152,10 +151,10 @@ def test_alp_river_scratch_path_is_excluded():
     tests_marker, build_marker = _markers(session_id)
     cwd = tempfile.mkdtemp()
     try:
-        run_state_dir = Path(cwd) / ".alp-river" / "runs" / "x"
-        run_state_dir.mkdir(parents=True)
-        target = run_state_dir / "run-state.json"
-        target.write_text("{}")
+        artifacts_dir = Path(cwd) / ".alp-river" / "artifacts"
+        artifacts_dir.mkdir(parents=True)
+        target = artifacts_dir / "plan-example.md"
+        target.write_text("plan body")
         result = _run_hook(
             {
                 "session_id": session_id,

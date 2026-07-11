@@ -19,6 +19,6 @@ DISCOVERIES:
     (or "(none)")
 ```
 
-**Novelty bar:** the item must NOT already be covered by the loaded `PROJECT_CONTEXT`. Skip anything you can find in `GLOSSARY.md`, `STACK.md`, or `INTENT.md`. When in doubt, skip - capture-agent does the final dedup, but you don't need to dump candidates the agent will only have to filter out.
+**Novelty bar:** the item must NOT already be covered by your loaded context. Skip anything already stated in the context blocks or project docs you were handed. When in doubt, skip - downstream consumers dedup against loaded context, but you don't need to dump candidates they will only have to filter out.
 
 The block is mandatory even when every bucket is empty. Emit all three bucket headings with `(none)` so the parser sees a structured block.

@@ -29,24 +29,14 @@ A block leaves the change marker in place (re-verification stays armed); any
 silent-pass branch that actually ran verification (or determined there was
 nothing to verify) CLEARS the change marker.
 
-RED WINDOW (replaces the blanket live-run exemption): a live, non-converged,
-cwd-matching, schema-valid, fresh run-state.json for THIS session opens the
-pre-implementation red window while its `live` list has NOT yet published
-code-written - inside that window verification is skipped (silent pass) even
-with the change marker armed, and the change marker survives (it is not
-consumed). The predicate is exactly "code-written not in live": a missing or
-non-list `live` reads as an open window (skip - a deliberately-red TDD turn must
-never block); once code-written is live the window CLOSES and a failing dir
-blocks. A converged, stale, cwd-mismatched, invalid, or missing-key run-state
-fails open to verification, exactly as before (the fail-toward-verify direction
-is preserved). At the Stop site the window is read off run-state (no
-hook_event_name -> this state branch); the SubagentStop site reads it off the
-stopping agent_type instead (see test_verify_subagent_stop.py).
+STOP SITE HAS NO RED WINDOW: at Stop (no hook_event_name in the payload) the
+armed change marker alone decides - verification always runs. The red window
+exists only at the SubagentStop site, read off the stopping agent_type (see
+test_verify_subagent_stop.py).
 
-Pre-existing tests below are updated to arm the tests change marker in setup
-(via _arm_change_marker) and clean it up in finally, per the revision contract;
-the bare-dir / no-test-command test is left unarmed since a silent pass is the
-correct outcome either way.
+Pre-existing tests below arm the tests change marker in setup (via
+_arm_change_marker) and clean it up in finally; the bare-dir / no-test-command
+test is left unarmed since a silent pass is the correct outcome either way.
 """
 
 import json
@@ -58,7 +48,6 @@ import uuid
 from pathlib import Path
 
 from verify_gate_helpers import arm_change_marker, change_marker_path, run_hook
-from verify_gate_helpers import write_run_state as _write_run_state
 
 # Path to the script under test (does not exist yet - tests are red by design)
 VERIFY_TESTS_PY = Path(__file__).resolve().parents[1] / "verify-tests.py"
@@ -514,7 +503,7 @@ def test_test_runner_rc127_is_silent_pass():
 
 
 # ---------------------------------------------------------------------------
-# Group B: change-marker gate + live-run exemption (TC-VT-G01..G23, skip G08)
+# Group B: change-marker gate (TC-VT-G01..G11, skip G08)
 # ---------------------------------------------------------------------------
 
 
@@ -783,372 +772,41 @@ def test_vt_g11_stop_hook_active_with_armed_change_marker_does_not_clear_it():
             change_marker.unlink()
 
 
-def test_vt_g12_live_run_exemption_list_route_is_silent_pass():
-    """TC-VT-G12: failing dir; change marker armed; fresh cwd-matching
-    run-state.json with route=["code"] and mid_run_stage present, no
-    pending_gate and no `live` key -> the red window reads OPEN (code-written
-    absent) -> silent pass; change marker survives."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(test_dir, session_id, route=["code"])
-        t = time.time()
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        assert (
-            result.stdout.strip() == ""
-        ), f"live-run exemption expected -> silent pass, got {result.stdout!r}"
-        assert change_marker.exists(), "exemption must not consume the change marker"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if change_marker.exists():
-            change_marker.unlink()
+def test_vt_no_run_state_exemption_stop_blocks_on_failing_tests():
+    """No-exemption contract (removes docs/ADR/run-state subsystems, AC3):
+    the Stop-site run-state exemption is gone entirely, not merely narrowed.
 
-
-def test_vt_g13_live_run_exemption_string_route_applies_identically():
-    """TC-VT-G13: same fixture, route a non-empty STRING and no `live` key ->
-    the window reads open (code-written absent) identically -> silent pass."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(test_dir, session_id, route="code")
-        t = time.time()
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        assert result.stdout.strip() == "", f"got {result.stdout!r}"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-def test_vt_g14_live_run_exemption_pending_gate_alone_is_non_converged():
-    """TC-VT-G14: same fixture, route=[] and pending_gate="plan-approval", no
-    `live` key -> non-converged and the window reads open (code-written absent)
-    -> silent pass (pending_gate alone keeps the run live)."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(
-            test_dir, session_id, route=[], pending_gate="plan-approval"
-        )
-        t = time.time()
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        assert result.stdout.strip() == "", f"got {result.stdout!r}"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-def test_vt_g15_converged_state_does_not_exempt():
-    """TC-VT-G15: fresh/cwd-matching fixture, route=[] (or "") and no
-    pending_gate -> converged, exemption does NOT apply; block observed.
-    Also route=[""] (list of empty strings) -> treated as converged (any()
-    predicate), verification runs."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    for label, route in [
-        ("empty-list", []),
-        ("empty-string", ""),
-        ("list-of-empty", [""]),
-    ]:
-        session_id = str(uuid.uuid4())
-        verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-        change_marker = _arm_change_marker(session_id)
-        test_dir = _make_failing_tests_dir()
-        try:
-            state_file = _write_run_state(
-                test_dir, session_id, route=route, pending_gate=""
-            )
-            t = time.time()
-            os.utime(state_file, (t, t))
-            result = _run_hook(
-                {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-            )
-            assert result.returncode == 0, f"[{label}] got {result.returncode}"
-            parsed = json.loads(result.stdout)
-            assert parsed.get("decision") == "block", (
-                f"[{label}] a converged run-state must not exempt; expected a block, "
-                f"got {result.stdout!r}"
-            )
-        finally:
-            shutil.rmtree(test_dir, ignore_errors=True)
-            if verify_marker.exists():
-                verify_marker.unlink()
-            if change_marker.exists():
-                change_marker.unlink()
-
-
-def test_vt_g16_stale_fixture_beyond_max_age_does_not_exempt():
-    """TC-VT-G16: non-converged fixture backdated via os.utime beyond 86400s
-    -> exemption does not apply; verification runs (block)."""
+    Reproduces the exact scenario the old code exempted (test_vt_g12: fresh,
+    cwd-matching, non-converged run-state.json for THIS session, no `live`
+    key, which used to read as an open red window) against a failing test
+    dir with the change marker armed. With the state branch removed there is
+    no window to read: the Stop site must run verification and block, the
+    same as any marker-gated call with no run-state file at all - agent_type
+    is None here (no hook_event_name in the payload), so there is no
+    SubagentStop branch to fall back on either.
+    """
     assert shutil.which("npm"), "npm required to drive the failing tests"
     session_id = str(uuid.uuid4())
     verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
     change_marker = _arm_change_marker(session_id)
     test_dir = _make_failing_tests_dir()
     try:
-        state_file = _write_run_state(test_dir, session_id, route=["code"])
-        t = time.time() - 90000
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        parsed = json.loads(result.stdout)
-        assert (
-            parsed.get("decision") == "block"
-        ), f"stale (>86400s) fixture must not exempt; got {result.stdout!r}"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if verify_marker.exists():
-            verify_marker.unlink()
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-def test_vt_g17_env_override_max_age_and_junk_fallback():
-    """TC-VT-G17: non-converged fixture a few seconds old; env
-    RIVER_STATE_MAX_AGE_SECONDS=1 -> exemption does not apply. Also: junk env
-    value ("abc") with a fresh fixture -> falls back to 86400, exemption
-    STILL applies (nested-try fallback pinned)."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-
-    # Sub-case 1: strict 1-second max age, fixture a few seconds old -> no exemption.
-    session_id = str(uuid.uuid4())
-    verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(test_dir, session_id, route=["code"])
-        t = time.time() - 5
-        os.utime(state_file, (t, t))
-        env = {**os.environ, "RIVER_STATE_MAX_AGE_SECONDS": "1"}
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False},
-            env=env,
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        parsed = json.loads(result.stdout)
-        assert (
-            parsed.get("decision") == "block"
-        ), f"5s-old fixture with max-age=1 must not exempt; got {result.stdout!r}"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if verify_marker.exists():
-            verify_marker.unlink()
-        if change_marker.exists():
-            change_marker.unlink()
-
-    # Sub-case 2: junk env value falls back to the 86400s default -> still exempt.
-    session_id2 = str(uuid.uuid4())
-    change_marker2 = _arm_change_marker(session_id2)
-    test_dir2 = _make_failing_tests_dir()
-    try:
-        state_file2 = _write_run_state(test_dir2, session_id2, route=["code"])
-        t = time.time()
-        os.utime(state_file2, (t, t))
-        env2 = {**os.environ, "RIVER_STATE_MAX_AGE_SECONDS": "abc"}
-        result2 = _run_hook(
-            {"session_id": session_id2, "cwd": test_dir2, "stop_hook_active": False},
-            env=env2,
-        )
-        assert result2.returncode == 0, f"got {result2.returncode}"
-        assert result2.stdout.strip() == "", (
-            f"junk env value must fall back to the 86400s default, exemption still "
-            f"applies; got {result2.stdout!r}"
-        )
-    finally:
-        shutil.rmtree(test_dir2, ignore_errors=True)
-        if change_marker2.exists():
-            change_marker2.unlink()
-
-
-def test_vt_g18_cwd_mismatch_does_not_exempt():
-    """TC-VT-G18: fixture cwd field differs from payload cwd -> exemption does
-    not apply; verification runs (block)."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(
-            test_dir, session_id, route=["code"], cwd="/different/path"
-        )
-        t = time.time()
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        parsed = json.loads(result.stdout)
-        assert (
-            parsed.get("decision") == "block"
-        ), f"cwd mismatch must not exempt; got {result.stdout!r}"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if verify_marker.exists():
-            verify_marker.unlink()
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-def test_vt_g19_invalid_json_run_state_fails_open_to_verification():
-    """TC-VT-G19: run-state.json invalid JSON -> fail-open; verification runs
-    (block)."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
+        # Inline leftover-file fixture: a stale run-state.json shaped like the
+        # removed subsystem's snapshot, proving its presence has zero effect.
         runs_dir = Path(test_dir) / ".alp-river" / "runs" / session_id
-        runs_dir.mkdir(parents=True)
+        runs_dir.mkdir(parents=True, exist_ok=True)
         state_file = runs_dir / "run-state.json"
-        state_file.write_text("{not valid json", encoding="utf-8")
-        t = time.time()
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        parsed = json.loads(result.stdout)
-        assert (
-            parsed.get("decision") == "block"
-        ), f"invalid run-state.json must fail-open to verification; got {result.stdout!r}"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if verify_marker.exists():
-            verify_marker.unlink()
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-def test_vt_g20_missing_required_keys_fails_structural_guard():
-    """TC-VT-G20: valid JSON, schema_version 1, but missing mid_run_stage (or
-    route, or cwd) key -> fails structural guard; verification runs (block)."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    for missing_key in ("mid_run_stage", "route", "cwd"):
-        session_id = str(uuid.uuid4())
-        verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-        change_marker = _arm_change_marker(session_id)
-        test_dir = _make_failing_tests_dir()
-        try:
-            runs_dir = Path(test_dir) / ".alp-river" / "runs" / session_id
-            runs_dir.mkdir(parents=True)
-            state = {
-                "schema_version": 1,
-                "cwd": test_dir,
-                "route": ["code"],
-                "mid_run_stage": "code-implementer",
-            }
-            del state[missing_key]
-            state_file = runs_dir / "run-state.json"
-            state_file.write_text(json.dumps(state), encoding="utf-8")
-            t = time.time()
-            os.utime(state_file, (t, t))
-            result = _run_hook(
-                {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-            )
-            assert result.returncode == 0, f"[{missing_key}] got {result.returncode}"
-            parsed = json.loads(result.stdout)
-            assert parsed.get("decision") == "block", (
-                f"[{missing_key}] missing required key must fail the structural guard; "
-                f"got {result.stdout!r}"
-            )
-        finally:
-            shutil.rmtree(test_dir, ignore_errors=True)
-            if verify_marker.exists():
-                verify_marker.unlink()
-            if change_marker.exists():
-                change_marker.unlink()
-
-
-def test_vt_g21_consumer_project_no_alp_river_dir_still_gated_by_marker():
-    """TC-VT-G21: consumer-project style temp dir, no .alp-river/ anywhere;
-    marker armed, failing dir -> verification runs (plain marker-gated
-    behaviour)."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        parsed = json.loads(result.stdout)
-        assert parsed.get("decision") == "block", f"got {result.stdout!r}"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if verify_marker.exists():
-            verify_marker.unlink()
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-def test_vt_g22_sibling_session_run_state_is_not_used_own_file_only():
-    """TC-VT-G22: this session's own runs/<sid>/run-state.json ABSENT; sibling
-    runs/<other-sid>/ holds a valid fresh non-converged cwd-matching fixture ->
-    exemption does NOT apply (own-file only, no scan); verification runs."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    other_session_id = str(uuid.uuid4())
-    verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(test_dir, other_session_id, route=["code"])
-        t = time.time()
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        parsed = json.loads(result.stdout)
-        assert parsed.get("decision") == "block", (
-            "a sibling session's run-state.json must not be used for this session's "
-            f"exemption check; got {result.stdout!r}"
-        )
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if verify_marker.exists():
-            verify_marker.unlink()
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-def test_vt_g24_code_written_live_run_verifies():
-    """TC-VT-G24: failing dir; change marker armed; fresh cwd-matching
-    run-state.json whose `live` list contains code-written -> the red window is
-    CLOSED, verification runs and blocks. The narrowing this whole fix exists
-    for (a live run WITH code-written no longer suppresses the Stop gate)."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(
-            test_dir, session_id, live=["code", "code-written"]
+        state_file.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "run_id": session_id,
+                    "cwd": test_dir,
+                    "route": ["code"],
+                    "mid_run_stage": "code-implementer",
+                }
+            ),
+            encoding="utf-8",
         )
         t = time.time()
         os.utime(state_file, (t, t))
@@ -1158,8 +816,9 @@ def test_vt_g24_code_written_live_run_verifies():
         assert result.returncode == 0, f"got {result.returncode}"
         parsed = json.loads(result.stdout)
         assert parsed.get("decision") == "block", (
-            "code-written in `live` closes the red window; the failing dir must "
-            f"block; got {result.stdout!r}"
+            "the run-state exemption no longer exists; a live run-state file "
+            "that used to open the red window must not suppress verification "
+            f"on a failing dir; got {result.stdout!r}"
         )
     finally:
         shutil.rmtree(test_dir, ignore_errors=True)
@@ -1167,145 +826,3 @@ def test_vt_g24_code_written_live_run_verifies():
             verify_marker.unlink()
         if change_marker.exists():
             change_marker.unlink()
-
-
-def test_vt_g25_red_test_window_still_skips():
-    """TC-VT-G25: failing dir; change marker armed; fresh run-state whose `live`
-    holds red-test signals but NOT code-written -> the window stays open, silent
-    pass; change marker survives (a deliberately-red TDD turn must never
-    block)."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(
-            test_dir, session_id, live=["code", "needs-tests", "tests-red"]
-        )
-        t = time.time()
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        assert result.stdout.strip() == "", (
-            "no code-written in `live` -> open window -> silent pass; "
-            f"got {result.stdout!r}"
-        )
-        assert (
-            change_marker.exists()
-        ), "the open window must not consume the change marker"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-def test_vt_g26_live_missing_or_non_list_treated_as_empty():
-    """TC-VT-G26: failing dir; change marker armed; fresh run-state with `live`
-    missing (None) and with `live` a non-list string -> both read as an empty
-    open window (code-written absent) -> silent pass; change marker survives."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    for label, live_val in [("none", None), ("non-list", "not-a-list")]:
-        session_id = str(uuid.uuid4())
-        change_marker = _arm_change_marker(session_id)
-        test_dir = _make_failing_tests_dir()
-        try:
-            state_file = _write_run_state(test_dir, session_id, live=live_val)
-            t = time.time()
-            os.utime(state_file, (t, t))
-            result = _run_hook(
-                {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-            )
-            assert result.returncode == 0, f"[{label}] got {result.returncode}"
-            assert result.stdout.strip() == "", (
-                f"[{label}] a missing/non-list `live` must read as an open window "
-                f"-> silent pass; got {result.stdout!r}"
-            )
-            assert (
-                change_marker.exists()
-            ), f"[{label}] the open window must not consume the change marker"
-        finally:
-            shutil.rmtree(test_dir, ignore_errors=True)
-            if change_marker.exists():
-                change_marker.unlink()
-
-
-def test_vt_g27_bad_schema_version_does_not_exempt():
-    """TC-VT-G27: valid JSON, fresh mtime, cwd-matching, ALL required keys
-    present, but schema_version 2 (not 1) -> fails the structural guard the
-    same way a missing key does; the exemption does not apply and verification
-    runs (block) on the failing dir."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    verify_marker = Path(f"/tmp/.claude-test-verify-{session_id}")
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(test_dir, session_id, schema_version=2)
-        t = time.time()
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {"session_id": session_id, "cwd": test_dir, "stop_hook_active": False}
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        parsed = json.loads(result.stdout)
-        assert parsed.get("decision") == "block", (
-            "schema_version != 1 must fail the structural guard and not exempt "
-            f"the run; got {result.stdout!r}"
-        )
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if verify_marker.exists():
-            verify_marker.unlink()
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-def test_old_cli_payload_missing_hook_event_name_takes_stop_branch():
-    """TC-VT-OLDCLI: a payload with NO hook_event_name but a stray
-    agent_type="code-implementer", plus a live pre-implementation run-state (no
-    code-written in `live`) -> silent pass. Branch selection reads
-    hook_event_name, never agent_type presence: the missing event takes the Stop
-    (state) branch and the open window skips - it must NOT be misread as a
-    SubagentStop implementer stop (which would verify and block)."""
-    assert shutil.which("npm"), "npm required to drive the failing tests"
-    session_id = str(uuid.uuid4())
-    change_marker = _arm_change_marker(session_id)
-    test_dir = _make_failing_tests_dir()
-    try:
-        state_file = _write_run_state(
-            test_dir, session_id, live=["code", "needs-tests"]
-        )
-        t = time.time()
-        os.utime(state_file, (t, t))
-        result = _run_hook(
-            {
-                "session_id": session_id,
-                "cwd": test_dir,
-                "stop_hook_active": False,
-                "agent_type": "code-implementer",
-            }
-        )
-        assert result.returncode == 0, f"got {result.returncode}"
-        assert result.stdout.strip() == "", (
-            "no hook_event_name -> Stop branch regardless of the stray agent_type; "
-            f"the pre-implementation window (no code-written) skips; got {result.stdout!r}"
-        )
-        assert (
-            change_marker.exists()
-        ), "the open window must not consume the change marker"
-    finally:
-        shutil.rmtree(test_dir, ignore_errors=True)
-        if change_marker.exists():
-            change_marker.unlink()
-
-
-# TC-VT-G23 (empty session_id never exempts) intentionally omitted: under the
-# pid-keyed fallback design (see test_mark_code_change.py::MCC-09), a black-box
-# Stop with an empty session_id can never rendezvous with a marker armed by a
-# different process - it always silent-passes at the marker gate before reaching
-# the exemption logic, so "verification runs -> block" is not a black-box
-# observable expectation. The exemption-False-on-empty-session property is a
-# unit fact; the pid-keyed fallback naming it would guard is already pinned by
-# test_mark_code_change.py::test_missing_session_id_falls_back_to_pid_keyed_markers.
