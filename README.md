@@ -17,7 +17,6 @@
 <br>
 
 <!-- MEDIA SLOT 1: hero journey diagram | placement: centered, directly below the strapline | dimensions: width 800px (~800x300) | content: the seven stops as a stylized river flowing left-to-right with the stage emojis as waypoints | alt: "The alp-river journey: Intent, Scout, Blueprint, Tests, Build, Review, Ship" | format: png or animated gif -->
-<img src="docs/assets/intro-example.png" alt="alp-river composing a route for a task" width="577">
 
 `🔎 Intent → 🧭 Scout → 📐 Blueprint → 🧪 Tests → 🔨 Build → 🔬 Review → 🚀 Ship`
 
@@ -97,35 +96,6 @@ Full history in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-## 🌊 How it works
-
-No commands required - describe what you want in plain text, or use `/alp-river:go`. Both run the same workflow.
-
-Think of it as a packing list that fills itself:
-
-1. **Triage picks the lane** - it reads your request and picks one of four conversation types.
-2. **Stages subscribe to signals** - a stage joins the route the moment one of its flags fires.
-3. **More flags pull in more stages** - the route grows as the work reveals itself: no email infra found pulls in research; a plan that signs tokens pulls in a security lens.
-4. **Size (XS-XXL) is the final head-count** - a readout of how many stages the route ended up with, never a dial you set.
-
-A worked example:
-
-> *"Add rate limiting to the login endpoint"*
-> → `code · needs-tests · significant-build · auth-surface`
-> → each flag pulls its stages: red tests, a challenged plan, a security review
-> → `code · L · 12 stages` → all clean → done.
-
-```mermaid
-flowchart TD
-    t{triage reads<br/>your request}
-    t -->|talk| A[discuss<br/>no code, just answers]
-    t -->|sketch| B[sketch-build<br/>throwaway in .prototypes/]
-    t -->|code| C[plan → test → implement<br/>→ review → heal]
-    t -->|system| D[plan → safety-gate<br/>→ execute → verify]
-```
-
----
-
 ## 🗺️ The journey
 
 Seven stops from headwater to sea. Each one-liner is the whole story; open a stop if you want to wade deeper.
@@ -149,6 +119,8 @@ Where you stay in the loop:
 
 </details>
 
+<br/>
+
 ### 🧭 Scout - walks the banks before the water rises
 
 What's reusable, how healthy the ground is, what novelty needs a tracer-bullet, and the root cause behind a bug.
@@ -169,6 +141,8 @@ What's reusable, how healthy the ground is, what novelty needs a tracer-bullet, 
 
 </details>
 
+<br/>
+
 ### 📐 Blueprint - a plan takes shape, then a challenger tries to sink it
 
 <details>
@@ -188,6 +162,8 @@ Where you stay in the loop:
 
 </details>
 
+<br/>
+
 ### 🧪 Tests - tests go red before code exists
 
 <details>
@@ -200,6 +176,8 @@ Where you stay in the loop:
 | test-review | opus | Validates the red tests against intent, then releases the implementer. |
 
 </details>
+
+<br/>
 
 ### 🔨 Build - code flows only once the red tests are validated
 
@@ -216,6 +194,8 @@ Where you stay in the loop:
 - **Safety gate** - fires only when a destructive step is queued. Never as fixed ceremony.
 
 </details>
+
+<br/>
 
 ### 🔬 Review - every diff faces a panel of parallel lenses
 
@@ -242,6 +222,8 @@ Where you stay in the loop:
 *Then `fixer` (sonnet) applies the reviewer findings, then re-runs the lenses whose findings it fixed plus correctness and the test suite until clean - the trailing heal line of Review.*
 
 </details>
+
+<br/>
 
 ### 🚀 Ship - the river reaches the sea: commit, push, draft PR - gated
 
@@ -285,6 +267,37 @@ Where you stay in the loop:
 /alp-river:reflect   Reflect on the current session to surface workflow friction worth tuning.
 /alp-river:audit     Self-audit the plugin and report a health scorecard with top fixes.
 ```
+
+---
+
+## 🌊 How it works
+
+No commands required - describe what you want in plain text, or use `/alp-river:go`. Both run the same workflow.
+
+Think of it as a packing list that fills itself:
+
+1. **Triage picks the lane** - it reads your request and picks one of four conversation types.
+2. **Stages subscribe to signals** - a stage joins the route the moment one of its flags fires.
+3. **More flags pull in more stages** - the route grows as the work reveals itself: no email infra found pulls in research; a plan that signs tokens pulls in a security lens.
+4. **Size (XS-XXL) is the final head-count** - a readout of how many stages the route ended up with, never a dial you set.
+
+A worked example:
+
+> *"Add rate limiting to the login endpoint"*
+> → `code · needs-tests · significant-build · auth-surface`
+> → each flag pulls its stages: red tests, a challenged plan, a security review
+> → `code · L · 12 stages` → all clean → done.
+
+```mermaid
+flowchart TD
+    t{triage reads<br/>your request}
+    t -->|talk| A[discuss<br/>no code, just answers]
+    t -->|sketch| B[sketch-build<br/>throwaway in .prototypes/]
+    t -->|code| C[plan → test → implement<br/>→ review → heal]
+    t -->|system| D[plan → safety-gate<br/>→ execute → verify]
+```
+
+---
 
 Contributing / internals → [CONTRIBUTING.md](CONTRIBUTING.md)
 
