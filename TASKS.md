@@ -1,20 +1,5 @@
 
 
-question asking can be bad
-
-we want:
-* pros and cons
-* simple language
-* reference to eventual prototypes
-* extra resources + context if needed
-* it to have properly researched via explore and web search subagents
-
----
-
-README overhaul
-
----
-
 skill-based new workflows?
 
 ---
