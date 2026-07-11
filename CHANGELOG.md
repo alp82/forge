@@ -2,6 +2,13 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.4.1 - 2026-07-11
+
+- Questions on decisions that matter now state each option's pros and cons in plain words, alongside a concrete example of what picking it means.
+- Options now point at the evidence behind them: an illustration file to open and the sources found during research.
+- When a topic needs background, a short background doc can now be produced instead of only an interactive illustration.
+- Routine yes/no confirmations stay as terse as before.
+
 ## 1.4.0 - 2026-07-11
 
 The plugin slims down: four side systems are removed so a run carries only the pipeline itself - user memory injection, per-step doctrine, the on-disk plan handle, and the session-start gitignore guard stay.

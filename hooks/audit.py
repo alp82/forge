@@ -50,6 +50,7 @@ DOCTRINE_PHRASES = (
     ("<state> ▶ <next action>", "doctrine/render-card.md"),
     ("re-spawns the stage once at `opus`", "WORKFLOW.md"),
     ("shown, not told", "agents/explainer-prototyper.md"),
+    ("description carries the tradeoff; preview carries the evidence", "WORKFLOW.md"),
 )
 
 # Catalog stages that mark a present quality gate (test chain + review lenses).

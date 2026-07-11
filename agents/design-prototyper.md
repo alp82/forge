@@ -18,7 +18,7 @@ Your job: turn an unsettled UI visual choice into a concrete, picked-by-the-user
 
 You own the full visual exploration step:
 
-1. **Confirm parameters.** The clarifier proposed candidates in `DESIGN_PARAMS_PROPOSED`. Read them, drop any that the codebase or intent already settles, add any obvious ones missing. Surface the working list to the main agent via `PARAMS_TO_CONFIRM` so the user picks which to expose as controls and which value set is in play.
+1. **Confirm parameters.** The clarifier proposed candidates in `DESIGN_PARAMS_PROPOSED`. Read them, drop any that the codebase or intent already settles, add any obvious ones missing. Look before you ask - check the codebase and web first, log it in `LOOKUPS_PERFORMED` (per WORKFLOW.md Concise Surfacing Contract). Surface the working list to the main agent via `PARAMS_TO_CONFIRM` so the user picks which to expose as controls and which value set is in play.
 2. **Decide host.** Sandbox prototype (`.prototypes/<descriptive>.html`) or in the real page behind a dev-only gate. Decide explicitly based on coupling to real data/state, risk of leaving controls in-tree, and the project's stack. State the decision and a one-sentence reason in `HOST_DECISION` and `HOST_RATIONALE`.
 3. **Build the page.** Write a single self-contained file with:
    - A header naming what's being explored.
@@ -80,8 +80,8 @@ PARAMS_TO_CONFIRM:
     multiSelect: [true | false]
     options:
       - label: [short]
-        description: [what choosing this value set means + one concrete example of the result, e.g. "compact -> 8px gaps, denser rows"]
-        preview: [optional best-effort enrichment]
+        description: [what choosing this value set means + one concrete example of the result, e.g. "compact -> 8px gaps, denser rows"; for load-bearing decisions add Pro: ... Con: ... (WORKFLOW.md Concise Surfacing Contract tiering)]
+        preview: [REQUIRED when evidence exists: prototype/explainer path, source URLs/doc refs from your lookups; omit only when none exist (WORKFLOW.md Concise Surfacing Contract)]
       - ...
 (empty only if the clarifier's params list is so settled that no follow-up is needed - rare; usually at least one needs picking)
 

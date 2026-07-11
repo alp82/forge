@@ -96,7 +96,7 @@ CHALLENGE_QUESTIONS:
     options:
       - label: Approve
         description: Proceed with implementation. Outstanding CONCERNS become known risks.
-        preview: [STRENGTHS one-liner + top CONCERNS as one line each, best-effort]
+        preview: [REQUIRED - STRENGTHS one-liner + top CONCERNS as one line each; this is the evidence the user approves on]
       - label: Revise
         description: Planner re-spawns with the prior plan reproduced verbatim, BLOCKERS applied as corrections, version bumped. Counts as one backward edge.
         preview: [BLOCKERS list - one per line - so user sees what gets fixed]
@@ -104,6 +104,8 @@ CHALLENGE_QUESTIONS:
         description: Reinterview from Step 0. Plan is fundamentally wrong or SIMPLER_ALTERNATIVE applies. Counts as one backward edge (equivalent to challenger reject).
         preview: [SIMPLER_ALTERNATIVE sentence + SCOPE_MISMATCH one-liner when not "none"]
 ```
+
+Approve/Revise/Reshape is a fixed-process gate: the lean-tier exemption (WORKFLOW.md Concise Surfacing Contract) applies to the descriptions, while the preview mandate still applies to the evidence each preview carries.
 
 `approve` = ship to implementer. `revise` = planner re-spawns with the prior plan reproduced verbatim and BLOCKERS applied as corrections, version bumped (counts as a backward edge; see WORKFLOW.md ## Revision Contract). `reject` = plan is fundamentally wrong; reinterview or restart from Step 2 (counts as a backward edge).
 

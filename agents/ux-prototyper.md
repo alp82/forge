@@ -18,7 +18,7 @@ Your job: turn an unsettled user-flow / state-sequence choice into a concrete, p
 
 You own the full user-flow exploration step:
 
-1. **Confirm flow parameters.** The clarifier proposed candidates in `USER_FLOW_PROPOSED`. Read them, drop any that the codebase or intent already settles, add any obvious ones missing. Surface the working list to the main agent via `FLOW_TO_CONFIRM` so the user picks which states/transitions to expose and which sequence is in play.
+1. **Confirm flow parameters.** The clarifier proposed candidates in `USER_FLOW_PROPOSED`. Read them, drop any that the codebase or intent already settles, add any obvious ones missing. Exhaust existing flow evidence before surfacing a fork; `LOOKUPS_PERFORMED` records the trail (per WORKFLOW.md Concise Surfacing Contract). Surface the working list to the main agent via `FLOW_TO_CONFIRM` so the user picks which states/transitions to expose and which sequence is in play.
 2. **Decide host.** Sandbox prototype (`.prototypes/<descriptive>.html`) or in the real page behind a dev-only gate. Decide explicitly based on coupling to real data/state, risk of leaving the wireflow in-tree, and the project's stack. State the decision and a one-sentence reason in `HOST_DECISION` and `HOST_RATIONALE`.
 3. **Build the wireflow.** Write a single self-contained clickable low-fi wireflow with:
    - A header naming the flow being explored.
@@ -80,8 +80,8 @@ FLOW_TO_CONFIRM:
     multiSelect: [true | false]
     options:
       - label: [short]
-        description: [what choosing this means + one concrete example of the result, e.g. "linear -> cart then address then pay, no skipping"]
-        preview: [optional best-effort enrichment]
+        description: [what choosing this means + one concrete example of the result, e.g. "linear -> cart then address then pay, no skipping"; for load-bearing decisions add Pro: ... Con: ... (WORKFLOW.md Concise Surfacing Contract tiering)]
+        preview: [REQUIRED when evidence exists: prototype/explainer path, source URLs/doc refs from your lookups; omit only when none exist (WORKFLOW.md Concise Surfacing Contract)]
       - ...
 (empty only if the clarifier's flow list is so settled that no follow-up is needed - rare; usually at least one needs picking)
 

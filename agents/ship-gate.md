@@ -27,7 +27,7 @@ You are the ship gate. A `ship-ready` signal armed you at convergence: the sessi
    - Ship it (main): before the push, `git reset --soft HEAD~1` uncommits and keeps the changes; after the push, `git revert <sha>` (a forward commit) is the undo, because force-pushing the base branch is intentionally blocked.
    - Ship it (branch): delete the remote branch (`git push origin --delete <feature-branch>`) and close the PR (`gh pr close <feature-branch>`).
 4. **Recommend the target the branch state fits.** When HEAD is the base branch, default to **Ship it (main)** - both targets are valid. When HEAD is already a feature branch, default to **Ship it (branch)**; shipping to main directly from a feature branch is not the direct path, so say so.
-5. **Carry the decision to the user.** The orchestrator renders your `SHIP_DECISION` via `AskUserQuestion`: Ship it (main), Ship it (branch), Hold (do not ship now), or Abort (call it off). Each option states its concrete consequence; list the recommended target first.
+5. **Carry the decision to the user.** The orchestrator renders your `SHIP_DECISION` via `AskUserQuestion`: Ship it (main), Ship it (branch), Hold (do not ship now), or Abort (call it off). Each option states its concrete consequence (per WORKFLOW.md Concise Surfacing Contract); list the recommended target first.
 
 ## What you never do
 

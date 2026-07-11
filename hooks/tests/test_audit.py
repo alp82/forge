@@ -1380,15 +1380,17 @@ def test_h21_subprocess_scorecard_json_has_doctrine_integrity():
 
 
 def test_doctrine_phrases_length_pinned():
-    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 9 entries
+    """PHRASES-01: audit.DOCTRINE_PHRASES has the pinned 10 entries
     (3 originals + CLAUDE.md + the artifact-handles canary + the render-card
     canary + the status-line canary + the fable-fallback canary + the
-    explainer ## Scope shown-not-told canary)."""
-    assert len(audit.DOCTRINE_PHRASES) == 9, (
-        f"DOCTRINE_PHRASES must have exactly 9 entries "
+    explainer ## Scope shown-not-told canary + the surfacing-contract
+    tradeoff/evidence canary)."""
+    assert len(audit.DOCTRINE_PHRASES) == 10, (
+        f"DOCTRINE_PHRASES must have exactly 10 entries "
         f"(3 originals + CLAUDE.md + the artifact-handles canary "
         f"+ the render-card canary + the status-line canary "
-        f"+ the fable-fallback canary + the explainer ## Scope canary); "
+        f"+ the fable-fallback canary + the explainer ## Scope canary "
+        f"+ the surfacing-contract tradeoff/evidence canary); "
         f"got {len(audit.DOCTRINE_PHRASES)}: {audit.DOCTRINE_PHRASES!r}"
     )
 
@@ -1409,6 +1411,20 @@ def test_doctrine_phrases_explainer_scope_canary_present():
     expected = ("shown, not told", "agents/explainer-prototyper.md")
     assert expected in audit.DOCTRINE_PHRASES, (
         f"expected the explainer ## Scope canary {expected!r} in DOCTRINE_PHRASES; "
+        f"got {audit.DOCTRINE_PHRASES!r}"
+    )
+
+
+def test_doctrine_phrases_surfacing_contract_canary_present():
+    """PHRASES-10: the Concise Surfacing Contract tradeoff/evidence canary
+    tuple is pinned by name - the length test alone cannot tell WHICH phrase
+    was added."""
+    expected = (
+        "description carries the tradeoff; preview carries the evidence",
+        "WORKFLOW.md",
+    )
+    assert expected in audit.DOCTRINE_PHRASES, (
+        f"expected the surfacing-contract canary {expected!r} in DOCTRINE_PHRASES; "
         f"got {audit.DOCTRINE_PHRASES!r}"
     )
 

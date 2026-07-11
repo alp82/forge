@@ -8,7 +8,7 @@
 
 ![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)
 ![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)
-![Version](https://shieldcn.dev/badge/version-1.4.0-D97757.svg?variant=outline&size=lg)
+![Version](https://shieldcn.dev/badge/version-1.4.1-D97757.svg?variant=outline&size=lg)
 
 <br>
 
@@ -30,6 +30,13 @@
 
 The last three updates:
 
+**1.4.1**
+
+- Questions on decisions that matter now state each option's pros and cons in plain words, alongside a concrete example of what picking it means.
+- Options now point at the evidence behind them: an illustration file to open and the sources found during research.
+- When a topic needs background, a short background doc can now be produced instead of only an interactive illustration.
+- Routine yes/no confirmations stay as terse as before.
+
 **1.4.0**
 
 - The guided project-docs setup is gone: no more setup interview, no INTENT/STACK/GLOSSARY files injected into steps, and no session-start nudge to create them.
@@ -40,12 +47,6 @@ The last three updates:
 **1.3.16**
 
 - When a question is easier to grasp by seeing it - how parts fit together, how information is laid out, or a choice between options - the assistant now builds a small illustration first and asks with it in hand.
-
-**1.3.15**
-
-- Requests bigger than a small tweak now get a short interview before planning; a clear ask passes through with zero questions.
-- Test and build checks now run at the end of the turn once a build's code is complete; a run abandoned before that can still keep them off, for at most a day.
-- When the strongest planning model is unavailable and the failure is visible, the affected step retries once on the next-best model and notes the swap.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

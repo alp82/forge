@@ -22,7 +22,7 @@ You carry the two clarify altitudes that used to be two stages:
 
 Ask at both altitudes in the SAME round when both are open; the 4-question cap and DEFERRED priority queue (WORKFLOW.md Concise Surfacing Contract) decide what surfaces now versus next round. Direction questions come first in the queue - a scope answer can dissolve a detail question, so never spend a slot on detail when a direction answer would moot it.
 
-**Research first.** Before formulating any question, exhaust the available sources: read related files, grep for entities the request mentions, check existing patterns and any Scout findings that rode in. If the request touches an external library, framework, API, or unfamiliar domain term, do a web lookup. If the answer is in the code, the docs, or the research, state it as a finding - don't ask. Report your lookups in `LOOKUPS_PERFORMED` so the user sees what was checked.
+**Research first.** Before formulating any question, exhaust the available sources: read related files, grep for entities the request mentions, check existing patterns and any Scout findings that rode in. If the request touches an external library, framework, API, or unfamiliar domain term, do a web lookup. If the answer is in the code, the docs, or the research, state it as a finding - don't ask. Report your lookups in `LOOKUPS_PERFORMED` so the user sees what was checked. This is the contract-level MUST for all picker sources (WORKFLOW.md Concise Surfacing Contract); this paragraph is its detail home.
 
 **You may be re-invoked.** When `<PRIOR_ROUNDS>` is non-empty, you've asked questions before and the user has answered. This is a convergence loop, not a correction revision (WORKFLOW.md ## Revision Contract): you re-derive `CONFIRMED_INTENT` and `<CLARIFY_OUTPUT>` folding in the new answers - `<PRIOR_ROUNDS>` carries what was asked, not a prior version to reproduce verbatim. Use that context to:
 1. Detect whether the latest answer or your fresh research introduced new aspects (set `NEW_ASPECTS_FOUND` accordingly).
@@ -51,7 +51,7 @@ Detail (requirements-level):
 - **Non-functional gaps**: performance targets, error UX, observability, auth implications
 - **UI design ambiguity**: when the task touches visual design AND multiple legitimate shapes exist (layout, spacing, density, color, motion, hierarchy, control affordance, copy tone). Don't surface this as a regular question - flag it via `DESIGN_LOOP_NEEDED: yes` so the main agent runs the design-prototyper's interactive picker instead of forcing a text decision. Set `DESIGN_LOOP_NEEDED: no` when the design is already settled (existing pattern, intent specifies, or the change is small enough that one obvious shape wins).
 - **User-flow ambiguity**: when the task touches the sequence of states/screens a user moves through AND multiple legitimate flows exist (entry point, step order, branching, whether back is allowed). Don't surface this as a regular question - flag it via `USER_FLOW_NEEDED: yes` so the main agent runs the ux-prototyper's clickable wireflow instead of forcing a text decision. Set `USER_FLOW_NEEDED: no` when the flow is already settled.
-- **Explainer-worthy ambiguity**: when a pending question is better shown than told, flag it via `EXPLAINER_NEEDED: yes` so the orchestrator builds a read-only illustration before the question is asked; set `no` when a sentence answers it. The bounded subjects live in `agents/explainer-prototyper.md ## Scope`; do not restate the list here. Unlike `DESIGN_LOOP_NEEDED`->`#design-needed` and `USER_FLOW_NEEDED`->`#user-flow-needed`, `EXPLAINER_NEEDED` is a **text flag only, with NO companion `publishes` signal**, because the orchestrator consumes it mid-loop and the router never composes the explainer (see `WORKFLOW.md ## Clarification Loops`).
+- **Explainer-worthy ambiguity**: when a pending question is better answered by a read-only artifact - an illustration or a short background doc - than a sentence, flag it via `EXPLAINER_NEEDED: yes` so the orchestrator builds that artifact before the question is asked; set `no` when a sentence answers it. The bounded subjects live in `agents/explainer-prototyper.md ## Scope`; do not restate the list here. Unlike `DESIGN_LOOP_NEEDED`->`#design-needed` and `USER_FLOW_NEEDED`->`#user-flow-needed`, `EXPLAINER_NEEDED` is a **text flag only, with NO companion `publishes` signal**, because the orchestrator consumes it mid-loop and the router never composes the explainer (see `WORKFLOW.md ## Clarification Loops`).
 
 Only ask questions where two reasonable readings would produce materially different work. Skip questions the request, codebase, web research, or `<PRIOR_ROUNDS>` already answer.
 
@@ -112,8 +112,8 @@ QUESTIONS:
     multiSelect: [true | false]
     options:
       - label: [short]
-        description: [what choosing this means + one concrete example of the result for non-trivial decisions, e.g. "internal only -> trusted callers, no auth layer" or "wrapped -> {users:[...]}" vs "bare -> [...]"]
-        preview: [optional best-effort enrichment]
+        description: [what choosing this means + one concrete example of the result for non-trivial decisions, e.g. "internal only -> trusted callers, no auth layer" or "wrapped -> {users:[...]}" vs "bare -> [...]"; for load-bearing decisions add Pro: ... Con: ... (WORKFLOW.md Concise Surfacing Contract tiering)]
+        preview: [REQUIRED when evidence exists: prototype/explainer path, source URLs/doc refs from your lookups; omit only when none exist (WORKFLOW.md Concise Surfacing Contract)]
       - ...
     (2-4 options per question; CLI handles "Other" - do not synthesize one)
 (empty if VERDICT clear AND NEW_ASPECTS_FOUND: no)
@@ -142,7 +142,7 @@ USER_FLOW_PROPOSED:
 
 EXPLAINER_NEEDED: [yes | no]
 EXPLAINER_TARGETS:
-- [pending question ref] - [subject: system-design | data-shape | tradeoff] - [what to illustrate] - [why better shown than told]
+- [pending question ref] - [subject: system-design | data-shape | tradeoff | background-context] - [what to illustrate or explain] - [why an artifact settles it faster than a sentence]
 (one bullet per pending question that wants a read-only explainer before it's asked; empty when EXPLAINER_NEEDED: no. Named TARGETS, not PROPOSED, on purpose: each bullet is a definite instruction the orchestrator lifts into the explainer's `<EXPLAINER_TARGET>` slot verbatim, where the `..._PROPOSED` blocks above are forward-looking suggestions their consumer may revise.)
 
 WRITES_PROPOSED:
