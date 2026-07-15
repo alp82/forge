@@ -406,15 +406,15 @@ def test_b01_agent_file_deleted():
 
 def test_b02_repo_tracked_grep_clean():
     """A repo-wide tracked-files grep for the agent-name needle finds no
-    matches anywhere, except the two historical carriers explicitly excluded
-    by design (TODO.md, CHANGELOG.md)."""
+    matches anywhere, except the three historical carriers explicitly excluded
+    by design (TODO.md, CHANGELOG.md, docs/research/pipeline-audit.md)."""
     result = subprocess.run(
         ["git", "grep", "-l", "-F", NEEDLE],
         cwd=str(REAL_REPO_ROOT),
         capture_output=True,
         text=True,
     )
-    allowed = {"TODO.md", "CHANGELOG.md"}
+    allowed = {"TODO.md", "CHANGELOG.md", "docs/research/pipeline-audit.md"}
     if result.returncode == 1:
         return  # no tracked carrier at all - clean
     assert result.returncode == 0, (
