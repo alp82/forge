@@ -32,3 +32,17 @@ A leitwort is a leading word: a short, memorable phrase an agent restates in its
 2. **Reinforce it.** A leitwort used once is inert. Recur it at the points where the agent acts - the anchors woven through `agents/plan-challenger.md` and `agents/discuss.md` are the canonical example.
 3. **One concept, one name.** Naming the same idea two ways across stages dilutes both; pick the canonical phrase and reuse it verbatim.
 4. **Keep it earned.** A job that reads fine as a literal instruction stays literal; a forced or fluffy coinage with no trained association tickles nothing and just spends words.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in the `alp82/alp-river` GitHub repo, managed via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles use their default label strings. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.

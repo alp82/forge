@@ -1,13 +1,4 @@
 
-
-skill-based new workflows?
-
----
-
-call codex from claude
-
----
-
 improve
     https://github.com/shadcn/improve
     https://www.reddit.com/r/ClaudeCode/comments/1u37glf/if_you_do_one_thing_with_fable_5_access_do_this/
