@@ -443,14 +443,14 @@
       <div class="d-gate"><span>⊘</span><span>Stop gate — the session can't end while a review is owed</span></div>
     </div>
 
-    <div class="d-panel" id="d-panel">
-      <h3 id="d-title">triage</h3>
-      <p id="d-body">Sizes the request before anything else happens. A multi-session effort with open decisions gets sent off to be mapped; a vague one gets interviewed down to something buildable.</p>
+    <div class="d-panel">
+      <h3 data-f="title">triage</h3>
+      <p data-f="body">Sizes the request before anything else happens. A multi-session effort with open decisions gets sent off to be mapped; a vague one gets interviewed down to something buildable.</p>
       <dl class="d-meta">
-        <dt>Reads</dt><dd id="d-reads">your request</dd>
-        <dt>Emits</dt><dd id="d-emits">request.md</dd>
-        <dt>Brief</dt><dd id="d-brief">go/TRIAGE.md</dd>
-        <dt>Words</dt><dd id="d-words">612</dd>
+        <dt>Reads</dt><dd data-f="reads">your request</dd>
+        <dt>Emits</dt><dd data-f="emits">request.md</dd>
+        <dt>Brief</dt><dd data-f="brief">go/TRIAGE.md</dd>
+        <dt>Words</dt><dd data-f="words">612</dd>
       </dl>
     </div>
   </div>
@@ -459,6 +459,117 @@
     <dt>Medium</dt><dd><b>Site</b> — needs interaction, can't be a README.</dd>
     <dt>Story</dt><dd>Architecture-as-pitch. The transparency <i>is</i> the differentiator, so the page proves it by exposing the entire machine at once and letting you read any part.</dd>
     <dt>Demos</dt><dd>Micro-casts, ~10s each, one per stage — playing inside the panel when you select a stage. No hero demo.</dd>
+  </dl>
+</section>
+
+<!-- ============================ VARIANT E ============================ -->
+<section id="E" class="wrap wide" hidden>
+  <div class="a-badges">
+    <span class="a-badge">version <b>2.0.0</b></span>
+    <span class="a-badge">claude code plugin</span>
+    <span class="a-badge">MIT</span>
+    <span class="a-badge">skills <b>3</b></span>
+  </div>
+
+  <div class="a-title">forge</div>
+  <p class="a-tagline">A code-change workflow for Claude Code. Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.</p>
+
+<pre>/plugin marketplace add alp82/forge
+/plugin install forge
+/setup-forge</pre>
+
+  <h2 class="a-h2">See it run</h2>
+
+  <div class="b-act">
+    <div class="b-note">
+      <div class="eyebrow">The plan gets attacked</div>
+      <h3>Before a line is written</h3>
+      <p>A second agent's only job is to break the plan. Cheapest possible place to be wrong.</p>
+    </div>
+    <div class="b-term"><pre><span class="u">›</span> /forge add rate limiting to the public API
+
+<span class="d">plan</span>      → .forge/rate-limit/plan.md
+<span class="d">challenge</span> <span class="u">✕ token bucket per-process breaks on 3 replicas</span>
+<span class="d">challenge</span> <span class="u">✕ no answer for what a 429 body says</span>
+<span class="d">plan</span>      revised → redis-backed, shared bucket</pre></div>
+  </div>
+
+  <div class="b-act">
+    <div class="b-note">
+      <div class="eyebrow">Green gets audited</div>
+      <h3>Tests that actually prove something</h3>
+      <p>A reviewer hunts for the passing test that would still pass with the feature deleted. False green is worse than red.</p>
+    </div>
+    <div class="b-term"><pre><span class="d">implement</span> 4 files, +181 −12
+<span class="d">tests</span>     11 added
+<span class="d">test-review</span> <span class="u">✕ burst test passes with the limiter deleted</span>
+<span class="d">fix</span>       assertion now fails without the limiter</pre></div>
+  </div>
+
+  <div class="b-act">
+    <div class="b-note">
+      <div class="eyebrow">Crossfire</div>
+      <h3>Reviewers that don't confer</h3>
+      <p>Independent lenses hit the diff at once, blind to each other. They don't know what the others found.</p>
+    </div>
+    <div class="b-term"><pre><span class="d">crossfire</span> 5 lenses, parallel
+  <span class="g">✓</span> correctness   clean
+  <span class="u">✕</span> security      limiter keyed on X-Forwarded-For, spoofable
+  <span class="u">✕</span> acceptance    admin routes uncovered, ticket said "public API"
+  <span class="g">✓</span> simplicity    clean
+  <span class="g">✓</span> conventions   clean
+
+<span class="d">fix</span>       2 findings → resolved
+<span class="d">crossfire</span> re-run <span class="g">✓ clean</span>
+<span class="c">done</span>      4 files, +196 −12 · plan survived challenge · 11 tests</pre></div>
+  </div>
+
+  <h2 class="a-h2">The whole machine</h2>
+  <p class="a-p">Seven stages, six hooks, three commands. No hidden layer — pick any stage and read exactly what it does and what it hands on.</p>
+
+  <div class="d-layout">
+    <div class="d-flow">
+      <button class="d-stage" data-stage="triage" aria-pressed="false"><span class="d-idx">1</span><span class="d-name">triage</span><span class="d-emit">→ request.md</span></button>
+      <button class="d-stage" data-stage="plan" aria-pressed="false"><span class="d-idx">2</span><span class="d-name">plan</span><span class="d-emit">→ plan.md</span></button>
+      <button class="d-stage" data-stage="challenge" aria-pressed="false"><span class="d-idx">3</span><span class="d-name">challenge</span><span class="d-emit">→ challenge.md</span></button>
+      <button class="d-stage" data-stage="implement" aria-pressed="false"><span class="d-idx">4</span><span class="d-name">implement</span><span class="d-emit">→ the diff</span></button>
+      <button class="d-stage" data-stage="tests" aria-pressed="false"><span class="d-idx">5</span><span class="d-name">test-author</span><span class="d-emit">→ the tests</span></button>
+      <button class="d-stage" data-stage="testreview" aria-pressed="false"><span class="d-idx">6</span><span class="d-name">test-review</span><span class="d-emit">→ findings.md</span></button>
+      <button class="d-stage cool" data-stage="crossfire" aria-pressed="false"><span class="d-idx">7</span><span class="d-name">crossfire</span><span class="d-emit">→ findings.md</span></button>
+      <button class="d-stage" data-stage="fix" aria-pressed="false"><span class="d-idx">8</span><span class="d-name">fix</span><span class="d-emit">→ the diff</span></button>
+      <div class="d-gate"><span>⊘</span><span>Stop gate — the session can't end while a review is owed</span></div>
+    </div>
+
+    <div class="d-panel">
+      <h3 data-f="title">triage</h3>
+      <p data-f="body">Sizes the request before anything else happens. A multi-session effort with open decisions gets sent off to be mapped; a vague one gets interviewed down to something buildable.</p>
+      <dl class="d-meta">
+        <dt>Reads</dt><dd data-f="reads">your request</dd>
+        <dt>Emits</dt><dd data-f="emits">request.md</dd>
+        <dt>Brief</dt><dd data-f="brief">go/TRIAGE.md</dd>
+        <dt>Words</dt><dd data-f="words">612</dd>
+      </dl>
+    </div>
+  </div>
+
+  <h2 class="a-h2">It can't skip the review</h2>
+  <p class="a-p">Prompts get forgotten under compaction; hooks don't. Forge ships six of them. If code changed and the review never ran, the session refuses to end.</p>
+
+  <h2 class="a-h2">It's just markdown</h2>
+  <p class="a-p">No agent definitions, no config language, no signal vocabulary. Every stage is a markdown file you can read in one sitting and edit with your own opinions. The plugin is a delivery mechanism, nothing more.</p>
+
+  <h2 class="a-h2">Works with your tracker</h2>
+  <p class="a-p">Point <code>/forge</code> at a ticket and it reads the ticket as the request, then posts the verdict back and closes it. No tracker? Nothing is missing — the contract lies dormant.</p>
+
+  <dl class="spec">
+    <dt>Medium</dt><dd><b>Both.</b> A full README carries A's reference content and stands alone on the repo; a GitHub Pages site is that same spine with B's transcript acts and D's interactive map layered in. One source of copy, two renderings.</dd>
+    <dt>Story</dt><dd>Reference-first frame (A), claims carried by shown transcript moments instead of adjectives (B), architecture exposed as the proof of transparency (D). No manifesto voice.</dd>
+    <dt>Demos</dt>
+    <dd><ol>
+      <li>Full run, ~90s — hero cast, embedded in both README and site.</li>
+      <li>Per-stage micro-casts, ~10s each — inside the map panel, site only.</li>
+      <li>Crossfire wave, ~40s — inside the crossfire act, site only.</li>
+    </ol></dd>
   </dl>
 </section>
 
@@ -474,6 +585,7 @@
     ['B', 'Transcript-led site'],
     ['C', 'Manifesto site'],
     ['D', 'System-map site'],
+    ['E', 'Merged A+B+D'],
   ];
 
   function show(key) {
@@ -515,15 +627,20 @@
     fix: ['fix', 'Works the findings until the diff survives a clean re-run of the wave.', 'findings.md', 'the diff', 'go/FIXER.md', '470'],
   };
 
-  const ids = ['d-title', 'd-body', 'd-reads', 'd-emits', 'd-brief', 'd-words'];
-  document.querySelectorAll('.d-stage').forEach((btn) => {
-    btn.onclick = () => {
-      document.querySelectorAll('.d-stage').forEach((b) => b.setAttribute('aria-pressed', 'false'));
-      btn.setAttribute('aria-pressed', 'true');
-      STAGES[btn.dataset.stage].forEach((v, i) => document.getElementById(ids[i]).textContent = v);
-    };
+  const FIELDS = ['title', 'body', 'reads', 'emits', 'brief', 'words'];
+  document.querySelectorAll('.d-layout').forEach((layout) => {
+    const btns = layout.querySelectorAll('.d-stage');
+    btns.forEach((btn) => {
+      btn.onclick = () => {
+        btns.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        STAGES[btn.dataset.stage].forEach((v, i) => {
+          layout.querySelector('[data-f="' + FIELDS[i] + '"]').textContent = v;
+        });
+      };
+    });
+    btns[0].setAttribute('aria-pressed', 'true');
   });
-  document.querySelector('.d-stage').setAttribute('aria-pressed', 'true');
 
-  show(new URL(location.href).searchParams.get('variant') || 'A');
+  show(new URL(location.href).searchParams.get('variant') || 'E');
 </script>
