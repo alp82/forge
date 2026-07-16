@@ -1,0 +1,529 @@
+<!--
+  PROTOTYPE — throwaway. Wayfinder ticket #13 (Landing page: shape, story, demos).
+  Four variants of the forge landing page, switchable via ?variant=A|B|C|D.
+  Not production code. The winner gets rewritten properly in the successor map.
+-->
+<title>forge — landing page variants (PROTOTYPE)</title>
+<style>
+  :root {
+    --ink: #14171C;
+    --ink-2: #262B33;
+    --steel: #667085;
+    --steel-2: #98A1AE;
+    --ground: #F5F6F7;
+    --ground-2: #FFFFFF;
+    --line: #DDE1E6;
+    --ember: #E8590C;
+    --ember-soft: #FDE8D9;
+    --quench: #2B7A9B;
+    --quench-soft: #E0EEF4;
+
+    --fg: var(--ink);
+    --fg-dim: var(--steel);
+    --bg: var(--ground);
+    --panel: var(--ground-2);
+    --rule: var(--line);
+    --accent: var(--ember);
+    --accent-soft: var(--ember-soft);
+    --cool: var(--quench);
+    --cool-soft: var(--quench-soft);
+
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+    --s6: 32px; --s7: 48px; --s8: 72px; --s9: 112px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg: #E6E9ED;
+      --fg-dim: #98A1AE;
+      --bg: #0E1116;
+      --panel: #171B22;
+      --rule: #2A313B;
+      --accent: #FF7A33;
+      --accent-soft: #3A1F10;
+      --cool: #63B3D4;
+      --cool-soft: #122A36;
+    }
+  }
+  :root[data-theme="dark"] {
+    --fg: #E6E9ED;
+    --fg-dim: #98A1AE;
+    --bg: #0E1116;
+    --panel: #171B22;
+    --rule: #2A313B;
+    --accent: #FF7A33;
+    --accent-soft: #3A1F10;
+    --cool: #63B3D4;
+    --cool-soft: #122A36;
+  }
+  :root[data-theme="light"] {
+    --fg: var(--ink);
+    --fg-dim: var(--steel);
+    --bg: var(--ground);
+    --panel: var(--ground-2);
+    --rule: var(--line);
+    --accent: var(--ember);
+    --accent-soft: var(--ember-soft);
+    --cool: var(--quench);
+    --cool-soft: var(--quench-soft);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: var(--s9);
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: var(--s7) var(--s5); }
+  .wide { max-width: 1140px; }
+  h1, h2, h3 { text-wrap: balance; }
+  code, pre, .m { font-family: var(--mono); }
+  a { color: var(--accent); }
+  pre {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: var(--s4);
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+
+  /* ---------- spec strip: what this variant is proposing (prototype-only) ---------- */
+  .spec {
+    border-top: 2px solid var(--fg);
+    margin-top: var(--s8);
+    padding-top: var(--s5);
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: var(--s3) var(--s5);
+    font-size: 14px;
+  }
+  .spec dt { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-dim); padding-top: 3px; }
+  .spec dd { margin: 0; }
+  .spec ol { margin: 0; padding-left: var(--s4); }
+
+  /* =========================== VARIANT A — README =========================== */
+  .a-badges { display: flex; flex-wrap: wrap; gap: var(--s2); margin-bottom: var(--s5); }
+  .a-badge {
+    font-family: var(--mono); font-size: 11px;
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 2px var(--s2); color: var(--fg-dim);
+  }
+  .a-badge b { color: var(--accent); font-weight: 600; }
+  .a-title { font-family: var(--mono); font-size: 34px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--s2); }
+  .a-tagline { font-size: 18px; color: var(--fg-dim); margin-bottom: var(--s6); max-width: 62ch; }
+  .a-h2 {
+    font-size: 20px; font-weight: 650; letter-spacing: -0.01em;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: var(--s2); margin: var(--s7) 0 var(--s4);
+  }
+  .a-p { max-width: 65ch; margin-bottom: var(--s4); }
+  .a-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .a-table th, .a-table td { text-align: left; padding: var(--s2) var(--s3); border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .a-table th { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-dim); }
+  .a-table td:first-child { font-family: var(--mono); white-space: nowrap; color: var(--accent); }
+
+  /* ====================== VARIANT B — transcript-led ======================== */
+  .b-hero { padding: var(--s8) 0 var(--s6); }
+  .b-kicker { font-family: var(--mono); font-size: 13px; color: var(--accent); margin-bottom: var(--s4); }
+  .b-h1 { font-family: var(--mono); font-size: clamp(28px, 5vw, 46px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: var(--s4); max-width: 18ch; }
+  .b-sub { font-size: 17px; color: var(--fg-dim); max-width: 54ch; }
+  .b-act { display: grid; grid-template-columns: 210px 1fr; gap: var(--s6); padding: var(--s6) 0; border-top: 1px solid var(--rule); }
+  .b-note { position: sticky; top: var(--s5); align-self: start; }
+  .b-note h3 { font-size: 16px; font-weight: 650; margin-bottom: var(--s2); }
+  .b-note p { font-size: 14px; color: var(--fg-dim); }
+  .b-term { background: var(--ink); border-radius: 4px; padding: var(--s4); overflow-x: auto; }
+  :root[data-theme="light"] .b-term, :root:not([data-theme]) .b-term { background: var(--ink); }
+  .b-term pre { background: none; border: 0; padding: 0; color: #C9D1D9; font-size: 12.5px; }
+  .b-term .u { color: #FF7A33; }
+  .b-term .g { color: #6FCF8E; }
+  .b-term .d { color: #7D8590; }
+  .b-term .c { color: #63B3D4; }
+  @media (max-width: 720px) { .b-act { grid-template-columns: 1fr; } .b-note { position: static; } }
+
+  /* ====================== VARIANT C — manifesto/proof ====================== */
+  .c-hero { padding: var(--s9) 0 var(--s7); border-bottom: 3px solid var(--fg); }
+  .c-claim {
+    font-family: var(--mono); font-weight: 700;
+    font-size: clamp(30px, 6.2vw, 64px);
+    letter-spacing: -0.045em; line-height: 1.02;
+    max-width: 15ch;
+  }
+  .c-claim .strike { color: var(--fg-dim); text-decoration: line-through; text-decoration-thickness: 2px; }
+  .c-claim .hot { color: var(--accent); }
+  .c-lede { margin-top: var(--s5); font-size: 17px; color: var(--fg-dim); max-width: 56ch; }
+  .c-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; margin-top: var(--s7); border-top: 1px solid var(--rule); }
+  .c-cell { padding: var(--s5) var(--s5) var(--s6) 0; border-bottom: 1px solid var(--rule); padding-right: var(--s5); }
+  .c-claim-s { font-size: 17px; font-weight: 650; margin: var(--s2) 0 var(--s2); }
+  .c-mech { font-size: 14px; color: var(--fg-dim); }
+  .c-mech b { color: var(--fg); font-weight: 600; }
+  .c-proof { margin-top: var(--s8); }
+  .c-proof-term { background: var(--ink); border-radius: 4px; padding: var(--s5); overflow-x: auto; margin-top: var(--s4); }
+  .c-proof-term pre { background: none; border: 0; padding: 0; color: #C9D1D9; font-size: 13px; }
+  .c-proof-term .stop { color: #FF6B6B; font-weight: 700; }
+  .c-proof-term .d { color: #7D8590; }
+  .c-proof-term .u { color: #FF7A33; }
+
+  /* ======================= VARIANT D — system map ========================== */
+  .d-head { padding: var(--s7) 0 var(--s6); }
+  .d-h1 { font-family: var(--mono); font-size: clamp(26px, 4vw, 38px); font-weight: 700; letter-spacing: -0.03em; margin-bottom: var(--s3); }
+  .d-sub { color: var(--fg-dim); max-width: 58ch; }
+  .d-layout { display: grid; grid-template-columns: 1fr 340px; gap: var(--s6); align-items: start; }
+  .d-flow { display: flex; flex-direction: column; gap: var(--s2); }
+  .d-stage {
+    display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: var(--s3);
+    background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--rule);
+    border-radius: 3px; padding: var(--s3) var(--s4);
+    cursor: pointer; text-align: left; width: 100%;
+    font: inherit; color: inherit;
+  }
+  .d-stage:hover { border-left-color: var(--accent); }
+  .d-stage:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .d-stage[aria-pressed="true"] { border-left-color: var(--accent); background: var(--accent-soft); }
+  .d-stage.cool[aria-pressed="true"] { border-left-color: var(--cool); background: var(--cool-soft); }
+  .d-idx { font-family: var(--mono); font-size: 11px; color: var(--fg-dim); }
+  .d-name { font-family: var(--mono); font-size: 14px; font-weight: 600; }
+  .d-emit { font-family: var(--mono); font-size: 11px; color: var(--fg-dim); }
+  .d-gate {
+    border: 1px dashed var(--accent); border-radius: 3px; padding: var(--s2) var(--s4);
+    font-family: var(--mono); font-size: 11.5px; color: var(--accent);
+    display: flex; align-items: center; gap: var(--s2);
+  }
+  .d-panel { position: sticky; top: var(--s5); border: 1px solid var(--rule); border-radius: 3px; background: var(--panel); padding: var(--s5); }
+  .d-panel h3 { font-family: var(--mono); font-size: 16px; margin-bottom: var(--s3); }
+  .d-panel p { font-size: 14px; color: var(--fg-dim); margin-bottom: var(--s4); }
+  .d-meta { display: grid; grid-template-columns: 62px 1fr; gap: var(--s2) var(--s3); font-size: 12.5px; }
+  .d-meta dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-dim); padding-top: 2px; }
+  .d-meta dd { margin: 0; font-family: var(--mono); }
+  @media (max-width: 860px) { .d-layout { grid-template-columns: 1fr; } .d-panel { position: static; } }
+
+  /* ---------------------------- switcher ---------------------------------- */
+  #sw {
+    position: fixed; bottom: var(--s5); left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: var(--s2);
+    background: #0B0D11; color: #fff; border: 1px solid #3A424E;
+    border-radius: 999px; padding: var(--s2) var(--s3);
+    box-shadow: 0 8px 28px rgba(0,0,0,.35); z-index: 99;
+    font-family: var(--mono); font-size: 12.5px;
+  }
+  #sw button {
+    background: #222932; color: #fff; border: 0; border-radius: 999px;
+    width: 26px; height: 26px; cursor: pointer; font-size: 13px; line-height: 1;
+  }
+  #sw button:hover { background: var(--ember); }
+  #sw button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+  #sw .lbl { padding: 0 var(--s2); white-space: nowrap; }
+  #sw .tag { color: #FF9C5B; }
+  .proto-flag {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 98;
+    background: var(--ember); color: #fff; text-align: center;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    padding: 3px;
+  }
+  body { padding-top: 22px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="proto-flag">Prototype — landing page variants — ticket #13</div>
+
+<!-- ============================ VARIANT A ============================ -->
+<section id="A" class="wrap" hidden>
+  <div class="a-badges">
+    <span class="a-badge">version <b>2.0.0</b></span>
+    <span class="a-badge">claude code plugin</span>
+    <span class="a-badge">MIT</span>
+    <span class="a-badge">skills <b>3</b></span>
+  </div>
+
+  <div class="a-title">forge</div>
+  <p class="a-tagline">A code-change workflow for Claude Code. Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.</p>
+
+  <h2 class="a-h2">Install</h2>
+<pre>/plugin marketplace add alp82/forge
+/plugin install forge
+/setup-forge</pre>
+
+  <h2 class="a-h2">Use</h2>
+  <p class="a-p">One verb. Describe the change you want in your own words.</p>
+<pre>/forge add rate limiting to the public API
+/forge #482                    <span style="color:var(--fg-dim)"># or point it at a ticket</span>
+/crossfire                     <span style="color:var(--fg-dim)"># review what's already there</span></pre>
+
+  <h2 class="a-h2">What happens</h2>
+  <table class="a-table">
+    <tr><th>Stage</th><th>What it does</th></tr>
+    <tr><td>triage</td><td>Sizes the request. Too big gets carved down or sent to a mapping skill; unclear gets interviewed.</td></tr>
+    <tr><td>plan</td><td>Writes the plan to a file, not the chat.</td></tr>
+    <tr><td>challenge</td><td>A second agent tries to break the plan before a line is written.</td></tr>
+    <tr><td>implement</td><td>Makes the change, with tests.</td></tr>
+    <tr><td>test-review</td><td>Catches tests that pass without proving anything.</td></tr>
+    <tr><td>crossfire</td><td>Independent reviewers hit the diff at once, each with one lens.</td></tr>
+    <tr><td>fix</td><td>Works the findings until the diff survives.</td></tr>
+  </table>
+
+  <h2 class="a-h2">It can't skip the review</h2>
+  <p class="a-p">Prompts get forgotten under compaction; hooks don't. Forge ships six of them. If code changed and the review never ran, the session refuses to end.</p>
+
+  <h2 class="a-h2">It's just markdown</h2>
+  <p class="a-p">No agent definitions, no config language, no signal vocabulary. Every stage is a markdown file you can read in one sitting and edit with your own opinions. The plugin is a delivery mechanism, nothing more.</p>
+
+  <h2 class="a-h2">Works with your tracker</h2>
+  <p class="a-p">Point <code>/forge</code> at a ticket and it reads the ticket as the request, then posts the verdict back and closes it. No tracker? Nothing is missing — the contract lies dormant.</p>
+
+  <dl class="spec">
+    <dt>Medium</dt><dd><b>README only.</b> No site. The repo front page is the landing page; GitHub hosts it, search finds it, it never goes stale because it's next to the code.</dd>
+    <dt>Story</dt><dd>Reference-first. "Here's what it is, here's how to install it, here's the stage list." Trust comes from legibility, not persuasion.</dd>
+    <dt>Demos</dt><dd>One embedded terminal cast at the top (~60s, the full run). Everything else is copy-pasteable commands.</dd>
+  </dl>
+</section>
+
+<!-- ============================ VARIANT B ============================ -->
+<section id="B" class="wrap" hidden>
+  <div class="b-hero">
+    <div class="b-kicker">$ /forge add rate limiting to the public API</div>
+    <h1 class="b-h1">Watch it think before it types.</h1>
+    <p class="b-sub">One request. Seven stages. Nothing hidden — this is the whole run, top to bottom.</p>
+  </div>
+
+  <div class="b-act">
+    <div class="b-note">
+      <div class="eyebrow">Act one</div>
+      <h3>It sizes you up first</h3>
+      <p>Before planning, forge decides whether your request is even one session's work. Too big gets carved down. Vague gets questioned.</p>
+    </div>
+    <div class="b-term"><pre><span class="u">›</span> /forge add rate limiting to the public API
+
+<span class="d">triage</span>  one session, clear enough → proceed
+<span class="d">triage</span>  found 4 route handlers, no existing middleware</pre></div>
+  </div>
+
+  <div class="b-act">
+    <div class="b-note">
+      <div class="eyebrow">Act two</div>
+      <h3>The plan gets attacked</h3>
+      <p>A second agent's only job is to break the plan — before a single line is written. Cheapest possible place to be wrong.</p>
+    </div>
+    <div class="b-term"><pre><span class="d">plan</span>      → .forge/rate-limit/plan.md
+<span class="d">challenge</span> <span class="u">✕ token bucket per-process breaks on 3 replicas</span>
+<span class="d">challenge</span> <span class="u">✕ no answer for what a 429 body says</span>
+<span class="d">plan</span>      revised → redis-backed, shared bucket</pre></div>
+  </div>
+
+  <div class="b-act">
+    <div class="b-note">
+      <div class="eyebrow">Act three</div>
+      <h3>Tests that actually prove something</h3>
+      <p>A reviewer reads the tests looking for green that means nothing — the assertion that can't fail, the mock that tests the mock.</p>
+    </div>
+    <div class="b-term"><pre><span class="d">implement</span> 4 files, +181 −12
+<span class="d">tests</span>     11 added
+<span class="d">test-review</span> <span class="u">✕ burst test passes with the limiter deleted</span>
+<span class="d">fix</span>       assertion now fails without the limiter</pre></div>
+  </div>
+
+  <div class="b-act">
+    <div class="b-note">
+      <div class="eyebrow">Act four</div>
+      <h3>Crossfire</h3>
+      <p>Independent reviewers hit the diff simultaneously, each seeing one thing only. They don't confer. They don't know what the others found.</p>
+    </div>
+    <div class="b-term"><pre><span class="d">crossfire</span> 5 lenses, parallel
+  <span class="g">✓</span> correctness   clean
+  <span class="u">✕</span> security      limiter keyed on X-Forwarded-For, spoofable
+  <span class="u">✕</span> acceptance    admin routes uncovered, ticket said "public API"
+  <span class="g">✓</span> simplicity    clean
+  <span class="g">✓</span> conventions   clean
+
+<span class="d">fix</span>       2 findings → resolved
+<span class="d">crossfire</span> re-run <span class="g">✓ clean</span>
+<span class="c">done</span>      4 files, +196 −12 · plan survived challenge · 11 tests</pre></div>
+  </div>
+
+  <dl class="spec">
+    <dt>Medium</dt><dd><b>Site</b> (GitHub Pages), with a short README that links to it.</dd>
+    <dt>Story</dt><dd>Show, don't claim. The transcript <i>is</i> the pitch — every differentiator is visible as a thing that happened, never asserted in adjectives.</dd>
+    <dt>Demos</dt>
+    <dd><ol>
+      <li>Full run, ~90s — the hero, autoplaying.</li>
+      <li>Crossfire wave alone, ~40s — five reviewers landing at once.</li>
+      <li>Wayfinder → forge handoff, ~60s — map ticket in, verdict out.</li>
+    </ol></dd>
+  </dl>
+</section>
+
+<!-- ============================ VARIANT C ============================ -->
+<section id="C" class="wrap" hidden>
+  <div class="c-hero">
+    <h1 class="c-claim">Your agent <span class="strike">reviews</span> <span class="hot">grades</span> its own homework.</h1>
+    <p class="c-lede">Every coding agent promises to check its work. Then the context fills up, the instruction falls out, and it ships anyway — cheerfully. Forge is built on the assumption that the model will forget, and makes forgetting impossible.</p>
+  </div>
+
+  <div class="c-grid">
+    <div class="c-cell">
+      <div class="eyebrow">Claim</div>
+      <div class="c-claim-s">The review can't be skipped.</div>
+      <p class="c-mech">Not "is instructed not to be." <b>A hook blocks the session from ending</b> while code has changed and no review has run. Prompts are advice; hooks are physics.</p>
+    </div>
+    <div class="c-cell">
+      <div class="eyebrow">Claim</div>
+      <div class="c-claim-s">The plan gets attacked before code exists.</div>
+      <p class="c-mech">A dedicated agent's only job is to break the plan. <b>Wrong is cheapest at the plan stage</b> — not after four files and a test suite.</p>
+    </div>
+    <div class="c-cell">
+      <div class="eyebrow">Claim</div>
+      <div class="c-claim-s">Reviewers don't confer.</div>
+      <p class="c-mech">Crossfire runs the lenses <b>in parallel and blind</b>. One reviewer with five jobs finds one thing. Five reviewers with one job each find five.</p>
+    </div>
+    <div class="c-cell">
+      <div class="eyebrow">Claim</div>
+      <div class="c-claim-s">Green tests get audited.</div>
+      <p class="c-mech">A reviewer hunts for the passing test that would <b>still pass with the feature deleted</b>. False green is worse than red.</p>
+    </div>
+    <div class="c-cell">
+      <div class="eyebrow">Claim</div>
+      <div class="c-claim-s">Nothing here is a black box.</div>
+      <p class="c-mech">No agent definitions, no config DSL. <b>Every stage is a markdown file</b> under 900 words. Disagree with one? Edit it.</p>
+    </div>
+    <div class="c-cell">
+      <div class="eyebrow">Claim</div>
+      <div class="c-claim-s">The chat stays out of the way.</div>
+      <p class="c-mech">Stages hand each other <b>file paths, not pasted text</b>. Runs survive compaction, and the orchestrator stops out-typing its own fleet.</p>
+    </div>
+  </div>
+
+  <div class="c-proof">
+    <div class="eyebrow">The proof</div>
+    <h2 style="font-size:22px;font-weight:650;margin:var(--s2) 0 var(--s3);max-width:34ch;">Try to walk away with a review owed.</h2>
+    <div class="c-proof-term"><pre><span class="u">›</span> that's good enough, stop here
+
+<span class="stop">⊘ blocked — review owed</span>
+<span class="d">  src/middleware/limit.ts changed 4 minutes ago.</span>
+<span class="d">  crossfire has not run on this diff.</span>
+<span class="d">  the session cannot end until it does.</span></pre></div>
+  </div>
+
+  <dl class="spec">
+    <dt>Medium</dt><dd><b>Site</b>, single screen-ish. README stays a stub that points at it.</dd>
+    <dt>Story</dt><dd>Stance-first. Names the shared enemy (agents that skip their own checks), then answers each claim with the mechanism that enforces it. Sells the <i>opinion</i>, not the feature list.</dd>
+    <dt>Demos</dt><dd>Exactly <b>one</b>, ~15s: the Stop gate refusing to end a session with a review owed. The single most unusual thing forge does — one demo, unmissable.</dd>
+  </dl>
+</section>
+
+<!-- ============================ VARIANT D ============================ -->
+<section id="D" class="wrap wide" hidden>
+  <div class="d-head">
+    <div class="eyebrow">forge</div>
+    <h1 class="d-h1">The whole system on one page.</h1>
+    <p class="d-sub">Seven stages, six hooks, three commands. No hidden layer — pick any stage and read exactly what it does and what it hands on.</p>
+  </div>
+
+  <div class="d-layout">
+    <div class="d-flow">
+      <button class="d-stage" data-stage="triage" aria-pressed="false"><span class="d-idx">1</span><span class="d-name">triage</span><span class="d-emit">→ request.md</span></button>
+      <button class="d-stage" data-stage="plan" aria-pressed="false"><span class="d-idx">2</span><span class="d-name">plan</span><span class="d-emit">→ plan.md</span></button>
+      <button class="d-stage" data-stage="challenge" aria-pressed="false"><span class="d-idx">3</span><span class="d-name">challenge</span><span class="d-emit">→ challenge.md</span></button>
+      <button class="d-stage" data-stage="implement" aria-pressed="false"><span class="d-idx">4</span><span class="d-name">implement</span><span class="d-emit">→ the diff</span></button>
+      <button class="d-stage" data-stage="tests" aria-pressed="false"><span class="d-idx">5</span><span class="d-name">test-author</span><span class="d-emit">→ the tests</span></button>
+      <button class="d-stage" data-stage="testreview" aria-pressed="false"><span class="d-idx">6</span><span class="d-name">test-review</span><span class="d-emit">→ findings.md</span></button>
+      <button class="d-stage cool" data-stage="crossfire" aria-pressed="false"><span class="d-idx">7</span><span class="d-name">crossfire</span><span class="d-emit">→ findings.md</span></button>
+      <button class="d-stage" data-stage="fix" aria-pressed="false"><span class="d-idx">8</span><span class="d-name">fix</span><span class="d-emit">→ the diff</span></button>
+      <div class="d-gate"><span>⊘</span><span>Stop gate — the session can't end while a review is owed</span></div>
+    </div>
+
+    <div class="d-panel" id="d-panel">
+      <h3 id="d-title">triage</h3>
+      <p id="d-body">Sizes the request before anything else happens. A multi-session effort with open decisions gets sent off to be mapped; a vague one gets interviewed down to something buildable.</p>
+      <dl class="d-meta">
+        <dt>Reads</dt><dd id="d-reads">your request</dd>
+        <dt>Emits</dt><dd id="d-emits">request.md</dd>
+        <dt>Brief</dt><dd id="d-brief">go/TRIAGE.md</dd>
+        <dt>Words</dt><dd id="d-words">612</dd>
+      </dl>
+    </div>
+  </div>
+
+  <dl class="spec">
+    <dt>Medium</dt><dd><b>Site</b> — needs interaction, can't be a README.</dd>
+    <dt>Story</dt><dd>Architecture-as-pitch. The transparency <i>is</i> the differentiator, so the page proves it by exposing the entire machine at once and letting you read any part.</dd>
+    <dt>Demos</dt><dd>Micro-casts, ~10s each, one per stage — playing inside the panel when you select a stage. No hero demo.</dd>
+  </dl>
+</section>
+
+<div id="sw">
+  <button id="prev" aria-label="Previous variant">‹</button>
+  <span class="lbl"><span class="tag" id="key">A</span> — <span id="name">README-only</span></span>
+  <button id="next" aria-label="Next variant">›</button>
+</div>
+
+<script>
+  const VARIANTS = [
+    ['A', 'README-only'],
+    ['B', 'Transcript-led site'],
+    ['C', 'Manifesto site'],
+    ['D', 'System-map site'],
+  ];
+
+  function show(key) {
+    VARIANTS.forEach(([k]) => document.getElementById(k).hidden = (k !== key));
+    const [, name] = VARIANTS.find(([k]) => k === key);
+    document.getElementById('key').textContent = key;
+    document.getElementById('name').textContent = name;
+    const url = new URL(location.href);
+    url.searchParams.set('variant', key);
+    history.replaceState({}, '', url);
+    scrollTo(0, 0);
+  }
+
+  function cycle(step) {
+    const cur = new URL(location.href).searchParams.get('variant') || 'A';
+    let i = VARIANTS.findIndex(([k]) => k === cur);
+    if (i < 0) i = 0;
+    show(VARIANTS[(i + step + VARIANTS.length) % VARIANTS.length][0]);
+  }
+
+  document.getElementById('prev').onclick = () => cycle(-1);
+  document.getElementById('next').onclick = () => cycle(1);
+  addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (e.key === 'ArrowLeft') cycle(-1);
+    if (e.key === 'ArrowRight') cycle(1);
+  });
+
+  // Variant D stage panel
+  const STAGES = {
+    triage: ['triage', 'Sizes the request before anything else happens. A multi-session effort with open decisions gets sent off to be mapped; a vague one gets interviewed down to something buildable.', 'your request', 'request.md', 'go/TRIAGE.md', '612'],
+    plan: ['plan', 'Writes the approach to a file rather than the chat, so the next stage reads a document instead of scrolling a transcript — and a fresh agent can pick it up after compaction.', 'request.md', 'plan.md', 'go/PLANNER.md', '740'],
+    challenge: ['challenge', 'Tries to break the plan. Its whole job is finding the assumption that collapses on contact — and it can stop the run cold if the plan is unbuildable as written.', 'plan.md', 'challenge.md', 'go/CHALLENGER.md', '688'],
+    implement: ['implement', 'Makes the change against the surviving plan. Reads paths, not pasted context.', 'plan.md, challenge.md', 'the diff', 'go/IMPLEMENTER.md', '805'],
+    tests: ['test-author', 'Writes tests for the change, aimed at the behavior the request asked for rather than the lines that happen to exist.', 'plan.md, the diff', 'the tests', 'go/TEST-AUTHOR.md', '594'],
+    testreview: ['test-review', 'Hunts for false green — the test that passes with the feature deleted, the mock asserting on itself. A green suite that proves nothing is worse than a red one.', 'the tests', 'findings.md', 'go/TEST-REVIEW.md', '523'],
+    crossfire: ['crossfire', 'Independent reviewers hit the diff at once, each carrying exactly one lens and blind to the others. Also runs standalone as /crossfire on any diff.', 'the diff', 'findings.md', 'crossfire/SKILL.md', '861'],
+    fix: ['fix', 'Works the findings until the diff survives a clean re-run of the wave.', 'findings.md', 'the diff', 'go/FIXER.md', '470'],
+  };
+
+  const ids = ['d-title', 'd-body', 'd-reads', 'd-emits', 'd-brief', 'd-words'];
+  document.querySelectorAll('.d-stage').forEach((btn) => {
+    btn.onclick = () => {
+      document.querySelectorAll('.d-stage').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      STAGES[btn.dataset.stage].forEach((v, i) => document.getElementById(ids[i]).textContent = v);
+    };
+  });
+  document.querySelector('.d-stage').setAttribute('aria-pressed', 'true');
+
+  show(new URL(location.href).searchParams.get('variant') || 'A');
+</script>
