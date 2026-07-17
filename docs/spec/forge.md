@@ -256,7 +256,31 @@ tooling from [#18](https://github.com/alp82/alp-river/issues/18).
   end bound). Re-recording is scripted via an autocast-style playbook; byte-stable regen
   requires a deterministic replay stub. Prototype source: branch `prototype/landing-page`.
 
-## 10. Successor map charter
+## 10. Portability
+
+Decisions from the harness-agnostic map
+([#31](https://github.com/alp82/forge/issues/31)); each entry links the ticket holding
+its full detail.
+
+**The spawn floor** ([#36](https://github.com/alp82/forge/issues/36)):
+
+1. **Isolated spawn is a hard requirement — no single-context fallback.** To run forge, a
+   harness MUST spawn a fresh, isolated agent context per stage; the contract defines no
+   degraded one-context mode, and a CLI that can't spawn is not a forge target. The
+   independence *is* the product: a challenger sharing the planner's context isn't loyal
+   opposition, an author sharing the reviewer's context defeats the test check. All four
+   surveyed harnesses clear this floor.
+2. **Parallel fan-out is optional, adapter-declared.** The guarantees rest on
+   independence, not wall-clock parallelism — "neither seeing the other's verdict" holds
+   when an adapter runs an independent pair serially into separate contexts, provided it
+   never feeds the first agent's output to the second. Briefs say "spawn independently —
+   in parallel where the adapter supports it." Keeps gemini (sequential-only) a valid
+   proof; parallelism is a speed optimization, not a correctness line.
+3. **Model-selectable spawn is required.** Every brief names a model per spawn, so the
+   floor includes choosing the model at spawn time. Model *diversity* (the worker running
+   a genuinely different model per harness) is a separate, still-open question.
+
+## 11. Successor map charter
 
 **Destination.** forge 2.0.0 is shipped and public: the skill-first shape built, the repo
 renamed, the migration path live, and the landing page with its three casts published.
