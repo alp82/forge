@@ -21,15 +21,15 @@ if [ -f "$plugin_json" ]; then
 fi
 
 # Sync check. /setup-forge symlinks the bare skill names in ~/.claude/skills
-# into the stable root (the marketplace clone, updated in place) - such a link
-# is always current. A link into the version-stamped plugin cache is a legacy
-# install: it dangles as soon as an update moves the version dir, so both the
-# already-dangling and the will-dangle shapes get the nag. Where a symlink
-# failed and a COPY was made, setup stamps the copy with a .forge-version
-# file; a stamp that differs from the plugin version (or is missing on a copy)
-# means the copy is stale. No entry at all = setup not run = stay silent (bare
-# names are opt-in). This stamp convention is canonical here; the setup skill
-# follows it.
+# into the stable root - the why of stable-root vs. versioned-cache is canonical
+# in skills/setup/SKILL.md ("Locate the plugin - and the stable root"). This
+# hook only detects the two legacy shapes that stem from it: a link that already
+# dangles, and a link into the versioned plugin cache that will dangle on the
+# next update - both nag. Where a symlink failed and a COPY was made, setup
+# stamps the copy with a .forge-version file; a stamp that differs from the
+# plugin version (or is missing on a copy) means the copy is stale. No entry at
+# all = setup not run = stay silent (bare names are opt-in). This stamp
+# convention is canonical here; the setup skill follows it.
 sync_nag=""
 for skill_dir in "${CLAUDE_PLUGIN_ROOT}"/skills/*/; do
   [ -f "${skill_dir}SKILL.md" ] || continue

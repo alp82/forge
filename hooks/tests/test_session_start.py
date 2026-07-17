@@ -3,9 +3,11 @@
 Contract: emit a hookSpecificOutput/additionalContext JSON object (plain text
 without jq) carrying exactly the minimal forge context - the entry rule
 ("code-modifying requests enter via /forge"), the flow-skill pointer, and,
-only when an installed skill COPY is stamped with a version that differs from
-the plugin's, the "re-run /setup-forge" nag. A symlinked skill is always
-current; an absent one means setup was never run - both stay silent.
+only when the installed skills are wired in a stale shape, the "re-run
+/setup-forge" nag. A symlink into the stable root is current and stays silent;
+a symlink that dangles or points into the versioned plugin cache nags (it will
+break on the next update); a COPY nags when its .forge-version stamp differs
+from the plugin's; an absent one means setup was never run and stays silent.
 
 Driven with HOME pointed at a temp dir so the real ~/.claude/skills never
 leaks into assertions.
@@ -76,6 +78,45 @@ def test_stale_skill_copy_triggers_the_setup_forge_nag():
         assert "re-run /setup-forge" in ctx, (
             f"a copy stamped 0.0.1 against plugin {_plugin_version()} must nag: {ctx!r}"
         )
+    finally:
+        shutil.rmtree(home, ignore_errors=True)
+
+
+def test_dangling_symlink_triggers_the_nag():
+    home = tempfile.mkdtemp()
+    try:
+        skills = Path(home) / ".claude" / "skills"
+        skills.mkdir(parents=True)
+        (skills / "forge").symlink_to(
+            Path(home) / "gone" / "forge", target_is_directory=True
+        )
+        ctx = _context(_run_hook(home))
+        assert "re-run /setup-forge" in ctx, (
+            f"a dangling skill link must nag: {ctx!r}"
+        )
+        assert "dangling" in ctx, f"the nag must name the dangling shape: {ctx!r}"
+    finally:
+        shutil.rmtree(home, ignore_errors=True)
+
+
+def test_cache_pointing_symlink_triggers_the_nag():
+    home = tempfile.mkdtemp()
+    try:
+        skills = Path(home) / ".claude" / "skills"
+        skills.mkdir(parents=True)
+        # A resolving link whose target sits under the versioned plugin cache -
+        # healthy today, dangles on the next update, so it nags now.
+        cached = (
+            Path(home) / ".claude" / "plugins" / "cache" / "mkt" / "forge"
+            / "1.0.0" / "skills" / "forge"
+        )
+        cached.mkdir(parents=True)
+        (skills / "forge").symlink_to(cached, target_is_directory=True)
+        ctx = _context(_run_hook(home))
+        assert "re-run /setup-forge" in ctx, (
+            f"a cache-pointing skill link must nag: {ctx!r}"
+        )
+        assert "cache" in ctx, f"the nag must name the cache shape: {ctx!r}"
     finally:
         shutil.rmtree(home, ignore_errors=True)
 
