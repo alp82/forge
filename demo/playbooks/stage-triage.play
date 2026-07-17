@@ -1,0 +1,13 @@
+# Micro-cast: triage — ~10s looping tile.
+@cols 80
+@rows 12
+@title triage
+
+r 0.5 |{org}❯{/} 
+t 0.3 0.03 |/forge add rate limiting to the public API
+o 0.4 |
+s 0.4 2.6 |{cyan}triage{/} {d}(haiku){/} — sizing the request, detecting detours
+o 0 |{green}✓{/} SIZE standard · flags: none
+o 1.0 |  {d}unknowns → interview · bug → diagnose · missing knowledge → research{/}
+w 3.6
+x 0

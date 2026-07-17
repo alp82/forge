@@ -1,0 +1,12 @@
+# Micro-cast: crossfire — ~10s looping tile.
+@cols 80
+@rows 12
+@title crossfire
+
+o 0.5 |{d}firing 6 lenses in parallel — each blind to the others{/}
+s 0.3 3.4 |{cyan}CORRECTNESS · ACCEPTANCE · SIMPLICITY · SHAPE · CONVENTIONS · worker{/}
+o 0 |  CORRECTNESS {yellow}warn{/} · ACCEPTANCE {green}pass{/} · SHAPE {green}pass{/}
+o 1.0 |  CONVENTIONS {green}pass{/} · SIMPLICITY {green}pass{/} · worker {red}fail{/}
+o 1.0 |  {red}▌{/} rate key from X-Forwarded-For — spoofable header
+w 4.3
+x 0

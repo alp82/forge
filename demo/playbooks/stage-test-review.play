@@ -1,0 +1,12 @@
+# Micro-cast: test-review — ~10s looping tile.
+@cols 80
+@rows 12
+@title test-review
+
+s 0.5 2.4 |{cyan}test-review{/} {d}(opus){/} — hunting false green
+o 0 |{red}✗{/} test_limit_resets passes with the limiter deleted
+w 2.8
+o 0.3 |{green}✓{/} rewritten · {b}ready{/} — the tests prove something now
+o 0.4 |  {d}code never starts against unvalidated tests{/}
+w 3.6
+x 0

@@ -1,0 +1,11 @@
+# Micro-cast: test-author — ~10s looping tile.
+@cols 80
+@rows 12
+@title test-author
+
+s 0.6 3.4 |{cyan}test-author{/} {d}(sonnet){/} — writing the red tests first
+o 0 |{green}✓{/} 4 tests written · {red}all red ✗{/}   {d}tests/test_ratelimit.py{/}
+o 1.2 |  {d}aimed at the promised behavior, not the lines{/}
+o 0.5 |  {d}that happen to exist{/}
+w 4.4
+x 0

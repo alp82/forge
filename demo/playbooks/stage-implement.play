@@ -1,0 +1,10 @@
+# Micro-cast: implement — ~10s looping tile.
+@cols 80
+@rows 12
+@title implement
+
+s 0.6 4.0 |{cyan}implementer{/} {d}(fable){/} — building against the surviving plan
+o 0 |{green}✓{/} tests {green}4/4 green{/} · receipt.md written
+o 1.2 |  {d}a KICKBACK goes back to the planner, not around it{/}
+w 4.3
+x 0

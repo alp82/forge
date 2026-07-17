@@ -1,0 +1,11 @@
+# Micro-cast: fix — ~10s looping tile.
+@cols 80
+@rows 12
+@title fix
+
+s 0.5 3.0 |{cyan}fixer{/} {d}(sonnet){/} — working the findings
+o 0 |{green}✓{/} key now derived from the authenticated client id
+s 0.4 2.6 |re-running {cyan}worker{/} + {cyan}CORRECTNESS{/} over the new diff
+o 0 |{green}✓{/} worker {green}pass{/} · CORRECTNESS {green}pass{/} — {b}wave clean{/}
+w 3.6
+x 0

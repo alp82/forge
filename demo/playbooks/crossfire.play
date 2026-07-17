@@ -1,0 +1,40 @@
+# Crossfire wave cast — standalone /crossfire over a working diff, ~40s.
+@cols 100
+@rows 24
+@title crossfire — the review wave, standalone
+
+m 0 Scope
+r 0.8 |{org}❯{/} 
+t 0.5 0.05 |/crossfire
+o 0.5 |
+o 0.4 |
+o 0.4 |{green}✓{/} scope: working diff vs HEAD — 3 files   {d}receipt.md · intent.md from ticket #482{/}
+o 0.7 |{d}diff touches auth →{/} {cyan}SECURITY{/} {d}joins the wave{/}
+w 2.8
+
+m 0.6 Wave
+o 1.0 |
+o 0.3 |{d}firing 7 lenses in parallel — each blind to the others, worker on a different model{/}
+s 0.4 4.8 |{cyan}CORRECTNESS · ACCEPTANCE · SIMPLICITY · SHAPE · CONVENTIONS · SECURITY · worker{/}
+o 0 |  {d}lens          verdict   gist{/}
+o 0.6 |  CORRECTNESS   {green}pass{/}
+o 0.6 |  ACCEPTANCE    {green}pass{/}      matches what ticket #482 asked for
+o 0.6 |  SIMPLICITY    {yellow}warn{/}      token parser duplicated — auth/parse.py already owns one
+o 0.6 |  SHAPE         {green}pass{/}
+o 0.6 |  CONVENTIONS   {green}pass{/}
+o 0.6 |  SECURITY      {red}fail{/}      token compared with == — timing leak; constant-time compare
+o 0.6 |  worker        {green}pass{/}      {d}(gemini){/}
+w 4.8
+
+m 0.6 Fix
+o 1.0 |
+o 0.3 |{org}❯{/} {b}Fix now?{/} — {b}{u}yes{/}
+s 1.0 3.8 |{cyan}fixer{/} {d}(sonnet){/} — working 2 findings
+o 0 |{green}✓{/} hmac.compare_digest in · parser reuses auth/parse.py
+s 0.5 3.4 |re-running {cyan}SECURITY{/} + {cyan}CORRECTNESS{/} over the new diff
+o 0 |{green}✓{/} SECURITY {green}pass{/} · CORRECTNESS {green}pass{/} — {b}wave clean{/}
+o 1.0 |
+o 0.8 |{b}crossfire complete{/} — verdict posted to ticket #482
+o 0.5 |
+w 3.8
+x 0

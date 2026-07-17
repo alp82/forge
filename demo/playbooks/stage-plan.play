@@ -1,0 +1,11 @@
+# Micro-cast: plan — ~10s looping tile.
+@cols 80
+@rows 12
+@title plan
+
+s 0.6 3.4 |{cyan}planner{/} {d}(fable){/} — writing the approach to a file, not the chat
+o 0 |{green}✓{/} {b}plan{/} done ▶ challenge   {d}plan.md{/}
+o 1.2 |  {d}the next stage reads a document — a fresh agent{/}
+o 0.5 |  {d}can pick it up after compaction{/}
+w 4.2
+x 0

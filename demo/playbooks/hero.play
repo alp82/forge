@@ -1,0 +1,90 @@
+# Hero cast — one /forge request end to end, ~90s.
+# Chapters (markers): Triage · Plan · Challenge · Tests first · Implement · Crossfire · Fix · Close
+@cols 100
+@rows 28
+@title forge — one request, end to end
+
+m 0 Triage
+r 0.8 |{org}❯{/} 
+t 0.6 0.04 |/forge add rate limiting to the public API
+o 0.6 |
+o 0.4 |
+s 0.4 2.4 |{cyan}triage{/} {d}(haiku){/} — sizing the request, detecting detours
+o 0 |{green}✓{/} {b}triage{/} done ▶ plan   {d}SIZE standard · flags: none · run dir .forge/rate-limit-public-api/{/}
+w 2.0
+
+m 0.8 Plan
+o 0.8 |
+s 0.4 2.8 |{cyan}planner{/} {d}(fable){/} — writing the approach to a file, not the chat
+o 0 |{green}✓{/} {b}plan{/} done ▶ challenge   {d}plan.md — token-bucket middleware, per-key buckets in process memory{/}
+w 2.2
+
+m 0.8 Challenge
+o 0.8 |
+o 0.4 |{d}spawning in parallel — neither sees the other's verdict{/}
+s 0.4 3.2 |{cyan}challenger{/} {d}(fable){/} + {cyan}worker{/} {d}(codex){/} — attacking the plan
+o 0 |{red}✗{/} {b}challenge{/} — {red}{b}BLOCKER{/}
+o 0.4 |  {red}▌{/} per-process buckets break under 3 gateway replicas — every client
+o 0.2 |  {red}▌{/} quietly gets 3× the limit. Redis sliding window or sticky routing;
+o 0.2 |  {red}▌{/} the plan proves neither.   {d}challenge.md{/}
+o 0.7 |  {yellow}▌{/} worker concurs — shared state required; also flags the missing
+o 0.2 |  {yellow}▌{/} Retry-After on 429.   {d}challenge-worker.md{/}
+w 3.6
+o 0.5 |
+o 0.3 |{org}❯{/} {b}Gate{/} — Approve · {b}{u}Revise{/} · Reshape
+w 2.4
+o 0.3 |{d}revising with the blockers as corrections — the plan re-earns approval{/}
+s 0.3 2.6 |{cyan}planner{/} — plan v2: Redis sliding-window counters, Retry-After on 429
+o 0 |{green}✓{/} {b}plan v2{/} ▶ gate
+o 0.7 |{org}❯{/} {b}Gate{/} — {b}{u}Approve{/}   {d}open concerns become known risks{/}
+w 2.4
+
+m 1.0 Tests first
+o 1.0 |
+s 0.4 2.8 |{cyan}test-author{/} {d}(sonnet){/} — writing the red tests first
+o 0 |{green}✓{/} 4 tests written · {red}all red ✗{/}   {d}tests/test_ratelimit.py{/}
+s 0.6 2.6 |{cyan}test-review{/} {d}(opus){/} — hunting false green
+o 0 |{red}✗{/} {b}test-review{/} — {red}misaligned{/}
+o 0.4 |  {red}▌{/} test_limit_resets still passes with the limiter deleted —
+o 0.2 |  {red}▌{/} it asserts on the mock clock, never on the 429.
+w 3.0
+s 0.5 2.2 |{cyan}test-author{/} — rewriting the flagged test
+o 0 |{green}✓{/} {b}test-review{/}: ready — 4 red tests prove the behavior. {d}Code starts now.{/}
+w 2.4
+
+m 0.8 Implement
+o 0.8 |
+s 0.4 3.8 |{cyan}implementer{/} {d}(fable){/} — building against plan v2, turning the tests green
+o 0 |{green}✓{/} {b}implement{/} done ▶ crossfire   {d}tests 4/4 green · receipt.md{/}
+w 2.0
+
+m 0.8 Crossfire
+o 0.8 |
+o 0.4 |{d}firing 6 lenses in parallel — each blind to the others{/}
+s 0.4 3.6 |{cyan}CORRECTNESS · ACCEPTANCE · SIMPLICITY · SHAPE · CONVENTIONS · worker{/}
+o 0 |  {d}lens          verdict   gist{/}
+o 0.4 |  CORRECTNESS   {yellow}warn{/}      bucket-expiry race — {d}[likely]{/} benign, the window self-heals
+o 0.4 |  ACCEPTANCE    {green}pass{/}      429 + Retry-After land exactly as asked
+o 0.4 |  SIMPLICITY    {green}pass{/}
+o 0.4 |  SHAPE         {green}pass{/}      limiter isolated behind one seam
+o 0.4 |  CONVENTIONS   {green}pass{/}
+o 0.4 |  worker        {red}fail{/}      rate key from X-Forwarded-For — spoofable header
+w 3.6
+
+m 0.6 Fix
+o 0.6 |
+s 0.4 3.0 |{cyan}fixer{/} {d}(sonnet){/} — working 2 findings
+o 0 |{green}✓{/} key now derived from the authenticated client id · expiry race noted as accepted
+s 0.5 2.6 |re-running {cyan}worker{/} + {cyan}CORRECTNESS{/} over the new diff
+o 0 |{green}✓{/} worker {green}pass{/} · CORRECTNESS {green}pass{/} — {b}wave clean{/}
+w 2.2
+
+m 0.8 Close
+o 0.8 |
+o 0.3 |{b}forge run complete{/}
+o 0.4 |  changed     gateway/ratelimit.py {green}+118{/} · tests/test_ratelimit.py {green}+64{/}
+o 0.3 |  review      6 lenses clean after one fix pass
+o 0.3 |  deviation   in-memory buckets → Redis sliding window {d}(challenge){/}
+o 0.6 |
+w 3.0
+x 0

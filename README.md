@@ -47,9 +47,9 @@ One verb. Describe the change you want in your own words.
 
 ## See it run
 
-<!-- MEDIA SLOT: hero cast | placement: full width below "See it run" | content: agg-rendered GIF of the full-run cast (~90 s), one /forge request from triage to clean crossfire re-run | alt: "A full forge run: plan attacked, tests reviewed, crossfire wave, fix" | source: the hero .cast recorded by the demo ticket | format: gif -->
+<!-- MEDIA SLOT: hero cast | source: demo/playbooks/hero.play → demo/casts/hero.cast → agg | regen: demo/build.sh -->
 
-*Hero cast lands here — recording in progress.*
+![A full forge run: plan attacked, tests reviewed, crossfire wave, fix](docs/assets/forge-hero.gif)
 
 ## What happens
 

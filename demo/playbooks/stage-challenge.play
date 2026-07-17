@@ -1,0 +1,12 @@
+# Micro-cast: challenge — ~10s looping tile.
+@cols 80
+@rows 12
+@title challenge
+
+s 0.5 2.4 |{cyan}challenger{/} {d}(fable){/} — a plan is wrong until proven
+o 0 |{red}✗{/} {red}{b}BLOCKER{/} — per-process buckets break under 3 replicas:
+o 0.2 |  every client quietly gets 3× the limit
+w 3.0
+o 0.4 |{org}❯{/} {b}Gate{/} — Approve · {b}{u}Revise{/} · Reshape
+w 3.5
+x 0
