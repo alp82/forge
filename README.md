@@ -8,7 +8,7 @@
 
 [![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)](https://claude.com/claude-code)
 [![Skills](https://shieldcn.dev/badge/Skills-first-D97757.svg?logo=anthropic&variant=outline&size=lg)](skills/forge/SKILL.md)
-[![Version](https://shieldcn.dev/badge/version-2.0.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
+[![Version](https://shieldcn.dev/badge/version-2.0.1-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
@@ -62,8 +62,7 @@ Per-stage micro-casts and the standalone crossfire wave play on [the site](https
 | triage | Sizes the request and detects what's missing: unknowns get interviewed, unproven externals get prototyped, missing knowledge gets researched, a bug gets diagnosed before anything is built. |
 | plan | Writes the approach to a file, not the chat — the next stage reads a document, and a fresh agent can pick it up after compaction. |
 | challenge | A second agent tries to break the plan before a line is written. Cheapest possible place to be wrong. |
-| test-author | Writes the red tests first, aimed at the behavior the request asked for rather than the lines that happen to exist. |
-| test-review | Hunts for false green — the test that passes with the feature deleted, the mock asserting on itself. Code waits until the tests prove something. |
+| tests | Writes the red tests first, aimed at the behavior the request asked for — then a second agent hunts for false green: the test that passes with the feature deleted, the mock asserting on itself. Code waits until the tests prove something. |
 | implement | Makes the change against the surviving plan and turns the tests green. |
 | crossfire | Independent reviewers hit the diff at once, each carrying one lens, blind to the others. Also runs standalone as `/crossfire` on any diff, branch, or file set. |
 | fix | Works the findings until the diff survives a clean re-run of the wave. |

@@ -24,7 +24,7 @@ source; nothing is hand-recorded.
 |---|---|---|
 | `hero` | ~90 s | README GIF (`docs/assets/forge-hero.gif`) + site player; markers at each stage boundary |
 | `crossfire` | ~40 s | site — the standalone review wave |
-| `stage-*` (8) | ~10 s each | site — looping tiles in the system-map panel |
+| `stage-*` (7) | ~10 s each | site — looping tiles in the system-map panel |
 
 ## Re-recording
 

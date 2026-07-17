@@ -2,6 +2,10 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.0.1 - 2026-07-17
+
+- Writing the red tests and auditing them for false green now read as one tests stage across the pipeline, docs, and site - the audit still runs as its own independent check inside it.
+
 ## 2.0.0 - 2026-07-17
 
 This release is a rename: **forge**, previously alp-river. Same repo, same changelog, new name - GitHub redirects the old URLs, but the plugin entry itself is new, so an installed alp-river no longer updates and must be swapped once.

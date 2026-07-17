@@ -249,7 +249,7 @@
   </div>
 
   <h2 class="h2">The whole machine</h2>
-  <p class="p">Eight stages, six hooks, no hidden layer. Pick any stage: what it does, what it reads and emits, the brief that drives it — and ten seconds of it running.</p>
+  <p class="p">Seven stages, six hooks, no hidden layer. Pick any stage: what it does, what it reads and emits, the brief that drives it — and ten seconds of it running.</p>
 
   <div class="map">
     <div class="flow" id="flow"></div>
@@ -259,7 +259,7 @@
       <dl class="meta">
         <dt>Reads</dt><dd id="p-reads"></dd>
         <dt>Emits</dt><dd id="p-emits"></dd>
-        <dt>Brief</dt><dd><a id="p-brief" href=""></a></dd>
+        <dt>Brief</dt><dd id="p-brief"></dd>
         <dt>Words</dt><dd id="p-words"></dd>
       </dl>
       <div id="stage-cast"></div>
@@ -292,28 +292,25 @@
   const STAGES = [
     { id: 'triage', name: 'triage', emit: '→ intent.md',
       body: "Sizes the request and detects what's missing: unknowns get interviewed, unproven externals get prototyped, missing knowledge gets researched, a bug gets diagnosed before anything is built.",
-      reads: 'your request', emits: 'intent.md', brief: 'skills/forge/TRIAGE.md', words: 391 },
+      reads: 'your request', emits: 'intent.md', briefs: ['skills/forge/TRIAGE.md'], words: '391' },
     { id: 'plan', name: 'plan', emit: '→ plan.md',
       body: 'Writes the approach to a file, not the chat — the next stage reads a document, and a fresh agent can pick it up after compaction.',
-      reads: 'intent.md', emits: 'plan.md', brief: 'skills/forge/PLANNER.md', words: 613 },
+      reads: 'intent.md', emits: 'plan.md', briefs: ['skills/forge/PLANNER.md'], words: '613' },
     { id: 'challenge', name: 'challenge', emit: '→ challenge.md',
       body: 'A second agent tries to break the plan before a line is written. Cheapest possible place to be wrong.',
-      reads: 'plan.md', emits: 'challenge.md', brief: 'skills/forge/CHALLENGER.md', words: 469 },
-    { id: 'test-author', name: 'test-author', emit: '→ red tests',
-      body: 'Writes the red tests first, aimed at the behavior the request asked for rather than the lines that happen to exist.',
-      reads: 'intent.md, plan.md', emits: 'red tests + tests.md', brief: 'skills/forge/TEST-AUTHOR.md', words: 243 },
-    { id: 'test-review', name: 'test-review', emit: '→ ready / misaligned',
-      body: 'Hunts for false green — the test that passes with the feature deleted, the mock asserting on itself. Code waits until the tests prove something.',
-      reads: 'the red tests', emits: 'ready / misaligned', brief: 'skills/forge/TEST-REVIEW.md', words: 213 },
+      reads: 'plan.md', emits: 'challenge.md', briefs: ['skills/forge/CHALLENGER.md'], words: '469' },
+    { id: 'tests', name: 'tests', emit: '→ red tests',
+      body: 'Writes the red tests first, aimed at the behavior the request asked for — then a second agent hunts for false green: the test that passes with the feature deleted, the mock asserting on itself. Code waits until the tests prove something.',
+      reads: 'intent.md, plan.md', emits: 'red tests + tests.md', briefs: ['skills/forge/TEST-AUTHOR.md', 'skills/forge/TEST-REVIEW.md'], words: '243 + 213' },
     { id: 'implement', name: 'implement', emit: '→ the diff',
       body: 'Makes the change against the surviving plan and turns the tests green.',
-      reads: 'plan.md, the tests', emits: 'the diff + receipt.md', brief: 'skills/forge/IMPLEMENTER.md', words: 504 },
+      reads: 'plan.md, the tests', emits: 'the diff + receipt.md', briefs: ['skills/forge/IMPLEMENTER.md'], words: '504' },
     { id: 'crossfire', name: 'crossfire', emit: '→ findings', cool: true,
       body: 'Independent reviewers hit the diff at once, each carrying one lens, blind to the others. Also runs standalone as /crossfire on any diff, branch, or file set.',
-      reads: 'receipt.md, plan.md, intent.md', emits: 'findings-<lens>.md', brief: 'skills/crossfire/SKILL.md', words: 696 },
+      reads: 'receipt.md, plan.md, intent.md', emits: 'findings-<lens>.md', briefs: ['skills/crossfire/SKILL.md'], words: '696' },
     { id: 'fix', name: 'fix', emit: '→ the diff',
       body: 'Works the findings until the diff survives a clean re-run of the wave.',
-      reads: 'findings-<lens>.md', emits: 'the diff', brief: 'skills/forge/FIXER.md', words: 212 },
+      reads: 'findings-<lens>.md', emits: 'the diff', briefs: ['skills/forge/FIXER.md'], words: '212' },
   ];
 
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -346,9 +343,8 @@
     document.getElementById('p-body').textContent = s.body;
     document.getElementById('p-reads').textContent = s.reads;
     document.getElementById('p-emits').textContent = s.emits;
-    const brief = document.getElementById('p-brief');
-    brief.textContent = s.brief;
-    brief.href = GH + s.brief;
+    document.getElementById('p-brief').innerHTML = s.briefs
+      .map(b => '<a href="' + GH + b + '">' + b + '</a>').join(' + ');
     document.getElementById('p-words').textContent = s.words;
     if (stagePlayer) stagePlayer.dispose();
     stagePlayer = AsciinemaPlayer.create('casts/stage-' + s.id + '.cast',

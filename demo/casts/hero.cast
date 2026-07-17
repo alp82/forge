@@ -157,7 +157,7 @@
 [0.12,"o","\r\u001b[2K"]
 [0.0,"o","\u001b[32m✓\u001b[0m \u001b[1mplan v2\u001b[0m ▶ gate\r\n"]
 [0.7,"o","\u001b[38;2;217;119;87m❯\u001b[0m \u001b[1mGate\u001b[0m — \u001b[1m\u001b[4mApprove\u001b[0m   \u001b[2mopen concerns become known risks\u001b[0m\r\n"]
-[3.4,"m","Tests first"]
+[3.4,"m","Tests"]
 [1.0,"o","\r\n"]
 [0.4,"o","\r\u001b[2K\u001b[38;2;217;119;87m⠋\u001b[0m \u001b[36mtest-author\u001b[0m \u001b[2m(sonnet)\u001b[0m — writing the red tests first"]
 [0.12,"o","\r\u001b[2K\u001b[38;2;217;119;87m⠙\u001b[0m \u001b[36mtest-author\u001b[0m \u001b[2m(sonnet)\u001b[0m — writing the red tests first"]

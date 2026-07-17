@@ -44,7 +44,8 @@ public-toolkit case. All 42 prior capabilities accounted for.
 **Paths.** Code is the only route. talk dissolves into plain conversation; sketch and
 system are cut whole.
 
-**Seven stages kept:**
+**Six stages kept** (amended post-2.0: test-author and test-review merged into the one
+`tests` stage — two spawns, one stage, mirroring challenge's challenger + worker pair):
 
 | Stage | Notes |
 |---|---|
@@ -52,8 +53,7 @@ system are cut whole.
 | planner | absorbs the Scout band's questions (reuse scan, health read, flag unknowns for a prototype detour) |
 | challenger | kept untouched — strongest evidence in the corpus |
 | implementer | kept |
-| test-author | absorbs test-plan: derive cases + write red tests in one spawn |
-| test-review | kept standalone — the false-green catch nobody else in the field has |
+| tests | one stage, two spawns: test-author (absorbs test-plan: derive cases + write red tests) then test-review as its gate — the false-green catch nobody else in the field has, kept an independent spawn |
 | fixer | kept |
 
 **Review wave + fixer** kept as a capability; the lens roster is § 4.

@@ -1,5 +1,5 @@
 # Hero cast — one /forge request end to end, ~90s.
-# Chapters (markers): Triage · Plan · Challenge · Tests first · Implement · Crossfire · Fix · Close
+# Chapters (markers): Triage · Plan · Challenge · Tests · Implement · Crossfire · Fix · Close
 @cols 100
 @rows 28
 @title forge — one request, end to end
@@ -39,7 +39,7 @@ o 0 |{green}✓{/} {b}plan v2{/} ▶ gate
 o 0.7 |{org}❯{/} {b}Gate{/} — {b}{u}Approve{/}   {d}open concerns become known risks{/}
 w 2.4
 
-m 1.0 Tests first
+m 1.0 Tests
 o 1.0 |
 s 0.4 2.8 |{cyan}test-author{/} {d}(sonnet){/} — writing the red tests first
 o 0 |{green}✓{/} 4 tests written · {red}all red ✗{/}   {d}tests/test_ratelimit.py{/}

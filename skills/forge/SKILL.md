@@ -42,9 +42,9 @@ Spawn in parallel, neither seeing the other's verdict before both are written:
 
 Read both, then gate with AskUserQuestion: **Approve** (proceed; open concerns become known risks) / **Revise** (re-spawn PLANNER.md with the blockers as corrections; the revised plan re-earns approval through this gate) / **Reshape** (back to the interview — the plan answers the wrong question). The plan's Summary and both challenge verdicts are the evidence shown.
 
-## Tests first
+## Tests
 
-When the change carries real logic (triage's NEEDS-TESTS, or the plan reveals it):
+One stage, two hands — like the challenge, it pairs a doer with an independent check. When the change carries real logic (triage's NEEDS-TESTS, or the plan reveals it):
 
 1. Spawn TEST-AUTHOR.md (model `sonnet`) → red tests in the repo's test tree + `tests.md`.
 2. Spawn TEST-REVIEW.md (`Explore`, model `opus`) to validate the red tests against intent and plan. `misaligned` → re-spawn TEST-AUTHOR.md with the report; loop until `ready`. Code never starts against unvalidated tests.

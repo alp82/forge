@@ -1,0 +1,12 @@
+# Micro-cast: tests — ~10s looping tile. One stage, two hands: author, then the false-green catch.
+@cols 80
+@rows 12
+@title tests
+
+s 0.5 2.6 |{cyan}test-author{/} {d}(sonnet){/} — writing the red tests first
+o 0 |{green}✓{/} 4 tests written · {red}all red ✗{/}   {d}tests/test_ratelimit.py{/}
+s 0.4 2.2 |{cyan}test-review{/} {d}(opus){/} — hunting false green
+o 0 |{red}✗{/} test_limit_resets passes with the limiter deleted
+o 0.5 |{green}✓{/} rewritten · {b}ready{/} — {d}code never starts against unvalidated tests{/}
+w 3.4
+x 0
