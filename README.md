@@ -1,26 +1,18 @@
 <div align="center">
 
-# 🌊 Alp River
+# forge
 
-## A river of agents, composed to the task
+## Plan · attack the plan · build test-first · review in crossfire
 
 [![Stars, Forks, Open Issues and License](https://shieldcn.dev/group/github/stars/alp82/forge+github/forks/alp82/forge+github/open-issues/alp82/forge+github/license/alp82/forge.svg?variant=secondary)](https://github.com/alp82/forge)
 
 [![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)](https://claude.com/claude-code)
-[![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)](skills/forge/SKILL.md)
+[![Skills](https://shieldcn.dev/badge/Skills-first-D97757.svg?logo=anthropic&variant=outline&size=lg)](skills/forge/SKILL.md)
 [![Version](https://shieldcn.dev/badge/version-2.0.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
-### **Routes itself** · **Plans** · **Tests first** · **Reviews in parallel** · **Self-heals**
-
-<br>
-
-<!-- MEDIA SLOT 1: hero journey diagram | placement: centered, directly below the strapline | dimensions: width 800px (~800x300) | content: the seven stops as a stylized river flowing left-to-right with the stage emojis as waypoints | alt: "The alp-river journey: Intent, Scout, Blueprint, Tests, Build, Review, Ship" | format: png or animated gif -->
-
-`🔎 Intent → 🧭 Scout → 📐 Blueprint → 🧪 Tests → 🔨 Build → 🔬 Review → 🚀 Ship`
-
-<br>
+A code-change workflow for Claude Code. Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.
 
 **Featured in:** [Alper Ortac's AI Stack](https://aistack.to/stacks/alper-ortac-unw0sl)
 
@@ -28,277 +20,63 @@
 
 ---
 
-## ⚡ Quick start
-
-Install in Claude Code:
+## Install
 
 ```
 /plugin marketplace add alp82/forge
 /plugin install forge@alperortac
-/reload-plugins
+/forge:setup-forge
 ```
+
+The setup runs once, plugin-prefixed; it installs the bare command names, so from then on it's `/setup-forge` everywhere. Plugin updates propagate on their own — no re-run needed.
 
 Upgrading from alp-river? Three steps in the [2.0.0 changelog entry](CHANGELOG.md).
 
-To pull updates later:
-
-```
-/plugin marketplace update alperortac
-/reload-plugins
-```
-
-Then:
-
-1. Set your main session model to **Opus at high effort** (see the tip below).
-2. Run `/setup-forge` once, then describe what you want in plain English or run `/forge` - and respond only at the decision points.
-
 > [!TIP]
-> Run the main session on a top-tier model like Opus at high effort. The orchestrator drives every routing decision, so a weaker main model degrades the whole pipeline.
+> Run the main session on a top-tier model at high effort. The orchestrator drives every routing decision, so a weaker main model degrades the whole pipeline.
 
-<div align="center">
+## Use
 
-<!-- MEDIA SLOT 2: run screenshot | placement: centered, directly below Quick start | dimensions: width 577 | content: existing docs/assets/intro-example.png, replaceable with a fresher run capture | alt: "alp-river composing a route for a task" | format: png -->
-
-<img src="docs/assets/intro-example.png" alt="alp-river composing a route for a task" width="577">
-
-*What a composed run looks like*
-
-</div>
-
-<details>
-<summary>
-
-## 📰 Latest updates
-
-</summary>
-
-The last three updates:
-
-**2.0.0**
-
-- The plugin is now named forge; installed copies of alp-river stop receiving updates until swapped.
-- The public commands are /forge, /crossfire, and /setup-forge - bare names, no plugin prefix, available in any project after setup.
-- /setup-forge installs the skills once and configures per-repo conventions; plugin updates then propagate without re-running it.
-
-**1.4.3**
-
-- The old pipeline surface is removed: the /go and /review commands, all agent definitions, and the workflow doctrine files are gone - the forge and crossfire skills carry the whole flow.
-- The self-audit and reflect commands leave the plugin and continue as repo-internal skills working against the skill files.
-- Contributor docs now describe the skill-first layout; changelog entry rules moved there.
-
-**1.4.2**
-
-- End-of-turn checks gain a third gate: a session that changed code but never ran a review is blocked once and pointed at the review step.
-- Session start now injects a three-line pointer (entry rule, flow location, stale-skill nag) instead of the workflow essentials block.
-- Automatic post-edit formatting and desktop notifications left the plugin; re-add them in your personal settings to keep them.
-- The deterministic step router and its agent catalog are removed; the flow now lives in the forge and crossfire skill files.
-
-Full history in [CHANGELOG.md](CHANGELOG.md).
-
-</details>
-
----
-
-## 🗺️ The journey
-
-Seven stops from headwater to sea. Each one-liner is the whole story; open a stop if you want to wade deeper.
-
-### 🔎 Intent - the river reads the current before it moves
-
-<!-- MEDIA SLOT 3: clarify-loop question card | placement: inside the Intent block, above the details fold-out | dimensions: width 700px | content: a clarify-loop question card screenshot | alt: "Clarifier asking a scoped question" | format: png -->
-
-<details>
-<summary>Wade in: how intent settles</summary>
-
-| Stage | Model | Role |
-|-------|-------|------|
-| triage | haiku | Always-on. Reads your request, picks the path, flags early risk and bug-framing. |
-| clarifier | opus | When the ask is ambiguous or under-specified, or simply bigger than a small tweak, researches the area, then confirms scope and success criteria and surfaces edge cases and acceptance criteria - one loop, both altitudes; exits immediately with zero questions when none are warranted. |
-
-Where you stay in the loop:
-
-- **Clarifier** - researches the codebase first, then asks only what's still open.
-- **Cost / plan gates** - fire only when the route turns expensive or a plan is ready. Never as fixed ceremony.
-
-</details>
-
-<br/>
-
-### 🧭 Scout - walks the banks before the water rises
-
-What's reusable, how healthy the ground is, what novelty needs a tracer-bullet, and the root cause behind a bug.
-
-<details>
-<summary>Wade in: the full scouting party</summary>
-
-| Stage | Model | Role |
-|-------|-------|------|
-| reuse-scanner | sonnet | Finds reusable code and quick wins; flags duplication and missing infra. |
-| health-checker | haiku | Scores the health of the area you're touching and surfaces cleanup targets. |
-| prototype-identifier | haiku | Flags unfamiliar APIs or SDKs and suggests shapes to try first. |
-| code-prototyper | sonnet | Builds a tracer-bullet against the real API to de-risk novelty before planning. |
-| data-prototyper | sonnet | Tries competing schemas against real samples and writes a reference report. |
-| performance-prototyper | sonnet | Measures timing/scale-critical unknowns with a runnable and a charted report. |
-| researcher | sonnet | Pulls library, framework, and domain knowledge from the web. |
-| code-investigator | opus | Root-cause debugging for a bug: hypothesizes, repros, traces; stops at the diagnosis the planner consumes. |
-
-</details>
-
-<br/>
-
-### 📐 Blueprint - a plan takes shape, then a challenger tries to sink it
-
-<details>
-<summary>Wade in: planning and its adversary</summary>
-
-| Stage | Model | Role |
-|-------|-------|------|
-| design-prototyper | opus | For UI with multiple legitimate visuals, builds an interactive picker; you paste back the spec. |
-| ux-prototyper | opus | For multiple legitimate user flows, builds a clickable wireflow; you paste back the flow spec. |
-| code-planner | fable | Turns intent into a concrete step-by-step blueprint. |
-| plan-challenger | fable | Adversarial review of the plan: holes, failure modes, simpler alternatives. |
-| plan-arbiter | fable | On a multi-plan build, cross-reviews the competing plans; decides Adopt / Hybrid / Revise-first. |
-
-Where you stay in the loop:
-
-- **Design picker** - for UI with multiple legitimate shapes, builds an interactive page; you paste back the chosen spec.
-
-</details>
-
-<br/>
-
-### 🧪 Tests - tests go red before code exists
-
-<details>
-<summary>Wade in: the red-first crew</summary>
-
-| Stage | Model | Role |
-|-------|-------|------|
-| test-plan | sonnet | Derives concrete test cases from the plan's acceptance criteria. |
-| test-author | sonnet | Writes the failing (red) tests before any implementation exists. |
-| test-review | opus | Validates the red tests against intent, then releases the implementer. |
-
-</details>
-
-<br/>
-
-### 🔨 Build - code flows only once the red tests are validated
-
-<details>
-<summary>Wade in: the build and its locks</summary>
-
-| Stage | Model | Role |
-|-------|-------|------|
-| code-implementer | fable | Executes the approved plan. Held by the TDD lock until tests are validated. |
-| safety-gate | sonnet | Before anything destructive or irreversible, shows what's at stake and waits for your go-ahead. Sticky. |
-
-Where you stay in the loop:
-
-- **Safety gate** - fires only when a destructive step is queued. Never as fixed ceremony.
-
-</details>
-
-<br/>
-
-### 🔬 Review - every diff faces a panel of parallel lenses
-
-<!-- MEDIA SLOT 4: parallel review lenses | placement: inside the Review block, above the details fold-out | dimensions: width 700px | content: parallel review lenses converging (screenshot or short gif) | alt: "Review lenses running in parallel" | format: png or gif -->
-
-<details>
-<summary>Wade in: all twelve lenses</summary>
-
-| Lens | Model | Runs when |
-|------|-------|-----------|
-| correctness | opus | every change |
-| simplicity | sonnet | planned builds |
-| shape | opus | logic changes |
-| conventions | sonnet | logic changes |
-| acceptance | sonnet | logic changes |
-| test-gap | sonnet | logic changes |
-| test-verifier | sonnet | logic changes |
-| performance | sonnet | perf surface touched |
-| security | opus | auth / secrets / permissions surface (sticky) |
-| ux | sonnet | UI touched |
-| accessibility | sonnet | UI touched |
-| design-consistency | sonnet | UI touched |
-
-*Then `fixer` (sonnet) applies the reviewer findings, then re-runs the lenses whose findings it fixed plus correctness and the test suite until clean - the trailing heal line of Review.*
-
-</details>
-
-<br/>
-
-### 🚀 Ship - the river reaches the sea: commit, push, draft PR - gated
-
-<details>
-<summary>Wade in: the last gate</summary>
-
-| Stage | Model | Role |
-|-------|-------|------|
-| ship-gate | sonnet | Names the commit/push/PR commands and how to undo each, and waits for your go-ahead. Sticky. |
-| ship-executor | sonnet | Composes one commit, pushes the branch, opens a draft PR. Held by the ship lock until the gate clears. |
-
-</details>
-
----
-
-<details>
-<summary>🛤️ Other paths - System, Talk, Sketch</summary>
-
-**🖥️ System** - changing the machine (configs, troubleshooting, CLI tooling) - leaves behind a verified change, destructive steps gated.
-
-| Stage | Model | Role |
-|-------|-------|------|
-| system-planner | opus | Plans an OS-level change as ordered, reversible steps with backup and rollback. |
-| system-executor | sonnet | Runs the plan one step at a time. Held by the safety lock before destructive steps. |
-| system-verifier | sonnet | Confirms the change actually reached its intended state. |
-| system-investigator | sonnet | Root-cause diagnosis for OS-level faults from service state, logs, and configs. |
-
-**💬 Talk** - thinking out loud, asking, weighing options - leaves behind nothing written: answers, worked examples, tradeoffs. A 1-2 stage route, sharing the 🔎 Intent and 🧭 Scout stages with the code path.
-
-**✏️ Sketch** - trying an idea fast - leaves behind a throwaway runnable in `.prototypes/`, relaxed ceremony. Shares the prototypers and the `correctness` / `security` lenses with the main journey.
-
-</details>
-
----
-
-## ⌨️ Slash commands
+One verb. Describe the change you want in your own words.
 
 ```
-/alp-river:go        Run the workflow. Triage routes the request; the router composes the stages it needs.
-/alp-river:review    Review specified files for quality, bugs, duplication, and dead code.
-/alp-river:reflect   Reflect on the current session to surface workflow friction worth tuning.
-/alp-river:audit     Self-audit the plugin and report a health scorecard with top fixes.
+/forge add rate limiting to the public API
+/forge #482                    # or point it at a ticket
+/crossfire                     # review what's already there
 ```
 
----
+## See it run
 
-## 🌊 How it works
+<!-- MEDIA SLOT: hero cast | placement: full width below "See it run" | content: agg-rendered GIF of the full-run cast (~90 s), one /forge request from triage to clean crossfire re-run | alt: "A full forge run: plan attacked, tests reviewed, crossfire wave, fix" | source: the hero .cast recorded by the demo ticket | format: gif -->
 
-No commands required - describe what you want in plain text, or use `/alp-river:go`. Both run the same workflow.
+*Hero cast lands here — recording in progress.*
 
-Think of it as a packing list that fills itself:
+## What happens
 
-1. **Triage picks the lane** - it reads your request and picks one of four conversation types.
-2. **Stages subscribe to signals** - a stage joins the route the moment one of its flags fires.
-3. **More flags pull in more stages** - the route grows as the work reveals itself: no email infra found pulls in research; a plan that signs tokens pulls in a security lens.
-4. **Size (XS-XXL) is the final head-count** - a readout of how many stages the route ended up with, never a dial you set.
+| Stage | What it does |
+|-------|--------------|
+| triage | Sizes the request and detects what's missing: unknowns get interviewed, unproven externals get prototyped, missing knowledge gets researched, a bug gets diagnosed before anything is built. |
+| plan | Writes the approach to a file, not the chat — the next stage reads a document, and a fresh agent can pick it up after compaction. |
+| challenge | A second agent tries to break the plan before a line is written. Cheapest possible place to be wrong. |
+| test-author | Writes the red tests first, aimed at the behavior the request asked for rather than the lines that happen to exist. |
+| test-review | Hunts for false green — the test that passes with the feature deleted, the mock asserting on itself. Code waits until the tests prove something. |
+| implement | Makes the change against the surviving plan and turns the tests green. |
+| crossfire | Independent reviewers hit the diff at once, each carrying one lens, blind to the others. Also runs standalone as `/crossfire` on any diff, branch, or file set. |
+| fix | Works the findings until the diff survives a clean re-run of the wave. |
 
-A worked example:
+With a worker CLI on PATH (codex, gemini, opencode), the challenge and the crossfire wave each get a different-model second opinion — read-only, failure visible, never blocking.
 
-> *"Add rate limiting to the login endpoint"*
-> → `code · needs-tests · significant-build · auth-surface`
-> → each flag pulls its stages: red tests, a challenged plan, a security review
-> → `code · L · 12 stages` → all clean → done.
+## It can't skip the review
 
-```mermaid
-flowchart TD
-    t{triage reads<br/>your request}
-    t -->|talk| A[discuss<br/>no code, just answers]
-    t -->|sketch| B[sketch-build<br/>throwaway in .prototypes/]
-    t -->|code| C[plan → test → implement<br/>→ review → heal]
-    t -->|system| D[plan → safety-gate<br/>→ execute → verify]
-```
+Prompts get forgotten under compaction; hooks don't. Forge ships six of them. If code changed and the review never ran, the session refuses to end.
+
+## It's just markdown
+
+No agent definitions, no config language, no signal vocabulary. Every stage is a markdown file you can read in one sitting and edit with your own opinions — start at [`skills/forge/SKILL.md`](skills/forge/SKILL.md). The plugin is a delivery mechanism, nothing more.
+
+## Works with your tracker
+
+Point `/forge` at a ticket and it reads the ticket as the request, then posts the verdict back and closes it. No tracker? Nothing is missing — the contract lies dormant.
 
 ---
 
