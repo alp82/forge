@@ -14,6 +14,8 @@
 
 A code-change workflow for Claude Code. Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.
 
+**Site:** [alp82.github.io/forge](https://alp82.github.io/forge/) — live demos: the full run, every stage, the crossfire wave
+
 **Featured in:** [Alper Ortac's AI Stack](https://aistack.to/stacks/alper-ortac-unw0sl)
 
 </div>
@@ -50,6 +52,8 @@ One verb. Describe the change you want in your own words.
 <!-- MEDIA SLOT: hero cast | source: demo/playbooks/hero.play → demo/casts/hero.cast → agg | regen: demo/build.sh -->
 
 ![A full forge run: plan attacked, tests reviewed, crossfire wave, fix](docs/assets/forge-hero.gif)
+
+Per-stage micro-casts and the standalone crossfire wave play on [the site](https://alp82.github.io/forge/).
 
 ## What happens
 

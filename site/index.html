@@ -1,0 +1,363 @@
+<!doctype html>
+<!--
+  The forge landing site — the README's spine with transcript acts and the
+  interactive system map layered in. One source of copy, two renderings:
+  section prose and the stage-table copy mirror README.md verbatim — when
+  editing either, edit both.
+
+  Shape: merged variant E (spec § 9, decided in alp-river #13, tooling #18).
+  Casts come from demo/casts/ — the deploy workflow copies them to ./casts/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>forge — a code-change workflow for Claude Code</title>
+<meta name="description" content="Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚒️</text></svg>">
+<link rel="stylesheet" href="asciinema-player.css">
+<style>
+  :root {
+    --ink: #14171C;
+    --steel: #667085;
+    --ground: #F5F6F7;
+    --ground-2: #FFFFFF;
+    --line: #DDE1E6;
+    --ember: #E8590C;
+    --ember-soft: #FDE8D9;
+    --quench: #2B7A9B;
+    --quench-soft: #E0EEF4;
+
+    --fg: var(--ink);
+    --fg-dim: var(--steel);
+    --bg: var(--ground);
+    --panel: var(--ground-2);
+    --rule: var(--line);
+    --accent: var(--ember);
+    --accent-soft: var(--ember-soft);
+    --cool: var(--quench);
+    --cool-soft: var(--quench-soft);
+
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+    --s6: 32px; --s7: 48px; --s8: 72px; --s9: 112px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg: #E6E9ED;
+      --fg-dim: #98A1AE;
+      --bg: #0E1116;
+      --panel: #171B22;
+      --rule: #2A313B;
+      --accent: #FF7A33;
+      --accent-soft: #3A1F10;
+      --cool: #63B3D4;
+      --cool-soft: #122A36;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: var(--s9);
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 var(--s5); }
+  h1, h2, h3 { text-wrap: balance; }
+  code, pre { font-family: var(--mono); }
+  a { color: var(--accent); }
+  pre.cmd {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: var(--s4);
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  pre.cmd .d { color: var(--fg-dim); }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+  .h2 {
+    font-size: 20px; font-weight: 650; letter-spacing: -0.01em;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: var(--s2); margin: var(--s8) 0 var(--s4);
+  }
+  .p { max-width: 68ch; margin-bottom: var(--s4); }
+  .p code { font-size: .92em; background: var(--panel); border: 1px solid var(--rule); border-radius: 3px; padding: 1px 5px; }
+
+  /* header */
+  header { padding-top: var(--s7); }
+  .topline { display: flex; align-items: center; justify-content: space-between; gap: var(--s4); margin-bottom: var(--s6); }
+  .badges { display: flex; flex-wrap: wrap; gap: var(--s2); }
+  .badge {
+    font-family: var(--mono); font-size: 11px;
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 2px var(--s2); color: var(--fg-dim);
+    text-decoration: none; white-space: nowrap;
+  }
+  .badge b { color: var(--accent); font-weight: 600; }
+  .gh {
+    font-family: var(--mono); font-size: 12.5px; text-decoration: none;
+    border: 1px solid var(--rule); border-radius: 3px; padding: var(--s1) var(--s3);
+    color: var(--fg); white-space: nowrap;
+  }
+  .gh:hover { border-color: var(--accent); }
+  .title { font-family: var(--mono); font-size: 34px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--s2); }
+  .tagline { font-size: 18px; color: var(--fg-dim); margin-bottom: var(--s5); max-width: 62ch; }
+
+  /* players */
+  .player { border-radius: 4px; overflow: hidden; border: 1px solid var(--rule); }
+  .player .ap-wrapper { display: block; }
+
+  /* transcript acts */
+  .act { display: grid; grid-template-columns: 230px 1fr; gap: var(--s6); padding: var(--s6) 0; border-top: 1px solid var(--rule); }
+  .act:first-of-type { border-top: 0; }
+  .act-note h3 { font-size: 16px; font-weight: 650; margin: var(--s2) 0; }
+  .act-note p { font-size: 14px; color: var(--fg-dim); }
+  .term { background: #16181d; border-radius: 4px; padding: var(--s4); overflow-x: auto; }
+  .term pre { color: #C9D1D9; font-size: 12.5px; line-height: 1.65; }
+  .term .u { color: #FF7A33; }
+  .term .g { color: #6FCF8E; }
+  .term .r { color: #ff616e; }
+  .term .y { color: #f0a45d; }
+  .term .d { color: #7D8590; }
+  .term .c { color: #4cd1e0; }
+  @media (max-width: 760px) { .act { grid-template-columns: 1fr; } }
+
+  /* system map */
+  .map { display: grid; grid-template-columns: 1fr 380px; gap: var(--s6); align-items: start; margin-top: var(--s5); }
+  .flow { display: flex; flex-direction: column; gap: var(--s2); }
+  .stage {
+    display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: var(--s3);
+    background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--rule);
+    border-radius: 3px; padding: var(--s3) var(--s4);
+    cursor: pointer; text-align: left; width: 100%;
+    font: inherit; color: inherit;
+  }
+  .stage:hover { border-left-color: var(--accent); }
+  .stage:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .stage[aria-pressed="true"] { border-left-color: var(--accent); background: var(--accent-soft); }
+  .stage.cool[aria-pressed="true"] { border-left-color: var(--cool); background: var(--cool-soft); }
+  .idx { font-family: var(--mono); font-size: 11px; color: var(--fg-dim); }
+  .name { font-family: var(--mono); font-size: 14px; font-weight: 600; }
+  .emit { font-family: var(--mono); font-size: 11px; color: var(--fg-dim); }
+  .gate {
+    border: 1px dashed var(--accent); border-radius: 3px; padding: var(--s2) var(--s4);
+    font-family: var(--mono); font-size: 11.5px; color: var(--accent);
+    display: flex; align-items: center; gap: var(--s2);
+  }
+  .panel { position: sticky; top: var(--s5); border: 1px solid var(--rule); border-radius: 3px; background: var(--panel); padding: var(--s5); }
+  .panel h3 { font-family: var(--mono); font-size: 16px; margin-bottom: var(--s3); }
+  .panel .body { font-size: 14px; color: var(--fg-dim); margin-bottom: var(--s4); }
+  .meta { display: grid; grid-template-columns: 62px 1fr; gap: var(--s2) var(--s3); font-size: 12.5px; margin-bottom: var(--s4); }
+  .meta dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-dim); padding-top: 2px; }
+  .meta dd { margin: 0; font-family: var(--mono); overflow-wrap: anywhere; }
+  .meta dd a { color: inherit; }
+  #stage-cast { border-radius: 3px; overflow: hidden; }
+  @media (max-width: 860px) { .map { grid-template-columns: 1fr; } .panel { position: static; } }
+
+  footer { margin-top: var(--s8); padding-top: var(--s5); border-top: 1px solid var(--rule); font-size: 14px; color: var(--fg-dim); }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="topline">
+      <div class="badges">
+        <a class="badge" href="https://github.com/alp82/forge/blob/main/CHANGELOG.md">version <b>2.0.0</b></a>
+        <a class="badge" href="https://claude.com/claude-code">claude code plugin</a>
+        <a class="badge" href="https://github.com/alp82/forge/blob/main/LICENSE">MIT</a>
+        <span class="badge">skills <b>3</b></span>
+      </div>
+      <a class="gh" href="https://github.com/alp82/forge">alp82/forge →</a>
+    </div>
+    <div class="title">forge</div>
+    <p class="tagline">A code-change workflow for Claude Code. Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.</p>
+  </header>
+
+  <h2 class="h2">Install</h2>
+<pre class="cmd">/plugin marketplace add alp82/forge
+/plugin install forge@alperortac
+/forge:setup-forge</pre>
+  <p class="p">The setup runs once, plugin-prefixed; it installs the bare command names, so from then on it's <code>/setup-forge</code> everywhere. Plugin updates propagate on their own — no re-run needed. Upgrading from alp-river? Three steps in the <a href="https://github.com/alp82/forge/blob/main/CHANGELOG.md">2.0.0 changelog entry</a>.</p>
+
+  <h2 class="h2">Use</h2>
+  <p class="p">One verb. Describe the change you want in your own words.</p>
+<pre class="cmd">/forge add rate limiting to the public API
+/forge #482                    <span class="d"># or point it at a ticket</span>
+/crossfire                     <span class="d"># review what's already there</span></pre>
+
+  <h2 class="h2">See it run</h2>
+  <p class="p">One request, end to end — the markers on the timeline are the stage boundaries.</p>
+  <div class="player" id="hero-cast"></div>
+
+  <div style="margin-top: var(--s7);">
+    <div class="act">
+      <div class="act-note">
+        <div class="eyebrow">The plan gets attacked</div>
+        <h3>Before a line is written</h3>
+        <p>A second agent's only job is to break the plan — and with a worker CLI on PATH, a different model attacks it too. Cheapest possible place to be wrong.</p>
+      </div>
+      <div class="term"><pre><span class="u">❯</span> /forge add rate limiting to the public API
+
+<span class="c">planner</span>    <span class="d">→ .forge/rate-limit-public-api/plan.md</span>
+<span class="c">challenge</span>  <span class="r">✗ BLOCKER</span>
+  <span class="r">▌</span> per-process buckets break under 3 gateway replicas — every client
+  <span class="r">▌</span> quietly gets 3× the limit. Redis sliding window or sticky routing;
+  <span class="r">▌</span> the plan proves neither.
+  <span class="y">▌</span> worker concurs — also flags the missing Retry-After on 429.
+<span class="c">planner</span>    plan v2: Redis sliding-window counters, Retry-After on 429
+<span class="u">❯</span> Gate — <span class="g">Approve</span>   <span class="d">open concerns become known risks</span></pre></div>
+    </div>
+
+    <div class="act">
+      <div class="act-note">
+        <div class="eyebrow">Green gets audited</div>
+        <h3>Tests that actually prove something</h3>
+        <p>The red tests come before the code, and a reviewer hunts for the one that would still pass with the feature deleted. False green is worse than red.</p>
+      </div>
+      <div class="term"><pre><span class="c">test-author</span>  4 tests written · <span class="r">all red ✗</span>
+<span class="c">test-review</span>  <span class="r">✗ misaligned</span>
+  <span class="r">▌</span> test_limit_resets still passes with the limiter deleted —
+  <span class="r">▌</span> it asserts on the mock clock, never on the 429.
+<span class="c">test-author</span>  rewriting the flagged test
+<span class="c">test-review</span>  <span class="g">ready</span> — 4 red tests prove the behavior. <span class="d">Code starts now.</span>
+<span class="c">implement</span>    <span class="g">✓</span> tests 4/4 green · <span class="d">receipt.md</span></pre></div>
+    </div>
+
+    <div class="act">
+      <div class="act-note">
+        <div class="eyebrow">Crossfire</div>
+        <h3>Reviewers that don't confer</h3>
+        <p>Independent lenses hit the diff at once, each carrying one thing only, blind to the others. Also runs standalone as <code style="font-size:.95em">/crossfire</code> on any diff, branch, or file set.</p>
+      </div>
+      <div class="player" id="crossfire-cast"></div>
+    </div>
+  </div>
+
+  <h2 class="h2">The whole machine</h2>
+  <p class="p">Eight stages, six hooks, no hidden layer. Pick any stage: what it does, what it reads and emits, the brief that drives it — and ten seconds of it running.</p>
+
+  <div class="map">
+    <div class="flow" id="flow"></div>
+    <div class="panel">
+      <h3 id="p-title"></h3>
+      <p class="body" id="p-body"></p>
+      <dl class="meta">
+        <dt>Reads</dt><dd id="p-reads"></dd>
+        <dt>Emits</dt><dd id="p-emits"></dd>
+        <dt>Brief</dt><dd><a id="p-brief" href=""></a></dd>
+        <dt>Words</dt><dd id="p-words"></dd>
+      </dl>
+      <div id="stage-cast"></div>
+    </div>
+  </div>
+
+  <p class="p" style="margin-top: var(--s5);">With a worker CLI on PATH (codex, gemini, opencode), the challenge and the crossfire wave each get a different-model second opinion — read-only, failure visible, never blocking.</p>
+
+  <h2 class="h2">It can't skip the review</h2>
+  <p class="p">Prompts get forgotten under compaction; hooks don't. Forge ships six of them. If code changed and the review never ran, the session refuses to end.</p>
+
+  <h2 class="h2">It's just markdown</h2>
+  <p class="p">No agent definitions, no config language, no signal vocabulary. Every stage is a markdown file you can read in one sitting and edit with your own opinions — start at <a href="https://github.com/alp82/forge/blob/main/skills/forge/SKILL.md"><code>skills/forge/SKILL.md</code></a>. The plugin is a delivery mechanism, nothing more.</p>
+
+  <h2 class="h2">Works with your tracker</h2>
+  <p class="p">Point <code>/forge</code> at a ticket and it reads the ticket as the request, then posts the verdict back and closes it. No tracker? Nothing is missing — the contract lies dormant.</p>
+
+  <footer>
+    <a href="https://github.com/alp82/forge/blob/main/CONTRIBUTING.md">Contributing / internals</a>
+    · Alper Ortac · <a href="https://x.com/alperortac">x.com/alperortac</a>
+  </footer>
+
+</div>
+
+<script src="asciinema-player.min.js"></script>
+<script>
+  // Stage copy mirrors the README's "What happens" table verbatim; meta comes
+  // from skills/forge/SKILL.md's spawn contract and the briefs' word counts.
+  const GH = 'https://github.com/alp82/forge/blob/main/';
+  const STAGES = [
+    { id: 'triage', name: 'triage', emit: '→ intent.md',
+      body: "Sizes the request and detects what's missing: unknowns get interviewed, unproven externals get prototyped, missing knowledge gets researched, a bug gets diagnosed before anything is built.",
+      reads: 'your request', emits: 'intent.md', brief: 'skills/forge/TRIAGE.md', words: 391 },
+    { id: 'plan', name: 'plan', emit: '→ plan.md',
+      body: 'Writes the approach to a file, not the chat — the next stage reads a document, and a fresh agent can pick it up after compaction.',
+      reads: 'intent.md', emits: 'plan.md', brief: 'skills/forge/PLANNER.md', words: 613 },
+    { id: 'challenge', name: 'challenge', emit: '→ challenge.md',
+      body: 'A second agent tries to break the plan before a line is written. Cheapest possible place to be wrong.',
+      reads: 'plan.md', emits: 'challenge.md', brief: 'skills/forge/CHALLENGER.md', words: 469 },
+    { id: 'test-author', name: 'test-author', emit: '→ red tests',
+      body: 'Writes the red tests first, aimed at the behavior the request asked for rather than the lines that happen to exist.',
+      reads: 'intent.md, plan.md', emits: 'red tests + tests.md', brief: 'skills/forge/TEST-AUTHOR.md', words: 243 },
+    { id: 'test-review', name: 'test-review', emit: '→ ready / misaligned',
+      body: 'Hunts for false green — the test that passes with the feature deleted, the mock asserting on itself. Code waits until the tests prove something.',
+      reads: 'the red tests', emits: 'ready / misaligned', brief: 'skills/forge/TEST-REVIEW.md', words: 213 },
+    { id: 'implement', name: 'implement', emit: '→ the diff',
+      body: 'Makes the change against the surviving plan and turns the tests green.',
+      reads: 'plan.md, the tests', emits: 'the diff + receipt.md', brief: 'skills/forge/IMPLEMENTER.md', words: 504 },
+    { id: 'crossfire', name: 'crossfire', emit: '→ findings', cool: true,
+      body: 'Independent reviewers hit the diff at once, each carrying one lens, blind to the others. Also runs standalone as /crossfire on any diff, branch, or file set.',
+      reads: 'receipt.md, plan.md, intent.md', emits: 'findings-<lens>.md', brief: 'skills/crossfire/SKILL.md', words: 696 },
+    { id: 'fix', name: 'fix', emit: '→ the diff',
+      body: 'Works the findings until the diff survives a clean re-run of the wave.',
+      reads: 'findings-<lens>.md', emits: 'the diff', brief: 'skills/forge/FIXER.md', words: 212 },
+  ];
+
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  AsciinemaPlayer.create('casts/hero.cast', document.getElementById('hero-cast'),
+    { preload: true, fit: 'width', poster: 'npt:3' });
+  AsciinemaPlayer.create('casts/crossfire.cast', document.getElementById('crossfire-cast'),
+    { preload: true, fit: 'width', poster: 'npt:2' });
+
+  const flow = document.getElementById('flow');
+  STAGES.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'stage' + (s.cool ? ' cool' : '');
+    btn.setAttribute('aria-pressed', 'false');
+    btn.innerHTML = '<span class="idx">' + (i + 1) + '</span><span class="name">' + s.name +
+      '</span><span class="emit">' + s.emit + '</span>';
+    btn.onclick = () => select(i);
+    flow.appendChild(btn);
+  });
+  const gate = document.createElement('div');
+  gate.className = 'gate';
+  gate.innerHTML = "<span>⊘</span><span>Stop gate — the session can't end while a review is owed</span>";
+  flow.appendChild(gate);
+
+  let stagePlayer = null;
+  function select(i) {
+    const s = STAGES[i];
+    flow.querySelectorAll('.stage').forEach((b, j) => b.setAttribute('aria-pressed', String(i === j)));
+    document.getElementById('p-title').textContent = s.name;
+    document.getElementById('p-body').textContent = s.body;
+    document.getElementById('p-reads').textContent = s.reads;
+    document.getElementById('p-emits').textContent = s.emits;
+    const brief = document.getElementById('p-brief');
+    brief.textContent = s.brief;
+    brief.href = GH + s.brief;
+    document.getElementById('p-words').textContent = s.words;
+    if (stagePlayer) stagePlayer.dispose();
+    stagePlayer = AsciinemaPlayer.create('casts/stage-' + s.id + '.cast',
+      document.getElementById('stage-cast'),
+      reducedMotion
+        ? { preload: true, fit: 'width', controls: true, poster: 'npt:2' }
+        : { preload: true, fit: 'width', controls: false, autoPlay: true, loop: true });
+  }
+  select(0);
+</script>
+</body>
+</html>
