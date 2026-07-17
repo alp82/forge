@@ -7,8 +7,8 @@
 [![Stars, Forks, Open Issues and License](https://shieldcn.dev/group/github/stars/alp82/alp-river+github/forks/alp82/alp-river+github/open-issues/alp82/alp-river+github/license/alp82/alp-river.svg?variant=secondary)](https://github.com/alp82/alp-river)
 
 [![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)](https://claude.com/claude-code)
-[![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)](WORKFLOW.md)
-[![Version](https://shieldcn.dev/badge/version-1.4.2-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
+[![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)](skills/forge/SKILL.md)
+[![Version](https://shieldcn.dev/badge/version-1.4.3-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
@@ -72,6 +72,12 @@ Then:
 
 The last three updates:
 
+**1.4.3**
+
+- The old pipeline surface is removed: the /go and /review commands, all agent definitions, and the workflow doctrine files are gone - the forge and crossfire skills carry the whole flow.
+- The self-audit and reflect commands leave the plugin and continue as repo-internal skills working against the skill files.
+- Contributor docs now describe the skill-first layout; changelog entry rules moved there.
+
 **1.4.2**
 
 - End-of-turn checks gain a third gate: a session that changed code but never ran a review is blocked once and pointed at the review step.
@@ -85,13 +91,6 @@ The last three updates:
 - Options now point at the evidence behind them: an illustration file to open and the sources found during research.
 - When a topic needs background, a short background doc can now be produced instead of only an interactive illustration.
 - Routine yes/no confirmations stay as terse as before.
-
-**1.4.0**
-
-- The guided project-docs setup is gone: no more setup interview, no INTENT/STACK/GLOSSARY files injected into steps, and no session-start nudge to create them.
-- The end-of-run capture step that proposed glossary and stack updates is gone.
-- The architecture-decision-record command and its drafting step are gone.
-- The crash-recovery state file written every turn is gone; after a compaction the workflow pointer is re-anchored and progress is reconciled from the working tree. One honest edge: a deliberately-red test turn that ends mid-run can now block once at the end-of-turn check before the retry cap lets it through.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

@@ -16,107 +16,33 @@ claude --plugin-dir ./alp-river
 ```
 alp-river/
 ├── .claude-plugin/         <- plugin.json (version), marketplace.json
-├── WORKFLOW.md             <- the full router-loop doctrine
-├── doctrine/               <- CATALOG.md (stage schema), SIGNALS.md (signal vocabulary), ...
-├── generated/catalog.json  <- compiled stage catalog (41 stages; tracked; the router reads it)
-├── hooks/                  <- route.py (router), gen-catalog.py (compiler), *.sh (inject, format, context)
-├── agents/                 <- 41 stage definitions + 1 off-route utility (explainer-prototyper)
-└── commands/               <- 4 slash commands
+├── skills/
+│   ├── forge/              <- SKILL.md (pipeline router) + stage briefs, primitive briefs, WORKER.md
+│   ├── crossfire/          <- SKILL.md (review wave) + 8 lens briefs
+│   └── setup/              <- SKILL.md (/setup-forge: skill install + tracker doc)
+├── hooks/                  <- 6 deterministic hooks + hooks.json + tests/
+└── .claude/skills/         <- repo-internal skills (/audit, /reflect), not shipped
 ```
 
 ## 🔧 Under the hood
 
-The router is deterministic code (`hooks/route.py`) - it routes, it never reasons. A stage joins when one of its `subscribes` topics matches a live signal, filtered to the live path by its `routes`; run order is a topological sort of the `input`/`output` artifact dependencies. The catalog it reads (`generated/catalog.json`) is compiled from each agent's frontmatter by a save-time hook. The judgment lives in the stages - triage frames the work, each stage classifies its own findings.
+**Skills all the way down.** There are no agent definitions and no deterministic router. `skills/forge/SKILL.md` is a prose flow: triage with detection detours (interview, prototype, research, diagnose), then plan → challenge → implement test-first → review wave → fix. Every stage runs as a generic spawned subagent with one contract — *"Read `<brief path>` and follow it"* — so each stage's judgment lives in its sibling brief file, plain markdown a contributor can edit directly.
 
-```mermaid
-flowchart LR
-    req([request]) --> triage
-    triage -->|path + signals| router{router composes}
-    router -->|next stage| stage[run a stage]
-    stage -->|publishes signals + artifacts| router
-    router -->|nothing left to trigger,<br/>all lenses clean| done([converged])
-```
+**File-carried artifacts.** Every stage output a later stage consumes is a markdown file in the gitignored run dir `.forge/<slug>/` (`plan.md`, `challenge.md`, `findings-<lens>.md`, …). Spawn prompts pass paths, never pasted content, so runs survive compaction and a fresh respawn needs only paths.
 
-Two rules never bend:
+**Independence where it pays.** The challenger and a different-model worker probe the plan in parallel, neither seeing the other's verdict; the review wave fires every applicable lens the same way. Worker failure is visible and non-blocking.
 
-- **precedence** - a stage can't run before the artifacts it needs exist.
-- **asymmetric rigor** - skipping a stage needs a positive signal; adding one needs only doubt. So safety and clarify stages stay in by default.
+**Deterministic floor.** The hooks are the only code: test/build verification on edits, a git-write guard, a code-change stamp, and a Stop gate that blocks a session which changed code but never ran tests or review. The flow persuades; the hooks enforce.
 
-Two **locks** hold a step until it is safe to proceed:
-
-- **TDD lock** on the code implementer - on a logic change, code can't start until the red tests are validated. Trivial changes skip it.
-- **safety lock** on the system executor - a destructive or irreversible step is held until the safety gate gets your go-ahead.
-
-**Convergence** - done when no signal triggers an unrun stage and every review lens is clean. Reviewer findings feed the fixer automatically. A SessionStart hook injects a small essentials block plus a pointer to `WORKFLOW.md`; after `/compact` it re-anchors that pointer so the router resumes deterministically.
-
-## 🎬 Worked examples
-
-### "Fix a typo in a doc comment"
-
-Trivial change - single file, no new logic. The short path skips planning and tests entirely.
-
-`code · XS · 3 stages`
-
-- 🔎 **Intent**
-  - ✓ triage
-- 🔨 **Build**
-  - ✓ code-implementer
-- 🔬 **Review**
-  - ✓ correctness
-
-### "Fix this off-by-one in pagination"
-
-A bug is a code task carrying a bug signal - it gets a root-cause hunt before the fix.
-
-`code + bug · M · ~11 stages`
-
-- 🔎 **Intent**
-  - ✓ triage - tags the bug
-- 🧭 **Scout**
-  - ✓ code-investigator - finds the root cause
-- 📐 **Blueprint**
-  - ✓ code-planner
-- 🧪 **Tests**
-  - ✓ test-plan
-  - ✓ test-author
-  - ✓ test-review
-- 🔨 **Build**
-  - ✓ code-implementer
-- 🔬 **Review**
-  - ✓ correctness
-  - ✓ simplicity
-  - ✓ test-verifier
-  - ✓ fixer - heals the findings
-
-### "Add OAuth login"
-
-A big code change - the full route, grouped by phase. This is what XXL looks like.
-
-`code · XXL · ~18 stages`
-
-- 🔎 **Intent**
-  - ✓ triage
-  - ✓ clarifier
-- 🧭 **Scout**
-  - ✓ reuse-scanner
-  - ✓ health-checker
-  - ✓ researcher
-- 📐 **Blueprint**
-  - ✓ code-planner
-  - ✓ plan-challenger
-- 🧪 **Tests**
-  - ✓ test-plan
-  - ✓ test-author
-  - ✓ test-review
-- 🔨 **Build**
-  - ✓ code-implementer
-- 🔬 **Review**
-  - ✓ correctness
-  - ✓ security - auth surface
-  - ✓ … +15 more lenses
-  - ✓ fixer - heals the findings
+**Word budgets as law.** Each SKILL.md and brief fits one read — ~865-word target, 2,000-word hard ceiling. The repo-internal `/audit` skill checks the budgets, cross-file duplication, version mirrors, and the hook test suite.
 
 ## 🏷️ Versioning and changelog
 
 The plugin version lives in `.claude-plugin/plugin.json` and is mirrored in `.claude-plugin/marketplace.json` and the README version badge - bump all three together.
-Changelog entry style is defined once, in `WORKFLOW.md` § "Changelog Style".
+
+### Changelog style
+
+The CHANGELOG.md entries and the README's "Latest updates" section follow the same rules: a user-facing summary, not implementation notes. README's "Latest updates" mirrors the CHANGELOG entry verbatim - same wording, same bullet count.
+
+- **Shape by release type:** patch (X.Y.Z, Z > 0) - bullets only, no intro; minor (X.Y.0) - one intro paragraph framing the release theme, then bullets; major or initial release (X.0.0, or 0.1.0) - several intro paragraphs giving the wider arc, then bullets.
+- **Per-bullet rules:** one line per bullet - no multi-sentence run-ons; outcome only - what changes for the person using this, not how it works inside; no internal terms (step numbers, agent names, axis names, flag names - if a stranger wouldn't recognize the word, drop it); no clever framing (no rhetorical asides, no "but"/"also"/"instead" - state the change and stop); bullets cap at four per release.

@@ -2,6 +2,12 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.4.3 - 2026-07-17
+
+- The old pipeline surface is removed: the /go and /review commands, all agent definitions, and the workflow doctrine files are gone - the forge and crossfire skills carry the whole flow.
+- The self-audit and reflect commands leave the plugin and continue as repo-internal skills working against the skill files.
+- Contributor docs now describe the skill-first layout; changelog entry rules moved there.
+
 ## 1.4.2 - 2026-07-17
 
 - End-of-turn checks gain a third gate: a session that changed code but never ran a review is blocked once and pointed at the review step.

@@ -1,0 +1,59 @@
+---
+name: reflect
+description: Reflect on the current session to surface workflow friction worth tuning, then audit and curate memory
+disable-model-invocation: true
+argument-hint: (optional) area to focus on, e.g. "the review wave" or "the last fix"
+---
+
+# Reflect
+
+Focus hint: $ARGUMENTS (scopes the session-reflection part only)
+
+Look back at the current session and surface only **big wins and big fails** worth acting on. Goal: signal that would change how this repo is built, not a comprehensive audit.
+
+**/reflect runs three parts in one pass:** (1) session reflection (in-chat, writes nothing — surface the items below directly), (2) the memory audit, (3) capture. The two memory-write parts (`## Memory`, `## Capture`) are the only paths that touch memory, and each runs as a two-phase write: Phase 1 PROPOSAL → per-item user approval → Phase 2 WRITE, executed by the main agent directly — no subagent spawn touches memory. Both follow `## Memory conventions` below.
+
+## Severity bar
+
+Flag an item only if at least one holds:
+
+- Recurring or systemic pattern, not a one-off blip.
+- Real cost (tokens, wall-clock, user rounds) that would noticeably improve if fixed.
+- Quality miss with downstream impact — slipped past reviewers, drove a wrong fix, misled the user.
+- Workflow gap this session exposed — a step that should have fired and didn't, a spec that contradicts itself.
+
+Routine variation, small papercuts, and "this could be slightly cleaner" do not clear the bar.
+
+Output the items that clear the bar as plain bullets — one per item, concrete, naming the file, step, or skill. No headings, no template. If nothing clears the bar, say "Nothing clears the bar." and stop.
+
+## Memory
+
+This part always runs: audit MEMORY.md and its linked topic files against `## Memory conventions`.
+
+**Phase 1 (PROPOSAL).** Read MEMORY.md and every linked topic file. Classify each memory as Keep / Improve / Retire / Merge, each with a self-contained reason — the reason must stand alone without re-reading the memory it refers to. Apply the conventions:
+
+- Retire any pending fact whose `expires` date has passed (expiry is enforced here, not at load time).
+- Flag any index entry that exceeds the one-line limit; the fix splits its detail into the linked topic file and leaves a short index line.
+- Merge memories that overlap (semantic equivalence) into one.
+
+Emit the classifications as a numbered proposal so the user can approve per item. Stop.
+
+**Phase 2 (WRITE).** On the user's per-item approvals, apply the Keep/Improve/Retire/Merge and split actions directly. Skip rejected items. Report what changed.
+
+## Capture
+
+Patterns surfaced this session are deduped and proposed for persistence to memory.
+
+**Dedup before write.** Before any captured pattern is written, dedup it against MEMORY.md and its linked topic files by semantic equivalence. A pattern already present — even under different wording — is dropped. A surviving pattern is classified absorb-into-existing (extend an existing memory) vs create-new.
+
+**Phase 1 (PROPOSAL).** Emit the surviving captures as a numbered proposal, each tagged absorb-into-existing (naming the target memory) or create-new, for per-item approval. Stop.
+
+**Phase 2 (WRITE).** On the user's per-item approvals, apply the absorb or create directly, keeping new index entries to the one-line limit. Skip rejected items. Report what changed.
+
+## Memory conventions
+
+The convention layer over Claude Code's native file-memory. The platform owns the load contract; these rules ride on top of it, enforced operationally at /reflect time — no hook reads or prunes them.
+
+- **Per-fact frontmatter (optional keys):** `status: pending` — provisional, not yet durable (absence means durable); `expires: YYYY-MM-DD` — the date a pending fact lapses; `priority: high | normal | low` — retention weight under pressure (absence means normal).
+- **One-line index entries:** each MEMORY.md index line stays a single short line, under ~150–200 characters; detail lives in the linked topic file. The platform loads the index eagerly and topic files on demand, so a bloated index line spends load budget that belongs to the topic file.
+- **Native budget:** the platform's memory load cap (~25KB / 200 lines) is not re-implemented here — keep index entries short so the cap is rarely the binding constraint.
