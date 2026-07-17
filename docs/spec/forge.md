@@ -280,6 +280,38 @@ its full detail.
    floor includes choosing the model at spawn time. Model *diversity* (the worker running
    a genuinely different model per harness) is a separate, still-open question.
 
+**The enforcement tiers** ([#37](https://github.com/alp82/forge/issues/37)):
+
+1. **Enforcement is entirely tiered — nothing joins spawn on the floor.** Spawn is
+   correctness (independence *is* the product); enforcement is reliability (the review
+   happens every time, not just when the model remembers). A harness with zero hook
+   surface is still a valid forge target, running degraded in guarantee, not in kind.
+2. **Three tiers, keyed to the strongest mechanism the harness can carry.** *Gated*: the
+   harness can refuse to let the agent stop with unreviewed changes, failing tests, or a
+   broken build. *Guarded*: no gate, but at least one mechanical block exists — skipping
+   review is possible but leaves tracks and gets pushback. *Prose-only*: no hook surface;
+   the briefs alone carry the discipline.
+3. **Adapters declare the capability checklist; the tier derives.** The four enforcement
+   capabilities — session-start injection, tool guard, change tracking, stop-gate — are
+   each declared **full / degraded / absent**, mechanism named (mandatory for any
+   `degraded` claim). Derivation: stop-gate full ⇒ gated; otherwise any mechanical
+   capability (a full guard, a degraded gate) ⇒ guarded; nothing mechanical ⇒ prose-only.
+   The label is shorthand, never a claim of its own.
+4. **Declared capabilities are verified live at install; degradation is loud, never
+   silent.** Install is the last point where the adapter can act outside the harness (in
+   a hooks-off codex even the self-reporting channel is a hook). Where the environment
+   refuses a declared capability, the install fails loudly or downgrades the declaration
+   to the tier the environment supports — telling the user which they got.
+5. **Prose is tier-invariant.** The briefs state the full discipline identically at every
+   tier, as if no hooks existed; mechanical capabilities never carry an instruction, only
+   enforce one the prose already states. A tier is purely an adapter property — changing
+   tier never touches skill text, and prose-only is just the core running bare.
+6. **Expected landings** (hypotheses; each adapter build owns its verified checklist):
+   Claude Code **gated** (Stop hook, shipping today); gemini **gated** (`AfterAgent`
+   block + retry); codex **gated** (install enables `features.hooks`, loud downgrade to
+   guarded under admin lockout); opencode **guarded** (full tool guard + degraded
+   stop-gate via idle nudge — a true gate is impossible there).
+
 ## 11. Successor map charter
 
 **Destination.** forge 2.0.0 is shipped and public: the skill-first shape built, the repo
