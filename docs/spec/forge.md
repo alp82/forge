@@ -312,6 +312,32 @@ its full detail.
    guarded under admin lockout); opencode **guarded** (full tool guard + degraded
    stop-gate via idle nudge — a true gate is impossible there).
 
+**The repo shape** ([#38](https://github.com/alp82/forge/issues/38)):
+
+1. **Single repo.** Core and all adapters ship from one repo — every install channel
+   points at a git repo, and one repo keeps one version and one release. No satellite
+   repos.
+2. **Root-as-core: there is no literal `core/` directory.** The harness-neutral core is
+   `skills/` at repo root — the directory every discovery convention (skills.sh crawler,
+   Claude Code plugins, codex, gemini Agent Skills) already finds; renaming it would
+   break them all for a tidier diagram. Core `skills/` holds the pipeline only (forge,
+   crossfire).
+3. **`adapters/<harness>/` holds everything harness-specific.** Hook implementations,
+   the harness's setup/install skill, and its capability declaration live in its adapter
+   dir — install glue is per-harness by definition. Root-level channel manifests
+   (`.claude-plugin/`, `.codex-plugin/`, `gemini-extension.json`) stay at repo root
+   because their channels demand it, as thin pointers into the adapter dir. The internal
+   anatomy of an adapter dir is the adapter contract's to define; the shape fixes only
+   the slot.
+4. **One version repo-wide.** Every adapter manifest carries the same version and a
+   release bumps them all together — mechanically (script or CI check), since the mirror
+   count is past manual discipline; the mechanism belongs to the release-shape decision.
+   Adapters never version independently.
+5. **Claude Code is symmetric.** It lives at `adapters/claude-code/` under the same
+   contract as every port; "adapter #1" means first-built reference implementation, not
+   structural privilege — a privileged adapter would let the contract silently assume
+   Claude-isms.
+
 ## 11. Successor map charter
 
 **Destination.** forge 2.0.0 is shipped and public: the skill-first shape built, the repo
