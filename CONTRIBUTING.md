@@ -1,20 +1,20 @@
-# Contributing to Alp River
+# Contributing to forge
 
-This is the reference side of the river: how the plugin works inside, how the repo is laid out, and how to run it locally. For the tour aimed at adopters, start with the [README](README.md).
+How the plugin works inside, how the repo is laid out, and how to run it locally. For the tour aimed at adopters, start with the [README](README.md).
 
 ## 💻 Local development
 
 Clone the repo and pass `--plugin-dir`:
 
 ```bash
-git clone https://github.com/alp82/alp-river.git
-claude --plugin-dir ./alp-river
+git clone https://github.com/alp82/forge.git
+claude --plugin-dir ./forge
 ```
 
 ## 🗂️ Structure
 
 ```
-alp-river/
+forge/
 ├── .claude-plugin/         <- plugin.json (version), marketplace.json
 ├── skills/
 │   ├── forge/              <- SKILL.md (pipeline router) + stage briefs, primitive briefs, WORKER.md

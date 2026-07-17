@@ -4,11 +4,11 @@
 
 ## A river of agents, composed to the task
 
-[![Stars, Forks, Open Issues and License](https://shieldcn.dev/group/github/stars/alp82/alp-river+github/forks/alp82/alp-river+github/open-issues/alp82/alp-river+github/license/alp82/alp-river.svg?variant=secondary)](https://github.com/alp82/alp-river)
+[![Stars, Forks, Open Issues and License](https://shieldcn.dev/group/github/stars/alp82/forge+github/forks/alp82/forge+github/open-issues/alp82/forge+github/license/alp82/forge.svg?variant=secondary)](https://github.com/alp82/forge)
 
 [![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)](https://claude.com/claude-code)
 [![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)](skills/forge/SKILL.md)
-[![Version](https://shieldcn.dev/badge/version-1.4.3-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
+[![Version](https://shieldcn.dev/badge/version-2.0.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
@@ -33,10 +33,12 @@
 Install in Claude Code:
 
 ```
-/plugin marketplace add alp82/alp-river
-/plugin install alp-river@alperortac
+/plugin marketplace add alp82/forge
+/plugin install forge@alperortac
 /reload-plugins
 ```
+
+Upgrading from alp-river? Three steps in the [2.0.0 changelog entry](CHANGELOG.md).
 
 To pull updates later:
 
@@ -48,7 +50,7 @@ To pull updates later:
 Then:
 
 1. Set your main session model to **Opus at high effort** (see the tip below).
-2. Describe what you want in plain English, or run `/alp-river:go` - then respond only at the decision points.
+2. Run `/setup-forge` once, then describe what you want in plain English or run `/forge` - and respond only at the decision points.
 
 > [!TIP]
 > Run the main session on a top-tier model like Opus at high effort. The orchestrator drives every routing decision, so a weaker main model degrades the whole pipeline.
@@ -72,6 +74,12 @@ Then:
 
 The last three updates:
 
+**2.0.0**
+
+- The plugin is now named forge; installed copies of alp-river stop receiving updates until swapped.
+- The public commands are /forge, /crossfire, and /setup-forge - bare names, no plugin prefix, available in any project after setup.
+- /setup-forge installs the skills once and configures per-repo conventions; plugin updates then propagate without re-running it.
+
 **1.4.3**
 
 - The old pipeline surface is removed: the /go and /review commands, all agent definitions, and the workflow doctrine files are gone - the forge and crossfire skills carry the whole flow.
@@ -84,13 +92,6 @@ The last three updates:
 - Session start now injects a three-line pointer (entry rule, flow location, stale-skill nag) instead of the workflow essentials block.
 - Automatic post-edit formatting and desktop notifications left the plugin; re-add them in your personal settings to keep them.
 - The deterministic step router and its agent catalog are removed; the flow now lives in the forge and crossfire skill files.
-
-**1.4.1**
-
-- Questions on decisions that matter now state each option's pros and cons in plain words, alongside a concrete example of what picking it means.
-- Options now point at the evidence behind them: an illustration file to open and the sources found during research.
-- When a topic needs background, a short background doc can now be produced instead of only an interactive illustration.
-- Routine yes/no confirmations stay as terse as before.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

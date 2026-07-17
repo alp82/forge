@@ -1,4 +1,4 @@
-# alp-river
+# forge
 
 Project-specific rules for this plugin repo. The pipeline lives in `skills/forge/SKILL.md`, the review wave in `skills/crossfire/SKILL.md`; stage, primitive, and lens briefs sit beside them. Global rules live in `~/.claude/CLAUDE.md`. This file does not ship to consumers - Claude Code only loads CLAUDE.md from the user's working directory.
 
@@ -22,7 +22,7 @@ Before adding an instruction anywhere under `skills/`, `hooks/`, or `.claude/ski
 2. **Is the fact defined exactly once?** A rule repeated across files drifts: one copy gets edited, the other rots. Pick the canonical home and cross-reference it from anywhere else that needs to point at it.
 3. **Does a cheap canary protect it?** A load-bearing literal earns a short pinned phrase the self-audit watches, so deleting or rewording it past recognition trips the doctrine-integrity check instead of silently rotting.
 
-This rule binds this repo's own changes - it governs how alp-river is authored, not anything shipped to a consumer. Its teeth are exactly two: the self-audit's doctrine-hygiene check (which flags an instruction line duplicated verbatim across skill files) plus author discipline at edit time. CLAUDE.md itself is neither shipped nor injected into any agent, so nothing enforces this for you automatically - the lens catches cross-file duplication after the fact, and the rest is the author honoring the three checks above.
+This rule binds this repo's own changes - it governs how forge is authored, not anything shipped to a consumer. Its teeth are exactly two: the self-audit's doctrine-hygiene check (which flags an instruction line duplicated verbatim across skill files) plus author discipline at edit time. CLAUDE.md itself is neither shipped nor injected into any agent, so nothing enforces this for you automatically - the lens catches cross-file duplication after the fact, and the rest is the author honoring the three checks above.
 
 ## Leitwort usage
 
@@ -37,7 +37,7 @@ A leitwort is a leading word: a short, memorable phrase an agent restates in its
 
 ### Issue tracker
 
-Issues live in the `alp82/alp-river` GitHub repo, managed via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues live in the `alp82/forge` GitHub repo, managed via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

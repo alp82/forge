@@ -5,25 +5,25 @@
   },
   "metadata": {
     "description": "Personal Claude Code plugins by Alper Ortac.",
-    "version": "1.4.3"
+    "version": "2.0.0"
   },
   "plugins": [
     {
-      "name": "alp-river",
+      "name": "forge",
       "source": "./",
-      "description": "Multi-step agent refinement for Claude Code: a deterministic router composes the exact stages each task needs.",
-      "homepage": "https://github.com/alp82/alp-river",
-      "repository": "https://github.com/alp82/alp-river",
+      "description": "Skill-first engineering pipeline for Claude Code: /forge runs a request from intent to ship, /crossfire fires the parallel review wave.",
+      "homepage": "https://github.com/alp82/forge",
+      "repository": "https://github.com/alp82/forge",
       "license": "MIT",
       "author": {
         "name": "Alper Ortac"
       },
       "keywords": [
         "claude-code",
+        "skills",
         "agents",
-        "subagents",
         "pipeline",
-        "dynamic-routing",
+        "tdd",
         "code-review"
       ]
     }

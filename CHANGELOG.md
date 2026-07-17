@@ -1,6 +1,22 @@
 # Changelog
 
-All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
+All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
+
+## 2.0.0 - 2026-07-17
+
+This release is a rename: **forge**, previously alp-river. Same repo, same changelog, new name - GitHub redirects the old URLs, but the plugin entry itself is new, so an installed alp-river no longer updates and must be swapped once.
+
+The shape underneath the name changed over the 1.4.x line: the routed pipeline of dozens of agent definitions became two readable skills. /forge takes a code-modifying request from intent to ship - triage, plan, challenge, test-first build, review, fix - and /crossfire fires a parallel review wave over any diff, branch, or file set. Everything the pipeline knows lives in plain markdown files you can open and edit.
+
+Migrating from alp-river takes three steps:
+
+1. `/plugin uninstall alp-river`
+2. `/plugin install forge@alperortac`
+3. Run `/setup-forge`
+
+- The plugin is now named forge; installed copies of alp-river stop receiving updates until swapped.
+- The public commands are /forge, /crossfire, and /setup-forge - bare names, no plugin prefix, available in any project after setup.
+- /setup-forge installs the skills once and configures per-repo conventions; plugin updates then propagate without re-running it.
 
 ## 1.4.3 - 2026-07-17
 
