@@ -1,36 +1,32 @@
-"""Structural checks on hooks/hooks.json for the change-marker gate rollout
-(Group E, TC-HOOKS-01..03).
+"""Structural checks on hooks/hooks.json for the forge hook surface.
 
 These are static content assertions against hooks.json, not subprocess runs.
-RED until:
-  - hooks.json has a PostToolUse Edit|Write entry invoking mark-code-change.py,
-    positioned after the gen-catalog.py entry, with a numeric timeout and no
-    "async": true key (the marker-arming write must stay synchronous so the
-    marker exists before the Stop hooks can ever observe it).
-  - the auto-format.sh entry carries "async": true and keeps "timeout": 30.
+The 2.0 hook surface is exactly six hooks: session-start.sh (SessionStart, all
+four matchers), block-git-writes.sh (PreToolUse Bash), mark-code-change.py
+(PostToolUse Edit|Write, synchronous), and the three Stop gates
+(verify-tests.py, verify-build.py, review-owed.py). Everything else - the
+deterministic router, catalog sync, context injection, auto-format, and the
+notification hooks - is gone or evicted to personal settings.
 """
 
 import json
 from pathlib import Path
 
-HOOKS_JSON = Path(__file__).resolve().parents[1] / "hooks.json"
+HOOKS_DIR = Path(__file__).resolve().parents[1]
+HOOKS_JSON = HOOKS_DIR / "hooks.json"
 
 
 def _load():
     return json.loads(HOOKS_JSON.read_text())
 
 
-def _post_tool_use_edit_write_hooks():
-    config = _load()
-    for group in config["hooks"]["PostToolUse"]:
-        if group.get("matcher") == "Edit|Write":
-            return group["hooks"]
-    raise AssertionError("no PostToolUse Edit|Write matcher group found in hooks.json")
-
-
-# ---------------------------------------------------------------------------
-# TC-HOOKS-01: hooks.json parses as valid JSON
-# ---------------------------------------------------------------------------
+def _all_commands(config):
+    return [
+        h.get("command", "")
+        for groups in config["hooks"].values()
+        for g in groups
+        for h in g.get("hooks", [])
+    ]
 
 
 def test_hooks_json_parses_as_valid_json():
@@ -39,118 +35,22 @@ def test_hooks_json_parses_as_valid_json():
     assert "hooks" in config, "hooks.json must have a top-level 'hooks' key"
 
 
-# ---------------------------------------------------------------------------
-# TC-HOOKS-02: mark-code-change.py entry after gen-catalog.py, synchronous
-# ---------------------------------------------------------------------------
-
-
-def test_mark_code_change_entry_present_after_gen_catalog_and_synchronous():
-    hooks = _post_tool_use_edit_write_hooks()
-    commands = [h.get("command", "") for h in hooks]
-
-    gen_catalog_idx = next(
-        (i for i, c in enumerate(commands) if "gen-catalog.py" in c), None
-    )
-    assert (
-        gen_catalog_idx is not None
-    ), "expected an existing gen-catalog.py entry under PostToolUse Edit|Write"
-
-    mark_change_idx = next(
-        (i for i, c in enumerate(commands) if "mark-code-change.py" in c), None
-    )
-    assert mark_change_idx is not None, (
-        "expected a PostToolUse Edit|Write entry invoking mark-code-change.py; "
-        f"got commands={commands!r}"
-    )
-    assert mark_change_idx > gen_catalog_idx, (
-        "mark-code-change.py entry must be positioned after the gen-catalog.py "
-        f"entry; gen_catalog_idx={gen_catalog_idx}, mark_change_idx={mark_change_idx}"
-    )
-
-    entry = hooks[mark_change_idx]
-    assert isinstance(
-        entry.get("timeout"), (int, float)
-    ), f"mark-code-change.py entry must carry a numeric timeout, got {entry.get('timeout')!r}"
-    assert "async" not in entry, (
-        "mark-code-change.py entry must NOT carry an 'async' key - it must stay "
-        f"synchronous so the marker exists before Stop hooks run; entry={entry!r}"
-    )
-
-
-# ---------------------------------------------------------------------------
-# TC-HOOKS-03: auto-format entry stays async with timeout 30
-# ---------------------------------------------------------------------------
-
-
-def test_auto_format_entry_is_async_with_timeout_30():
-    hooks = _post_tool_use_edit_write_hooks()
-    entry = next((h for h in hooks if "auto-format.sh" in h.get("command", "")), None)
-    assert (
-        entry is not None
-    ), "expected an auto-format.sh entry under PostToolUse Edit|Write"
-    assert (
-        entry.get("async") is True
-    ), f'auto-format.sh entry must carry "async": true; got {entry!r}'
-    assert (
-        entry.get("timeout") == 30
-    ), f'auto-format.sh entry must retain "timeout": 30; got {entry!r}'
-
-
-# ---------------------------------------------------------------------------
-# TC-HOOKS-04: SubagentStop group registers both verify scripts
-# ---------------------------------------------------------------------------
-
-
-def test_subagent_stop_group_registers_both_verify_scripts():
-    """The SubagentStop group exists with the pinned agent-type matcher and
-    registers both gate scripts with the pinned numeric timeouts (130 for
-    verify-tests, 190 for verify-build - mirroring the Stop group)."""
+def test_only_the_four_surviving_events_are_wired():
     config = _load()
-    groups = config["hooks"].get("SubagentStop")
-    assert groups, "hooks.json must have a SubagentStop group"
-    group = next(
-        (g for g in groups if g.get("matcher") == "(.*:)?(code-implementer|fixer)"),
-        None,
+    assert set(config["hooks"]) == {
+        "SessionStart",
+        "PreToolUse",
+        "PostToolUse",
+        "Stop",
+    }, (
+        "the forge hook surface wires exactly SessionStart/PreToolUse/"
+        f"PostToolUse/Stop; got {sorted(config['hooks'])!r}"
     )
-    assert group is not None, (
-        "expected a SubagentStop group with the literal matcher "
-        f"'(.*:)?(code-implementer|fixer)'; got {groups!r}"
-    )
-    hooks = group["hooks"]
-    tests_entry = next(
-        (h for h in hooks if "verify-tests.py" in h.get("command", "")), None
-    )
-    build_entry = next(
-        (h for h in hooks if "verify-build.py" in h.get("command", "")), None
-    )
-    assert (
-        tests_entry is not None
-    ), f"SubagentStop group must register verify-tests.py; got {hooks!r}"
-    assert (
-        build_entry is not None
-    ), f"SubagentStop group must register verify-build.py; got {hooks!r}"
-    assert (
-        tests_entry.get("timeout") == 130
-    ), f"verify-tests.py SubagentStop entry must carry timeout 130; got {tests_entry!r}"
-    assert (
-        build_entry.get("timeout") == 190
-    ), f"verify-build.py SubagentStop entry must carry timeout 190; got {build_entry!r}"
 
 
-# ---------------------------------------------------------------------------
-# TC-HOOKS-05: SessionStart group runs inject-workflow.sh on every matcher
-# ---------------------------------------------------------------------------
-
-
-def test_session_start_group_runs_inject_workflow_on_every_matcher():
-    """SessionStart wires inject-workflow.sh on every matcher, plus the
-    gitignore guard on startup/resume. recover-run-state.sh stays removed
-    (gone with docs/ADR/run-state). startup and resume run inject-workflow.sh
-    then ensure-gitignore.sh; clear and compact run only inject-workflow.sh."""
+def test_session_start_runs_session_start_sh_on_every_matcher():
     config = _load()
-    groups = config["hooks"].get("SessionStart")
-    assert groups, "hooks.json must have a SessionStart group"
-
+    groups = config["hooks"]["SessionStart"]
     matchers = {g.get("matcher") for g in groups}
     assert matchers == {
         "startup",
@@ -158,46 +58,91 @@ def test_session_start_group_runs_inject_workflow_on_every_matcher():
         "clear",
         "compact",
     }, f"expected exactly the startup/resume/clear/compact matchers; got {matchers!r}"
-
-    expected = {
-        "startup": [
-            "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
-            "${CLAUDE_PLUGIN_ROOT}/hooks/ensure-gitignore.sh",
-        ],
-        "resume": [
-            "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
-            "${CLAUDE_PLUGIN_ROOT}/hooks/ensure-gitignore.sh",
-        ],
-        "clear": ["${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh"],
-        "compact": ["${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh"],
-    }
     for group in groups:
-        matcher = group.get("matcher")
         commands = [h.get("command", "") for h in group.get("hooks", [])]
-        assert commands == expected[matcher], (
-            f"SessionStart matcher {matcher!r} must run exactly "
-            f"{expected[matcher]!r}; got commands={commands!r}"
-        )
-        assert not any("recover-run-state.sh" in c for c in commands), (
-            f"SessionStart matcher {matcher!r} must not register "
-            f"recover-run-state.sh; got commands={commands!r}"
+        assert commands == ["${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"], (
+            f"SessionStart matcher {group.get('matcher')!r} must run exactly "
+            f"session-start.sh; got {commands!r}"
         )
 
 
-def test_subagent_stop_group_present_alongside_stop_group():
-    """The Stop group still exists with its two verify entries next to the new
-    SubagentStop group - a regression guard against a careless top-level key
-    replace."""
+def test_pre_tool_use_wires_block_git_writes_on_bash():
     config = _load()
-    assert "SubagentStop" in config["hooks"], "SubagentStop group must exist"
-    stop_groups = config["hooks"].get("Stop")
-    assert stop_groups, "the Stop group must still exist alongside SubagentStop"
-    stop_commands = [
-        h.get("command", "") for g in stop_groups for h in g.get("hooks", [])
-    ]
-    assert any(
-        "verify-tests.py" in c for c in stop_commands
-    ), f"Stop group must still register verify-tests.py; got {stop_commands!r}"
-    assert any(
-        "verify-build.py" in c for c in stop_commands
-    ), f"Stop group must still register verify-build.py; got {stop_commands!r}"
+    groups = config["hooks"]["PreToolUse"]
+    assert len(groups) == 1 and groups[0].get("matcher") == "Bash", (
+        f"PreToolUse must carry exactly one Bash matcher group; got {groups!r}"
+    )
+    commands = [h.get("command", "") for h in groups[0]["hooks"]]
+    assert commands == ["${CLAUDE_PLUGIN_ROOT}/hooks/block-git-writes.sh"], (
+        f"PreToolUse Bash must run exactly block-git-writes.sh; got {commands!r}"
+    )
+
+
+def test_mark_code_change_is_the_only_post_tool_use_hook_and_synchronous():
+    config = _load()
+    groups = config["hooks"]["PostToolUse"]
+    assert len(groups) == 1 and groups[0].get("matcher") == "Edit|Write", (
+        f"PostToolUse must carry exactly one Edit|Write matcher group; got {groups!r}"
+    )
+    hooks = groups[0]["hooks"]
+    assert len(hooks) == 1 and "mark-code-change.py" in hooks[0].get("command", ""), (
+        f"PostToolUse Edit|Write must run exactly mark-code-change.py; got {hooks!r}"
+    )
+    entry = hooks[0]
+    assert isinstance(entry.get("timeout"), (int, float)), (
+        f"mark-code-change.py entry must carry a numeric timeout; got {entry!r}"
+    )
+    assert "async" not in entry, (
+        "mark-code-change.py must stay synchronous so the marker exists before "
+        f"the Stop hooks can ever observe it; entry={entry!r}"
+    )
+
+
+def test_stop_group_registers_the_three_gates_in_order():
+    config = _load()
+    groups = config["hooks"]["Stop"]
+    assert len(groups) == 1, f"expected exactly one Stop group; got {groups!r}"
+    hooks = groups[0]["hooks"]
+    names = [h.get("command", "").rsplit("/", 1)[-1] for h in hooks]
+    assert names == [
+        "verify-tests.py",
+        "verify-build.py",
+        "review-owed.py",
+    ], f"Stop must run the three gates in order; got {names!r}"
+    timeouts = {n: h.get("timeout") for n, h in zip(names, hooks)}
+    assert timeouts["verify-tests.py"] == 130, f"got {timeouts!r}"
+    assert timeouts["verify-build.py"] == 190, f"got {timeouts!r}"
+    assert isinstance(timeouts["review-owed.py"], (int, float)), f"got {timeouts!r}"
+
+
+def test_every_wired_script_exists_on_disk():
+    config = _load()
+    for command in _all_commands(config):
+        script = command.replace("python3 ", "").replace(
+            "${CLAUDE_PLUGIN_ROOT}/hooks/", ""
+        )
+        assert (HOOKS_DIR / script).is_file(), (
+            f"hooks.json references {script!r} but hooks/{script} does not exist"
+        )
+
+
+def test_no_dead_hook_is_referenced():
+    """Regression guard: none of the removed hooks may creep back into the
+    wiring - the router, catalog sync, injectors, auto-format (evicted to
+    personal settings), and the notification hooks (same eviction)."""
+    dead = (
+        "route.py",
+        "gen-catalog.py",
+        "check_catalog.py",
+        "audit.py",
+        "auto-format.sh",
+        "notify.sh",
+        "user-context-injector.sh",
+        "user-prompt-submit.sh",
+        "inject-workflow.sh",
+        "ensure-gitignore.sh",
+        "workflow-anchor.sh",
+    )
+    text = HOOKS_JSON.read_text()
+    for name in dead:
+        assert name not in text, f"dead hook {name!r} referenced in hooks.json"

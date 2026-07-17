@@ -3,18 +3,13 @@
 
 Activates whenever a build/typecheck tool resolves locally for the project and a
 per-session change marker (armed by mark-code-change.py) is present - a chat-only
-turn exits before any command detection or subprocess. Max 1 retry per session,
-per event.
+turn exits before any command detection or subprocess. Fires at Stop at end of
+turn whenever code changed. Max 1 retry per session.
 
 Conservative by construction: the build/typecheck runs ONLY when its tool is
 locally present (no npx-on-miss downloads/hangs). A timeout is treated as a
 non-blocking pass-through. For rust/go this checks the compile-error class
 (cargo check / go build -o /dev/null) - it does not assert artifact parity.
-
-Fires at SubagentStop when an implementation stage (code-implementer / fixer)
-stops and at Stop at end of turn whenever code changed; at SubagentStop the red
-window (verify_shared.red_window) keeps deliberately-red TDD turns from ever
-blocking - see verify_shared.
 
 Stdlib only. Always exits 0 (Claude hook contract). A failing build is signalled
 by a single JSON block on stdout; every pass/skip branch prints nothing. Building

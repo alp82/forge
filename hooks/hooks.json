@@ -6,12 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/ensure-gitignore.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
             "timeout": 5
           }
         ]
@@ -21,12 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/ensure-gitignore.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
             "timeout": 5
           }
         ]
@@ -36,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
             "timeout": 5
           }
         ]
@@ -46,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/inject-workflow.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
             "timeout": 5
           }
         ]
@@ -62,33 +52,12 @@
             "timeout": 5
           }
         ]
-      },
-      {
-        "matcher": "Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/user-context-injector.sh",
-            "timeout": 5
-          }
-        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/auto-format.sh",
-            "timeout": 30,
-            "async": true
-          },
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/gen-catalog.py",
-            "timeout": 10
-          },
           {
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/mark-code-change.py",
@@ -110,60 +79,10 @@
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/verify-build.py",
             "timeout": 190
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "(.*:)?(code-implementer|fixer)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/verify-tests.py",
-            "timeout": 130
           },
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/verify-build.py",
-            "timeout": 190
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.sh",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/review-owed.py",
             "timeout": 5
           }
         ]

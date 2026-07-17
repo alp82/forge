@@ -3,12 +3,8 @@
 
 Activates whenever the project has a detectable test command and a per-session
 change marker (armed by mark-code-change.py) is present - a chat-only turn exits
-before any command detection or subprocess. Max 1 retry per session, per event.
-
-Fires at SubagentStop when an implementation stage (code-implementer / fixer)
-stops and at Stop at end of turn whenever code changed; at SubagentStop the red
-window (verify_shared.red_window) keeps deliberately-red TDD turns from ever
-blocking - see verify_shared.
+before any command detection or subprocess. Fires at Stop at end of turn
+whenever code changed. Max 1 retry per session.
 
 Stdlib only. Always exits 0 (Claude hook contract). A failing suite is signalled
 by a single JSON block on stdout; every pass/skip branch prints nothing. Building

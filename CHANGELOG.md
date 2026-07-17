@@ -2,6 +2,13 @@
 
 All notable changes to alp-river. Versions match `.claude-plugin/plugin.json`.
 
+## 1.4.2 - 2026-07-17
+
+- End-of-turn checks gain a third gate: a session that changed code but never ran a review is blocked once and pointed at the review step.
+- Session start now injects a three-line pointer (entry rule, flow location, stale-skill nag) instead of the workflow essentials block.
+- Automatic post-edit formatting and desktop notifications left the plugin; re-add them in your personal settings to keep them.
+- The deterministic step router and its agent catalog are removed; the flow now lives in the forge and crossfire skill files.
+
 ## 1.4.1 - 2026-07-11
 
 - Questions on decisions that matter now state each option's pros and cons in plain words, alongside a concrete example of what picking it means.

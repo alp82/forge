@@ -8,7 +8,7 @@
 
 [![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)](https://claude.com/claude-code)
 [![Agentic](https://shieldcn.dev/badge/Agentic-workflows-D97757.svg?logo=anthropic&variant=outline&size=lg&animate=shimmer)](WORKFLOW.md)
-[![Version](https://shieldcn.dev/badge/version-1.4.1-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
+[![Version](https://shieldcn.dev/badge/version-1.4.2-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
@@ -72,6 +72,13 @@ Then:
 
 The last three updates:
 
+**1.4.2**
+
+- End-of-turn checks gain a third gate: a session that changed code but never ran a review is blocked once and pointed at the review step.
+- Session start now injects a three-line pointer (entry rule, flow location, stale-skill nag) instead of the workflow essentials block.
+- Automatic post-edit formatting and desktop notifications left the plugin; re-add them in your personal settings to keep them.
+- The deterministic step router and its agent catalog are removed; the flow now lives in the forge and crossfire skill files.
+
 **1.4.1**
 
 - Questions on decisions that matter now state each option's pros and cons in plain words, alongside a concrete example of what picking it means.
@@ -85,10 +92,6 @@ The last three updates:
 - The end-of-run capture step that proposed glossary and stack updates is gone.
 - The architecture-decision-record command and its drafting step are gone.
 - The crash-recovery state file written every turn is gone; after a compaction the workflow pointer is re-anchored and progress is reconciled from the working tree. One honest edge: a deliberately-red test turn that ends mid-run can now block once at the end-of-turn check before the retry cap lets it through.
-
-**1.3.16**
-
-- When a question is easier to grasp by seeing it - how parts fit together, how information is laid out, or a choice between options - the assistant now builds a small illustration first and asks with it in hand.
 
 Full history in [CHANGELOG.md](CHANGELOG.md).
 

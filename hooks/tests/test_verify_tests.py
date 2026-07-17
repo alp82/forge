@@ -29,10 +29,7 @@ A block leaves the change marker in place (re-verification stays armed); any
 silent-pass branch that actually ran verification (or determined there was
 nothing to verify) CLEARS the change marker.
 
-STOP SITE HAS NO RED WINDOW: at Stop (no hook_event_name in the payload) the
-armed change marker alone decides - verification always runs. The red window
-exists only at the SubagentStop site, read off the stopping agent_type (see
-test_verify_subagent_stop.py).
+At Stop the armed change marker alone decides - verification always runs.
 
 Pre-existing tests below arm the tests change marker in setup (via
 _arm_change_marker) and clean it up in finally; the bare-dir / no-test-command
