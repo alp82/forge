@@ -2,6 +2,11 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.0.2 - 2026-07-17
+
+- The installed command names now survive plugin updates instead of breaking when a new version lands.
+- Sessions now warn when an earlier install is still wired the old way and name the one command that fixes it.
+
 ## 2.0.1 - 2026-07-17
 
 - Writing the red tests and auditing them for false green now read as one tests stage across the pipeline, docs, and site - the audit still runs as its own independent check inside it.

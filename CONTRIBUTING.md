@@ -42,7 +42,7 @@ The plugin version lives in `.claude-plugin/plugin.json` and is mirrored in `.cl
 
 ### Changelog style
 
-The CHANGELOG.md entries and the README's "Latest updates" section follow the same rules: a user-facing summary, not implementation notes. README's "Latest updates" mirrors the CHANGELOG entry verbatim - same wording, same bullet count.
+CHANGELOG.md entries are a user-facing summary, not implementation notes.
 
 - **Shape by release type:** patch (X.Y.Z, Z > 0) - bullets only, no intro; minor (X.Y.0) - one intro paragraph framing the release theme, then bullets; major or initial release (X.0.0, or 0.1.0) - several intro paragraphs giving the wider arc, then bullets.
 - **Per-bullet rules:** one line per bullet - no multi-sentence run-ons; outcome only - what changes for the person using this, not how it works inside; no internal terms (step numbers, agent names, axis names, flag names - if a stranger wouldn't recognize the word, drop it); no clever framing (no rhetorical asides, no "but"/"also"/"instead" - state the change and stop); bullets cap at four per release.

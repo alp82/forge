@@ -20,21 +20,36 @@ if [ -f "$plugin_json" ]; then
   fi
 fi
 
-# Sync check. /setup-forge symlinks the bare skill names in ~/.claude/skills to
-# the installed plugin's skill dirs - a symlink is always current. Where a
-# symlink failed and a COPY was made, setup stamps the copy with a
-# .forge-version file; a stamp that differs from the plugin version (or is
-# missing on a copy) means the copy is stale. No dir at all = setup not run =
-# stay silent (bare names are opt-in). This stamp convention is canonical here;
-# the setup skill follows it.
+# Sync check. /setup-forge symlinks the bare skill names in ~/.claude/skills
+# into the stable root (the marketplace clone, updated in place) - such a link
+# is always current. A link into the version-stamped plugin cache is a legacy
+# install: it dangles as soon as an update moves the version dir, so both the
+# already-dangling and the will-dangle shapes get the nag. Where a symlink
+# failed and a COPY was made, setup stamps the copy with a .forge-version
+# file; a stamp that differs from the plugin version (or is missing on a copy)
+# means the copy is stale. No entry at all = setup not run = stay silent (bare
+# names are opt-in). This stamp convention is canonical here; the setup skill
+# follows it.
 sync_nag=""
 for skill_dir in "${CLAUDE_PLUGIN_ROOT}"/skills/*/; do
   [ -f "${skill_dir}SKILL.md" ] || continue
   name=$(sed -n 's/^name:[[:space:]]*//p' "${skill_dir}SKILL.md" | head -1)
   [ -n "$name" ] || name=$(basename "$skill_dir")
   target="$HOME/.claude/skills/$name"
+  if [ -L "$target" ]; then
+    if [ ! -e "$target" ]; then
+      sync_nag="- Installed skill links are dangling - re-run /setup-forge."
+      break
+    fi
+    case "$(readlink "$target")" in
+      */plugins/cache/*)
+        sync_nag="- Installed skill links point into the versioned plugin cache and will break on update - re-run /setup-forge."
+        break
+        ;;
+    esac
+    continue
+  fi
   [ -e "$target" ] || continue
-  [ -L "$target" ] && continue
   stamp=$(cat "$target/.forge-version" 2>/dev/null || true)
   if [ -n "$plugin_version" ] && [ "$stamp" != "$plugin_version" ]; then
     sync_nag="- Installed skill copies are outdated - re-run /setup-forge."
