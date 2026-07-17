@@ -7,10 +7,9 @@ dir (.forge/, or the pre-2.0 .alp-river/). The Stop gates (verify-tests,
 verify-build, review-owed) gate on these markers, so a chat-only turn (no
 Edit/Write) leaves them absent and the end-of-turn checks skip.
 
-The review marker is also CLEARED here: a write of `findings-<lens>.md` inside
-a `.forge/` run dir is the deterministic evidence that a review lens ran over
-the change (both the forge wave and standalone /crossfire write these), so it
-settles the review debt for the session.
+This hook only ARMS. The review debt is settled at Stop by review-owed.py - see
+its module docstring for why settling has to happen there, not at write time. So
+a `.forge/` write is inert here: it arms nothing and settles nothing.
 
 Marker existence is the whole signal; content is irrelevant. Always exits 0
 and never prints (PostToolUse stdout would be parsed). Fail-open: any
@@ -24,7 +23,6 @@ from pathlib import Path
 
 from verify_shared import (
     CHANGE_MARKER_PREFIXES,
-    REVIEW_CHANGE_PREFIX,
     session_marker,
 )
 
@@ -46,15 +44,6 @@ def should_arm(file_path, cwd):
     return not SCRATCH_DIRS.intersection(rel.parts)
 
 
-def settles_review(file_path):
-    """True when the write is a lens findings file in a .forge run dir - the
-    deterministic "a review ran" signal that clears the review debt."""
-    path = Path(file_path)
-    return ".forge" in path.parts and (
-        path.name.startswith("findings-") and path.name.endswith(".md")
-    )
-
-
 def main():
     try:
         if sys.stdin.isatty():
@@ -70,9 +59,6 @@ def main():
         if not file_path or not cwd:
             return
         session_id = payload.get("session_id") or ""
-        if settles_review(file_path):
-            session_marker(REVIEW_CHANGE_PREFIX, session_id).unlink(missing_ok=True)
-            return
         if not should_arm(file_path, cwd):
             return
         # Rendezvous precondition: this session_id must equal the end-of-turn Stop

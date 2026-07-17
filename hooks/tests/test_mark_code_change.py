@@ -18,9 +18,10 @@ CONTRACT:
              /tmp/.claude-code-changed-build-<session_id>
              /tmp/.claude-code-changed-review-<session_id>
     All markers arm together (Edit and Write arm identically).
-  - CLEARS the review marker when the write is a lens findings file
-    (findings-<lens>.md) inside a .forge run dir - the deterministic
-    "a review ran" signal consumed by review-owed.py.
+  - is INERT on a .forge run-dir write (including a findings-<lens>.md lens
+    file): arms nothing and clears nothing. Settling the review debt moved to
+    review-owed.py, which checks findings mtime at Stop under the main
+    session_id.
   - session_id missing/empty falls back to a pid-keyed marker name so the
     gate still arms for a single-process invocation:
       /tmp/.claude-code-changed-<kind>-fallback-<pid>
@@ -473,12 +474,14 @@ def test_forge_scratch_path_is_excluded():
 
 
 # ---------------------------------------------------------------------------
-# TC-MCC-13: a findings-<lens>.md write in a .forge run dir CLEARS the review
-# marker (the deterministic "a review ran" signal) and arms nothing
+# TC-MCC-13: a findings-<lens>.md write in a .forge run dir is INERT here -
+# arms nothing and clears nothing. Settling the review debt moved to
+# review-owed.py (Stop-time findings-mtime check under the main session_id),
+# so a pre-armed review marker must SURVIVE this write.
 # ---------------------------------------------------------------------------
 
 
-def test_findings_write_in_forge_run_dir_clears_review_marker():
+def test_findings_write_in_forge_run_dir_is_inert():
     session_id = str(uuid.uuid4())
     tests_marker, build_marker, review_marker = _markers(session_id)
     cwd = tempfile.mkdtemp()
@@ -500,9 +503,10 @@ def test_findings_write_in_forge_run_dir_clears_review_marker():
             f"stderr={result.stderr!r}"
         )
         assert result.stdout.strip() == "", f"got {result.stdout!r}"
-        assert (
-            not review_marker.exists()
-        ), "a findings-<lens>.md write in a .forge run dir must clear the review marker"
+        assert review_marker.exists(), (
+            "a .forge findings write must NOT clear the review marker - "
+            "clearing moved to review-owed.py at Stop"
+        )
         assert not tests_marker.exists(), "a findings write must not arm the tests marker"
         assert not build_marker.exists(), "a findings write must not arm the build marker"
     finally:

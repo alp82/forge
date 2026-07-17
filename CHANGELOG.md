@@ -2,6 +2,10 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.0.3 - 2026-07-17
+
+- The end-of-session review reminder now clears once a review has actually run, instead of repeating after a completed review wave.
+
 ## 2.0.2 - 2026-07-17
 
 - The installed command names now survive plugin updates instead of breaking when a new version lands.
