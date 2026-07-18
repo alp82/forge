@@ -20,10 +20,8 @@ Two standing rules govern this document:
   this contract are harness-neutral; Claude Code mechanisms appear only as the reference
   example.
 
-Status: the repo is mid-migration — restructuring
-([#42](https://github.com/alp82/forge/issues/42)) moves today's root `hooks/` and
-`skills/setup/` into the anatomy of § 7. This contract documents the target shape; it
-moves no files.
+Status: the restructuring ([#42](https://github.com/alp82/forge/issues/42)) has landed —
+§ 7's anatomy is the repo's current shape.
 
 ## 2. The spawn floor (required)
 
@@ -230,7 +228,7 @@ invariant.
 ## 8. Install and update expectations
 
 Normative source: spec § 10, #37 pt 4. Operational detail generalized from the existing
-setup-skill precedent (`skills/setup/SKILL.md`).
+setup-skill precedent (`adapters/claude-code/skills/setup/SKILL.md`).
 
 Install MUST:
 
@@ -242,8 +240,8 @@ Install MUST:
   downgrade of the *effective* declaration to what the environment supports — with the
   user told which of the two outcomes occurred.
 - **Be idempotent.** Re-running refreshes, never duplicates — the pattern
-  `skills/setup/SKILL.md` already sets (symlink-first, ownership guard, stamped copy
-  fallback).
+  `adapters/claude-code/skills/setup/SKILL.md` already sets (symlink-first, ownership
+  guard, stamped copy fallback).
 
 Update MUST re-verify capabilities, and MUST NOT silently change tier. Stale-install
 detection — the `session-start.sh` version-stamp nag, comparing installed stamp to

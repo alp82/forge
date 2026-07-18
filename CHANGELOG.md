@@ -2,6 +2,11 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.0.5 - 2026-07-18
+
+- Everything Claude-Code-specific now lives under `adapters/claude-code/` - the hooks and the setup skill moved there, leaving root `skills/` holding only the harness-neutral pipeline (forge + crossfire). The plugin manifest points at the new locations, so installs and updates keep working unchanged.
+- The Claude Code adapter now ships its capability declaration (`capabilities.json`) and an adapter README stating its enforcement tier, per the adapter contract.
+
 ## 2.0.4 - 2026-07-18
 
 - The skill briefs no longer name Claude-specific models or mechanisms, so the same briefs can run under other agent CLIs.

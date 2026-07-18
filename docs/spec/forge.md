@@ -104,7 +104,8 @@ are compaction-proof: a fresh respawn needs only paths. Kickbacks are declared i
 briefs as explicit condition + successor by name.
 
 **Layout** (locked in the [#14](https://github.com/alp82/alp-river/issues/14) coherence
-pass — primitives and WORKER.md flat beside the stage briefs):
+pass — primitives and WORKER.md flat beside the stage briefs; harness-specific parts
+restructured under `adapters/` per § 10, #38/#42):
 
 ```
 skills/
@@ -120,9 +121,12 @@ skills/
     SKILL.md          ← wave + ad-hoc review; forge's wave reaches lenses as ../crossfire/*.md
     CORRECTNESS.md  ACCEPTANCE.md  SIMPLICITY.md  SHAPE.md  CONVENTIONS.md
     UI.md  SECURITY.md  PERFORMANCE.md      ← conditional (§ 4)
-  setup/
-    SKILL.md          ← /setup-forge
-hooks/                ← 6 survivors + hooks.json (§ 7)
+adapters/
+  claude-code/        ← capabilities.json + README.md (adapter contract)
+    hooks/            ← 6 survivors + hooks.json (§ 7)
+    skills/
+      setup/
+        SKILL.md      ← /setup-forge
 .claude-plugin/       ← plugin.json, marketplace.json (distribution only)
 ```
 

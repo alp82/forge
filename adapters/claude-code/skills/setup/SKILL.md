@@ -12,17 +12,17 @@ Bootstrap wrinkle, accepted and documented: the first invocation is necessarily 
 
 ## Locate the plugin — and the stable root
 
-The plugin root is `${CLAUDE_PLUGIN_ROOT}` when set; otherwise two directories up from this file. Read the plugin version from `.claude-plugin/plugin.json` — the copy stamp below needs it.
+The plugin root is `${CLAUDE_PLUGIN_ROOT}` when set; otherwise four directories up from this file. Read the plugin version from `.claude-plugin/plugin.json` — the copy stamp below needs it.
 
 The plugin root is **not** the symlink target. An installed plugin's root sits in the version-stamped cache (`~/.claude/plugins/cache/<marketplace>/forge/<version>/`), which moves on every update — a symlink into it dangles the moment a new version lands. The symlink target is the **stable root**: the marketplace clone, updated in place at a path that never moves. Resolve it from `installLocation` in `~/.claude/plugins/known_marketplaces.json` for the marketplace named in the plugin root's cache path; forge's plugin source is `./`, so the clone root holds `skills/` directly. A plugin root that is not under `plugins/cache/` (a dev tree) is its own stable root. No stable root resolvable → skip straight to the copy fallback.
 
 ## Install the bare skill names
 
-For each `skills/*/` directory under the plugin root that holds a `SKILL.md`, the bare name is its frontmatter `name:` (directory basename as fallback) and the target is `~/.claude/skills/<name>` (create `~/.claude/skills` if missing).
+For each `skills/*/` and `adapters/claude-code/skills/*/` directory under the plugin root that holds a `SKILL.md`, the bare name is its frontmatter `name:` (directory basename as fallback) and the target is `~/.claude/skills/<name>` (create `~/.claude/skills` if missing).
 
-1. **Symlink first.** `ln -sfn <stable root skill dir> <target>` — never into the versioned cache. A symlink into the stable root survives updates — plugin updates propagate with zero re-run.
-2. **Ownership guard.** A target that already exists and is not forge's own — neither a symlink into an installed plugin's `skills/` tree nor a copy carrying a `.forge-version` stamp — belongs to the user. Ask before replacing it; never overwrite silently.
-3. **Copy fallback.** Where no stable root resolves or symlink creation fails (filesystem or platform refuses), copy the skill directory instead and write the plugin version into `<target>/.forge-version`. The stamp convention is canonical in `hooks/session-start.sh`: the SessionStart hook compares stamp to plugin version and prints the one-line "re-run /setup-forge" nag when they differ. On re-run, retry the symlink before refreshing a copy — the machine may allow it now.
+1. **Symlink first.** `ln -sfn <stable root skill dir> <target>` — the skill's own directory under the stable root, at the same plugin-root-relative path — never into the versioned cache. A symlink into the stable root survives updates — plugin updates propagate with zero re-run.
+2. **Ownership guard.** A target that already exists and is not forge's own — neither a symlink into an installed plugin's skill tree nor a copy carrying a `.forge-version` stamp — belongs to the user. Ask before replacing it; never overwrite silently.
+3. **Copy fallback.** Where no stable root resolves or symlink creation fails (filesystem or platform refuses), copy the skill directory instead and write the plugin version into `<target>/.forge-version`. The stamp convention is canonical in `adapters/claude-code/hooks/session-start.sh`: the SessionStart hook compares stamp to plugin version and prints the one-line "re-run /setup-forge" nag when they differ. On re-run, retry the symlink before refreshing a copy — the machine may allow it now.
 
 ## Tracker conventions — per repo, only if absent
 

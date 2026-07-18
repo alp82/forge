@@ -1,6 +1,6 @@
 # Foundation: makes the hooks test-runnable. The plugin itself stays bash + markdown;
 # this only configures pytest so verify-tests.py picks up the hook suite.
 [tool.pytest.ini_options]
-testpaths = ["hooks/tests"]
-pythonpath = ["hooks"]
+testpaths = ["adapters/claude-code/hooks/tests"]
+pythonpath = ["adapters/claude-code/hooks"]
 addopts = "-q"

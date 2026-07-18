@@ -1,7 +1,7 @@
 """Version / changelog release gate.
 
 Per CLAUDE.md's versioning rule, a workflow-surface change under skills/ or
-hooks/ earns a version bump, mirrored in three places that must always agree:
+adapters/ earns a version bump, mirrored in three places that must always agree:
 `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`
 (`metadata.version`), and the README version badge - plus a matching
 CHANGELOG.md entry.
@@ -21,7 +21,7 @@ import json
 import re
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[4]
 PLUGIN_JSON = REPO_ROOT / ".claude-plugin" / "plugin.json"
 MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 CHANGELOG_MD = REPO_ROOT / "CHANGELOG.md"

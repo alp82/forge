@@ -2,7 +2,8 @@
 
 CONTRACT:
   - A hook whose command runs the script itself (first token is
-    ${CLAUDE_PLUGIN_ROOT}/hooks/<name>.sh) is exec'd by the OS, so the file
+    ${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/<name>.sh) is exec'd by
+    the OS, so the file
     needs the executable bit. The bit that matters is the one git TRACKS
     (mode 100755), because that is what propagates into the plugin cache on
     install - a working-tree chmod that never reaches the index still ships a
@@ -22,11 +23,13 @@ import subprocess
 from pathlib import Path
 
 HOOKS_DIR = Path(__file__).resolve().parent.parent
-REPO_ROOT = HOOKS_DIR.parent
+REPO_ROOT = HOOKS_DIR.parents[2]
 HOOKS_JSON = HOOKS_DIR / "hooks.json"
 
 # First token of a command that runs a repo hook script directly (no interpreter).
-DIRECT_SCRIPT = re.compile(r"^\$\{CLAUDE_PLUGIN_ROOT\}/hooks/([^\s]+\.sh)$")
+DIRECT_SCRIPT = re.compile(
+    r"^\$\{CLAUDE_PLUGIN_ROOT\}/adapters/claude-code/hooks/([^\s]+\.sh)$"
+)
 
 
 def _iter_commands(node):
@@ -75,7 +78,7 @@ def test_directly_invoked_hooks_are_executable():
     """Every directly-invoked hook script is git-tracked as executable (100755)."""
     offenders = {}
     for name in _directly_invoked_scripts():
-        rel = f"hooks/{name}"
+        rel = f"adapters/claude-code/hooks/{name}"
         mode = _git_mode(rel)
         if mode != "100755":
             offenders[rel] = mode or "untracked"

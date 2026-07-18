@@ -8,7 +8,7 @@ set -euo pipefail
 # Self-locate so the dev-tree hook always gets the dev-tree files, regardless
 # of what CLAUDE_PLUGIN_ROOT points at in a session.
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-: "${CLAUDE_PLUGIN_ROOT:="$(cd "${hook_dir}/.." && pwd)"}"
+: "${CLAUDE_PLUGIN_ROOT:="$(cd "${hook_dir}/../../.." && pwd)"}"
 
 plugin_json="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
 plugin_version=""
@@ -22,7 +22,8 @@ fi
 
 # Sync check. /setup-forge symlinks the bare skill names in ~/.claude/skills
 # into the stable root - the why of stable-root vs. versioned-cache is canonical
-# in skills/setup/SKILL.md ("Locate the plugin - and the stable root"). This
+# in adapters/claude-code/skills/setup/SKILL.md ("Locate the plugin - and the
+# stable root"). This
 # hook only detects the two legacy shapes that stem from it: a link that already
 # dangles, and a link into the versioned plugin cache that will dangle on the
 # next update - both nag. Where a symlink failed and a COPY was made, setup
@@ -31,7 +32,7 @@ fi
 # all = setup not run = stay silent (bare names are opt-in). This stamp
 # convention is canonical here; the setup skill follows it.
 sync_nag=""
-for skill_dir in "${CLAUDE_PLUGIN_ROOT}"/skills/*/; do
+for skill_dir in "${CLAUDE_PLUGIN_ROOT}"/skills/*/ "${CLAUDE_PLUGIN_ROOT}"/adapters/claude-code/skills/*/; do
   [ -f "${skill_dir}SKILL.md" ] || continue
   name=$(sed -n 's/^name:[[:space:]]*//p' "${skill_dir}SKILL.md" | head -1)
   [ -n "$name" ] || name=$(basename "$skill_dir")

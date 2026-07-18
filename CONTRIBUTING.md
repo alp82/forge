@@ -15,12 +15,15 @@ claude --plugin-dir ./forge
 
 ```
 forge/
-├── .claude-plugin/         <- plugin.json (version), marketplace.json
-├── skills/
+├── .claude-plugin/         <- plugin.json (version + adapter path pointers), marketplace.json
+├── skills/                 <- the harness-neutral core
 │   ├── forge/              <- SKILL.md (pipeline router) + stage briefs, primitive briefs, WORKER.md
-│   ├── crossfire/          <- SKILL.md (review wave) + 8 lens briefs
-│   └── setup/              <- SKILL.md (/setup-forge: skill install + tracker doc)
-├── hooks/                  <- 6 deterministic hooks + hooks.json + tests/
+│   └── crossfire/          <- SKILL.md (review wave) + 8 lens briefs
+├── adapters/
+│   └── claude-code/        <- capabilities.json + README.md (the adapter contract's anatomy)
+│       ├── hooks/          <- 6 deterministic hooks + hooks.json + tests/
+│       └── skills/
+│           └── setup/      <- SKILL.md (/setup-forge: skill install + tracker doc)
 └── .claude/skills/         <- repo-internal skills (/audit, /reflect), not shipped
 ```
 

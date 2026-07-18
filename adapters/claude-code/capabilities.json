@@ -1,0 +1,12 @@
+{
+  "harness": "claude-code",
+  "surveyed": "2026-07-18",
+  "spawn": { "isolated": true, "model-selectable": true, "parallel-fan-out": true },
+  "models": { "mini": "haiku", "standard": "sonnet", "large": "opus", "ultra": "fable" },
+  "enforcement": {
+    "session-start-injection": { "level": "full", "mechanism": "SessionStart hook (startup/resume/clear/compact)" },
+    "tool-guard":              { "level": "full", "mechanism": "PreToolUse(Bash) hook, exit 2 blocks" },
+    "change-tracking":         { "level": "full", "mechanism": "PostToolUse(Edit|Write) hook arms session markers" },
+    "stop-gate":               { "level": "full", "mechanism": "Stop hook, blocking exit re-engages the agent" }
+  }
+}

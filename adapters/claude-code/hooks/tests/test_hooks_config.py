@@ -1,4 +1,4 @@
-"""Structural checks on hooks/hooks.json for the forge hook surface.
+"""Structural checks on adapters/claude-code/hooks/hooks.json for the forge hook surface.
 
 These are static content assertions against hooks.json, not subprocess runs.
 The 2.0 hook surface is exactly six hooks: session-start.sh (SessionStart, all
@@ -60,7 +60,9 @@ def test_session_start_runs_session_start_sh_on_every_matcher():
     }, f"expected exactly the startup/resume/clear/compact matchers; got {matchers!r}"
     for group in groups:
         commands = [h.get("command", "") for h in group.get("hooks", [])]
-        assert commands == ["${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"], (
+        assert commands == [
+            "${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/session-start.sh"
+        ], (
             f"SessionStart matcher {group.get('matcher')!r} must run exactly "
             f"session-start.sh; got {commands!r}"
         )
@@ -73,7 +75,9 @@ def test_pre_tool_use_wires_block_git_writes_on_bash():
         f"PreToolUse must carry exactly one Bash matcher group; got {groups!r}"
     )
     commands = [h.get("command", "") for h in groups[0]["hooks"]]
-    assert commands == ["${CLAUDE_PLUGIN_ROOT}/hooks/block-git-writes.sh"], (
+    assert commands == [
+        "${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/block-git-writes.sh"
+    ], (
         f"PreToolUse Bash must run exactly block-git-writes.sh; got {commands!r}"
     )
 
@@ -119,10 +123,11 @@ def test_every_wired_script_exists_on_disk():
     config = _load()
     for command in _all_commands(config):
         script = command.replace("python3 ", "").replace(
-            "${CLAUDE_PLUGIN_ROOT}/hooks/", ""
+            "${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/", ""
         )
         assert (HOOKS_DIR / script).is_file(), (
-            f"hooks.json references {script!r} but hooks/{script} does not exist"
+            f"hooks.json references {script!r} but "
+            f"adapters/claude-code/hooks/{script} does not exist"
         )
 
 

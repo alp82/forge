@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/session-start.sh",
             "timeout": 5
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/session-start.sh",
             "timeout": 5
           }
         ]
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/session-start.sh",
             "timeout": 5
           }
         ]
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/session-start.sh",
             "timeout": 5
           }
         ]
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-git-writes.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/block-git-writes.sh",
             "timeout": 5
           }
         ]
@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/mark-code-change.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/mark-code-change.py",
             "timeout": 5
           }
         ]
@@ -72,17 +72,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/verify-tests.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/verify-tests.py",
             "timeout": 130
           },
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/verify-build.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/verify-build.py",
             "timeout": 190
           },
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/review-owed.py",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/adapters/claude-code/hooks/review-owed.py",
             "timeout": 5
           }
         ]

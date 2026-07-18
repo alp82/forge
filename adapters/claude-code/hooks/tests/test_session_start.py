@@ -20,8 +20,10 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-SESSION_START_SH = REPO_ROOT / "hooks" / "session-start.sh"
+REPO_ROOT = Path(__file__).resolve().parents[4]
+SESSION_START_SH = (
+    REPO_ROOT / "adapters" / "claude-code" / "hooks" / "session-start.sh"
+)
 
 
 def _plugin_version():
@@ -117,6 +119,27 @@ def test_cache_pointing_symlink_triggers_the_nag():
             f"a cache-pointing skill link must nag: {ctx!r}"
         )
         assert "cache" in ctx, f"the nag must name the cache shape: {ctx!r}"
+    finally:
+        shutil.rmtree(home, ignore_errors=True)
+
+
+def test_stale_adapter_skill_copy_triggers_the_nag():
+    """The sync-nag loop scans both root skills/*/ and the adapter path
+    adapters/claude-code/skills/*/ (session-start.sh line 35) - setup-forge
+    only exists under the adapter path, so this is the only case that
+    exercises that second glob term. Without it, a typo'd or later-broken
+    adapter glob would pass the rest of the suite while a stale installed
+    setup-forge copy silently stopped nagging."""
+    home = tempfile.mkdtemp()
+    try:
+        copy_dir = Path(home) / ".claude" / "skills" / "setup-forge"
+        copy_dir.mkdir(parents=True)
+        (copy_dir / ".forge-version").write_text("0.0.1")
+        ctx = _context(_run_hook(home))
+        assert "re-run /setup-forge" in ctx, (
+            f"a stale setup-forge copy, discovered only via the adapter-path "
+            f"glob, must nag: {ctx!r}"
+        )
     finally:
         shutil.rmtree(home, ignore_errors=True)
 
