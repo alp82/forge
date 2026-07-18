@@ -360,6 +360,17 @@ its full detail.
    cost, the map shifts toward installer-first and the native channels become thin
    skill wrappers.
 
+**The adapter contract** ([#40](https://github.com/alp82/forge/issues/40)): the
+implementer-facing detail for all of the above lives in
+[`docs/spec/adapter-contract.md`](adapter-contract.md) — the spec indexes decisions; the
+contract holds what a porter executes. Two deferred calls settled there:
+
+1. **The capability checklist is a machine-readable manifest**,
+   `adapters/<harness>/capabilities.json` — install-time verification is a mechanical
+   reader; a prose copy would be a second home that drifts.
+2. **The adapter-dir anatomy** is `capabilities.json` + `README.md` + `hooks/` +
+   `skills/setup/`.
+
 ## 11. Successor map charter
 
 **Destination.** forge 2.0.0 is shipped and public: the skill-first shape built, the repo
