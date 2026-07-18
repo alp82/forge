@@ -26,6 +26,7 @@ PLUGIN_JSON = REPO_ROOT / ".claude-plugin" / "plugin.json"
 MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 CHANGELOG_MD = REPO_ROOT / "CHANGELOG.md"
 README_MD = REPO_ROOT / "README.md"
+OPENCODE_FORGE_JS = REPO_ROOT / "adapters" / "opencode" / "hooks" / "forge.js"
 
 
 def _plugin_version():
@@ -71,4 +72,26 @@ def test_readme_version_badge_matches_plugin_json():
     assert m.group(1) == _plugin_version(), (
         f"expected README.md version badge == {_plugin_version()!r}, "
         f"got {m.group(1)!r}"
+    )
+
+
+def test_opencode_plugin_version_stamp_matches_plugin_json():
+    """adapters/opencode/hooks/forge.js is the fourth version mirror (spec § 10,
+    #43 pt 4: "each new adapter registers its manifest path when it lands").
+    Its FORGE_VERSION const is baked into the plugin artifact itself, so this
+    gate reads it by regex - same pattern as the README badge check above -
+    rather than importing the module (forge.js runs under opencode's Bun/ESM
+    and has no reason to be import-safe from a pytest process)."""
+    assert OPENCODE_FORGE_JS.exists(), (
+        f"expected {OPENCODE_FORGE_JS} to exist so its FORGE_VERSION stamp "
+        "can be checked against plugin.json (adapter-contract release gate)"
+    )
+    text = OPENCODE_FORGE_JS.read_text()
+    m = re.search(r'FORGE_VERSION\s*=\s*"(\d+\.\d+\.\d+)"', text)
+    assert m is not None, (
+        f'expected a `FORGE_VERSION = "x.y.z"` stamp in {OPENCODE_FORGE_JS}'
+    )
+    assert m.group(1) == _plugin_version(), (
+        f"expected adapters/opencode/hooks/forge.js FORGE_VERSION == "
+        f"{_plugin_version()!r}, got {m.group(1)!r}"
     )

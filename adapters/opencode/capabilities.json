@@ -1,0 +1,17 @@
+{
+  "harness": "opencode",
+  "surveyed": "2026-07-17",
+  "spawn": { "isolated": true, "model-selectable": true, "parallel-fan-out": true },
+  "models": {
+    "mini": "anthropic/claude-haiku-4-5",
+    "standard": "anthropic/claude-sonnet-4-5",
+    "large": "anthropic/claude-opus-4-5",
+    "ultra": "anthropic/claude-fable-5"
+  },
+  "enforcement": {
+    "session-start-injection": { "level": "full", "mechanism": "chat.message hook appends the forge banner part to a main session's first message" },
+    "tool-guard":              { "level": "full", "mechanism": "tool.execute.before(bash) hook, throw blocks the tool call" },
+    "change-tracking":         { "level": "full", "mechanism": "tool.execute.after(edit|write|apply_patch) hook arms per-session change markers" },
+    "stop-gate":               { "level": "degraded", "mechanism": "session.idle event + client.session.prompt reactive nudge - post-hoc, cannot block the session from ending" }
+  }
+}

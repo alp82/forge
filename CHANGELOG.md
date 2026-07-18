@@ -2,6 +2,13 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.1.0 - 2026-07-18
+
+forge now installs under opencode. One paste inside an opencode session sets everything up globally, checks each promised capability against the live environment, and reports what it got.
+
+- forge runs on opencode with the git-write guard and an end-of-work review reminder; opencode cannot stop a session from ending, and the install says so plainly instead of pretending otherwise.
+- Installing is one pasted line; updating is re-pasting the same line, and a startup notice says when the installed copies have gone stale.
+
 ## 2.0.5 - 2026-07-18
 
 - Everything Claude-Code-specific now lives under `adapters/claude-code/` - the hooks and the setup skill moved there, leaving root `skills/` holding only the harness-neutral pipeline (forge + crossfire). The plugin manifest points at the new locations, so installs and updates keep working unchanged.

@@ -8,7 +8,7 @@
 
 [![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)](https://claude.com/claude-code)
 [![Skills](https://shieldcn.dev/badge/Skills-first-D97757.svg?logo=anthropic&variant=outline&size=lg)](skills/forge/SKILL.md)
-[![Version](https://shieldcn.dev/badge/version-2.0.5-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
+[![Version](https://shieldcn.dev/badge/version-2.1.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
@@ -33,6 +33,16 @@ A code-change workflow for Claude Code. Your request gets planned, the plan gets
 The setup runs once, plugin-prefixed; it installs the bare command names, so from then on it's `/setup-forge` everywhere. Plugin updates propagate on their own — no re-run needed.
 
 Upgrading from alp-river? Three steps in the [2.0.0 changelog entry](CHANGELOG.md).
+
+### Install (opencode)
+
+Inside an [opencode](https://opencode.ai) session, paste:
+
+```
+Fetch https://raw.githubusercontent.com/alp82/forge/main/adapters/opencode/INSTALL.md and follow it.
+```
+
+The session installs forge globally and verifies every capability live. On opencode, forge runs guarded: git-write guard and idle review nudge, no stop-gate — opencode cannot block a session from ending. Details in the [opencode adapter README](adapters/opencode/README.md).
 
 > [!TIP]
 > Run the main session on a top-tier model at high effort. The orchestrator drives every routing decision, so a weaker main model degrades the whole pipeline.
