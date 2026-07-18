@@ -47,4 +47,4 @@ RECEIPT: <path to receipt.md>
 KICKBACK: none | <patch|replan|reinterview> — <step or file> — <why it can't be executed as written>
 ```
 
-`complete` requires a green build and `KICKBACK: none`. `blocked` requires a kickback tier — or, when you've hit the same blocker twice, names it plainly so the orchestrator surfaces it instead of looping.
+`complete` requires a green build and `KICKBACK: none`. `blocked` requires a kickback level — or, when you've hit the same blocker twice, names it plainly so the orchestrator surfaces it instead of looping.

@@ -15,7 +15,7 @@ Direction questions go first in every round — a scope answer can dissolve a de
 
 ## The loop
 
-Ask with AskUserQuestion, at most four questions per round, direction before detail; overflow waits for the next round. State the plausible readings as options so the user picks between them rather than authoring from scratch, each option saying what choosing it means with one concrete example of the result ("internal only → trusted callers, no auth layer").
+Put each round to the user as structured choices, at most four questions per round, direction before detail; overflow waits for the next round. State the plausible readings as options so the user picks between them rather than authoring from scratch, each option saying what choosing it means with one concrete example of the result ("internal only → trusted callers, no auth layer").
 
 Answers can open new aspects; fresh recon can too. Loop until intent is clear AND a round surfaces nothing new — no round cap, and the loop never spins silently: every round shows its questions, so the user can direct you to proceed at any point.
 

@@ -2,6 +2,11 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.0.4 - 2026-07-18
+
+- The skill briefs no longer name Claude-specific models or mechanisms, so the same briefs can run under other agent CLIs.
+- A forge run now checks at the start whether its enforcement layer is present and says plainly when it is running without it.
+
 ## 2.0.3 - 2026-07-17
 
 - The end-of-session review reminder now clears once a review has actually run, instead of repeating after a completed review wave.

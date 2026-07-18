@@ -41,11 +41,16 @@ target.
    not in its prompt or named input files — a conforming isolated agent must be unable to
    answer.
 2. **Model-selectable spawn.** The orchestrator chooses the model per spawn — every stage
-   brief names one, so an adapter that cannot honor a per-spawn model choice cannot run
+   brief names a role tier (§ 6 `models`), which the adapter's manifest resolves to a
+   concrete model, so an adapter that cannot honor a per-spawn model choice cannot run
    the briefs as written.
 3. **Sequential-execution discipline.** An adapter that runs an independent pair of
    agents serially MUST NOT feed the first agent's output into the second. Independence,
    not wall-clock parallelism, carries the guarantees.
+
+Briefs mark some spawns `read-only`. An adapter maps the marker to a native read-only
+agent kind where one exists; absent one, an ordinary isolated agent conforms — the
+brief's own read-only discipline carries the constraint.
 
 ## 3. Optional capabilities
 
@@ -101,11 +106,11 @@ branch-qualified URL because they are unmerged:
 [gemini](https://github.com/alp82/forge/blob/research/gemini-cli-survey/docs/research/gemini-cli-survey.md),
 [opencode](https://github.com/alp82/forge/blob/research/opencode-survey/docs/research/opencode-survey.md).
 
-## 5. Tier vocabulary and derivation
+## 5. Enforcement tiers and derivation
 
 Normative source: spec § 10, #37 pts 2, 3, and 5.
 
-Three tiers: **gated / guarded / prose-only**. Operationally, from the manifest:
+Three enforcement tiers: **gated / guarded / prose-only**. Operationally, from the manifest:
 
 ```
 enforcement["stop-gate"].level == "full"                                  ⇒ gated
@@ -150,6 +155,12 @@ Shape:
     "model-selectable": true,
     "parallel-fan-out": "<boolean>"
   },
+  "models": {
+    "mini": "<harness-native model identifier>",
+    "standard": "<harness-native model identifier>",
+    "large": "<harness-native model identifier>",
+    "ultra": "<harness-native model identifier>"
+  },
   "enforcement": {
     "session-start-injection": { "level": "full|degraded|absent", "mechanism": "<string or null>" },
     "tool-guard":              { "level": "full|degraded|absent", "mechanism": "<string or null>" },
@@ -164,6 +175,10 @@ Rules:
 - `spawn.isolated` and `spawn.model-selectable` are booleans that MUST be `true` — they
   are the floor (§ 2); declaring them anyway keeps install-time verification a one-file
   read. `parallel-fan-out` declares the § 3 option.
+- `models` maps the four **role tiers** the briefs spawn with — `mini` / `standard` /
+  `large` / `ultra`, a capability-ordinal register (each tier at least as capable as the
+  one before) — to harness-native model identifiers; all four keys required; briefs say
+  "tier `<name>`" and never name a model.
 - The four enforcement keys are exactly the kebab-case identifiers above — the manifest
   exists for mechanical readers, so JSON keys carry no spaces; § 4 binds each identifier
   to its prose name.
@@ -179,6 +194,7 @@ Worked example — Claude Code's expected landing, a hypothesis until adapter ve
   "harness": "claude-code",
   "surveyed": "2026-07-18",
   "spawn": { "isolated": true, "model-selectable": true, "parallel-fan-out": true },
+  "models": { "mini": "haiku", "standard": "sonnet", "large": "opus", "ultra": "fable" },
   "enforcement": {
     "session-start-injection": { "level": "full", "mechanism": "SessionStart hook (startup/resume/clear/compact)" },
     "tool-guard":              { "level": "full", "mechanism": "PreToolUse(Bash) hook, exit 2 blocks" },

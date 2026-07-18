@@ -276,8 +276,9 @@ its full detail.
    never feeds the first agent's output to the second. Briefs say "spawn independently —
    in parallel where the adapter supports it." Keeps gemini (sequential-only) a valid
    proof; parallelism is a speed optimization, not a correctness line.
-3. **Model-selectable spawn is required.** Every brief names a model per spawn, so the
-   floor includes choosing the model at spawn time. Model *diversity* (the worker running
+3. **Model-selectable spawn is required.** Every brief names a role tier per spawn,
+   resolved to a concrete model through the adapter's manifest, so the floor includes
+   choosing the model at spawn time. Model *diversity* (the worker running
    a genuinely different model per harness) is a separate, still-open question.
 
 **The enforcement tiers** ([#37](https://github.com/alp82/forge/issues/37)):
