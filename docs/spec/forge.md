@@ -335,9 +335,10 @@ its full detail.
    anatomy of an adapter dir is the adapter contract's to define; the shape fixes only
    the slot.
 4. **One version repo-wide.** Every adapter manifest carries the same version and a
-   release bumps them all together — mechanically (script or CI check), since the mirror
-   count is past manual discipline; the mechanism belongs to the release-shape decision.
-   Adapters never version independently.
+   release bumps them all together — mechanically, since the mirror count is past manual
+   discipline; the mechanism is the bump script + self-audit guard fixed by the
+   release-shape decision ([#43](https://github.com/alp82/forge/issues/43)). Adapters
+   never version independently.
 5. **Claude Code is symmetric.** It lives at `adapters/claude-code/` under the same
    contract as every port; "adapter #1" means first-built reference implementation, not
    structural privilege — a privileged adapter would let the contract silently assume
@@ -375,6 +376,28 @@ contract holds what a porter executes. Two deferred calls settled there:
    reader; a prose copy would be a second home that drifts.
 2. **The adapter-dir anatomy** is `capabilities.json` + `README.md` + `hooks/` +
    `skills/setup/`.
+
+**The release and migration shape** ([#43](https://github.com/alp82/forge/issues/43)):
+
+1. **Incremental, trunk-style — no big-bang release.** Each adapter lands as its own
+   minor bump; "harness-agnostic forge" is the state after the claims update
+   ([#47](https://github.com/alp82/forge/issues/47)), which rides the last adapter's
+   minor rather than earning a number of its own. No release branch, no
+   landed-but-unannounced work.
+2. **No major. 2.x continues.** A major marks a consumer break (the 2.0.0 precedent:
+   forced uninstall/reinstall), and nothing in the port breaks a Claude Code install —
+   the restructure already shipped transparently as patches. The version keeps meaning
+   "what must a consumer do"; the README and site carry the announcement.
+3. **No migration.** forge has no external consumers yet, so there is nobody to
+   migrate; the `SessionStart` stale-install nag remains as the self-healing path for
+   any existing install (its dangling-symlink detection is verified live under adapter
+   verification, [#44](https://github.com/alp82/forge/issues/44)).
+4. **Version-mirror mechanism: one bump script, one guard.** A `scripts/` bump script
+   is the only sanctioned way to change the version — it rewrites every mirror location
+   (today `.claude-plugin/plugin.json`, `marketplace.json`, the README badge; each new
+   adapter registers its manifest path when it lands) in one commit. The self-audit
+   greps all registered locations and fails loudly on mismatch — no CI infrastructure
+   needed.
 
 ## 11. Successor map charter
 
