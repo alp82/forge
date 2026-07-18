@@ -338,6 +338,28 @@ its full detail.
    structural privilege — a privileged adapter would let the contract silently assume
    Claude-isms.
 
+**The distribution shape** ([#39](https://github.com/alp82/forge/issues/39)):
+
+1. **Hybrid, with hierarchy: native channels are canonical, the universal installer is
+   reach.** Each harness's own channel (Claude Code plugin, gemini extension, codex
+   plugin) is the canonical install — the only carriers that ship hooks, and therefore
+   the only routes that deliver an enforcement tier above prose-only. The skills.sh
+   installer (`npx skills add`) is the reach channel: it carries `SKILL.md` folders
+   only, so it installs the core at the prose-only tier by construction.
+2. **The hookless route is loud, twice.** A README line beside the installer command
+   names the tradeoff, and the forge skill itself opens with a cheap runtime self-check:
+   is my enforcement layer present? When absent, it states plainly that it is running
+   prose-only and points at the native install for the harness. The check keys on the
+   layer's *presence*, not the install route — so it also catches dangling
+   version-pinned symlinks and a hooks-off codex. Prose carries the loudness because
+   prose is all that channel ships.
+3. **Provisional: the hierarchy stands unless the tier-necessity survey overturns it.**
+   Markdown-only distributors (mattpocock/skills) demonstrate wide adoption with no
+   enforcement layer at all; if the survey
+   ([#49](https://github.com/alp82/forge/issues/49)) finds the tiers don't earn their
+   cost, the map shifts toward installer-first and the native channels become thin
+   skill wrappers.
+
 ## 11. Successor map charter
 
 **Destination.** forge 2.0.0 is shipped and public: the skill-first shape built, the repo
