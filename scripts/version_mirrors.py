@@ -87,6 +87,11 @@ MIRRORS = [
         r'FORGE_VERSION\s*=\s*"' + _SEMVER + r'"',
         "opencode adapter FORGE_VERSION stamp",
     ),
+    Mirror(
+        ".codex-plugin/plugin.json",
+        r'"version":\s*"' + _SEMVER + r'"',
+        "codex channel manifest version",
+    ),
 ]
 
 CANONICAL = MIRRORS[0]

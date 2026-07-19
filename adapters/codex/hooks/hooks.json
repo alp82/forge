@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "session-start.sh", "timeout": 5, "statusMessage": "forge: injecting session context" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^(shell|local_shell|bash|Bash|exec_command|unified_exec)$",
+        "hooks": [
+          { "type": "command", "command": "block-git-writes.sh", "timeout": 5, "statusMessage": "forge: git-write guard" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(apply_patch|edit|write|str_replace|create_file|Edit|Write)$",
+        "hooks": [
+          { "type": "command", "command": "python3 mark-code-change.py", "timeout": 5, "statusMessage": "forge: change tracking" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 verify-tests.py", "timeout": 130, "statusMessage": "forge: verifying tests" },
+          { "type": "command", "command": "python3 verify-build.py", "timeout": 190, "statusMessage": "forge: verifying build" },
+          { "type": "command", "command": "python3 review-owed.py", "timeout": 5, "statusMessage": "forge: review-owed gate" }
+        ]
+      }
+    ]
+  }
+}
