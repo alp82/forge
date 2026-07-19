@@ -1,0 +1,17 @@
+{
+  "harness": "codex",
+  "surveyed": "2026-07-17",
+  "spawn": { "isolated": true, "model-selectable": true, "parallel-fan-out": true },
+  "models": {
+    "mini": "gpt-5.6-luna",
+    "standard": "gpt-5.6-terra",
+    "large": "gpt-5.6-sol",
+    "ultra": "gpt-5.6-sol"
+  },
+  "enforcement": {
+    "session-start-injection": { "level": "full", "mechanism": "SessionStart hook injects the forge banner" },
+    "tool-guard":              { "level": "full", "mechanism": "PreToolUse(shell) hook, exit 2 denies" },
+    "change-tracking":         { "level": "full", "mechanism": "PostToolUse(edit tools) hook arms session markers" },
+    "stop-gate":               { "level": "full", "mechanism": "Stop hook, decision:\"block\" re-engages the agent" }
+  }
+}

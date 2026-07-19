@@ -27,6 +27,7 @@ MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
 CHANGELOG_MD = REPO_ROOT / "CHANGELOG.md"
 README_MD = REPO_ROOT / "README.md"
 OPENCODE_FORGE_JS = REPO_ROOT / "adapters" / "opencode" / "hooks" / "forge.js"
+CODEX_PLUGIN_JSON = REPO_ROOT / ".codex-plugin" / "plugin.json"
 
 
 def _plugin_version():
@@ -94,4 +95,20 @@ def test_opencode_plugin_version_stamp_matches_plugin_json():
     assert m.group(1) == _plugin_version(), (
         f"expected adapters/opencode/hooks/forge.js FORGE_VERSION == "
         f"{_plugin_version()!r}, got {m.group(1)!r}"
+    )
+
+
+def test_codex_plugin_version_matches_plugin_json():
+    """.codex-plugin/plugin.json is the fifth version mirror (spec § 10, #43
+    pt 4: "each new adapter registers its manifest path when it lands") - the
+    codex channel manifest at repo root, stamped with the one repo-wide
+    version per contract § 7."""
+    assert CODEX_PLUGIN_JSON.exists(), (
+        f"expected {CODEX_PLUGIN_JSON} to exist so the codex channel manifest "
+        "version can be checked against plugin.json (adapter-contract release gate)"
+    )
+    codex_version = json.loads(CODEX_PLUGIN_JSON.read_text()).get("version")
+    assert codex_version == _plugin_version(), (
+        ".codex-plugin/plugin.json and .claude-plugin/plugin.json versions "
+        f"must be identical; codex={codex_version!r}, plugin={_plugin_version()!r}"
     )

@@ -8,7 +8,7 @@
 
 [![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)](https://claude.com/claude-code)
 [![Skills](https://shieldcn.dev/badge/Skills-first-D97757.svg?logo=anthropic&variant=outline&size=lg)](skills/forge/SKILL.md)
-[![Version](https://shieldcn.dev/badge/version-2.1.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
+[![Version](https://shieldcn.dev/badge/version-2.2.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
@@ -43,6 +43,16 @@ Fetch https://raw.githubusercontent.com/alp82/forge/main/adapters/opencode/INSTA
 ```
 
 The session installs forge globally and verifies every capability live. On opencode, forge runs guarded: git-write guard and idle review nudge, no stop-gate — opencode cannot block a session from ending. Details in the [opencode adapter README](adapters/opencode/README.md).
+
+### Install (codex)
+
+In a terminal with [Codex CLI](https://developers.openai.com/codex) installed:
+
+```
+codex plugin marketplace add alp82/forge
+```
+
+then install the `forge` plugin and run the `$setup-forge` skill inside a codex session. Setup enables hooks (with consent), generates the tier agents, and verifies every capability live. On codex, forge runs gated — the same stop-gate as Claude Code blocks a session ending on failing tests or unreviewed code. Details in the [codex adapter README](adapters/codex/README.md).
 
 > [!TIP]
 > Run the main session on a top-tier model at high effort. The orchestrator drives every routing decision, so a weaker main model degrades the whole pipeline.
