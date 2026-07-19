@@ -28,6 +28,7 @@ CHANGELOG_MD = REPO_ROOT / "CHANGELOG.md"
 README_MD = REPO_ROOT / "README.md"
 OPENCODE_FORGE_JS = REPO_ROOT / "adapters" / "opencode" / "hooks" / "forge.js"
 CODEX_PLUGIN_JSON = REPO_ROOT / ".codex-plugin" / "plugin.json"
+GEMINI_EXTENSION_JSON = REPO_ROOT / "gemini-extension.json"
 
 
 def _plugin_version():
@@ -111,4 +112,20 @@ def test_codex_plugin_version_matches_plugin_json():
     assert codex_version == _plugin_version(), (
         ".codex-plugin/plugin.json and .claude-plugin/plugin.json versions "
         f"must be identical; codex={codex_version!r}, plugin={_plugin_version()!r}"
+    )
+
+
+def test_gemini_extension_version_matches_plugin_json():
+    """gemini-extension.json is the sixth version mirror (spec § 10, #43 pt 4:
+    "each new adapter registers its manifest path when it lands") - the gemini
+    channel manifest at repo root, stamped with the one repo-wide version per
+    contract § 7."""
+    assert GEMINI_EXTENSION_JSON.exists(), (
+        f"expected {GEMINI_EXTENSION_JSON} to exist so the gemini channel manifest "
+        "version can be checked against plugin.json (adapter-contract release gate)"
+    )
+    gemini_version = json.loads(GEMINI_EXTENSION_JSON.read_text()).get("version")
+    assert gemini_version == _plugin_version(), (
+        "gemini-extension.json and .claude-plugin/plugin.json versions "
+        f"must be identical; gemini={gemini_version!r}, plugin={_plugin_version()!r}"
     )

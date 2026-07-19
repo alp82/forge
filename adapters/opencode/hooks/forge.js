@@ -17,7 +17,7 @@ import path from "node:path";
 // re-paste cannot pair agreeing stamps with a stale plugin. Mirror-guarded by
 // adapters/claude-code/hooks/tests/test_release_version.py against
 // .claude-plugin/plugin.json - bump them together.
-export const FORGE_VERSION = "2.2.0";
+export const FORGE_VERSION = "2.3.0";
 
 // ---------------------------------------------------------------------------
 // classifyGitCommand - faithful JS port of the reference guard

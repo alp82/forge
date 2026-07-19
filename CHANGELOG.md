@@ -2,6 +2,15 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.3.0 - 2026-07-19
+
+forge now installs on Gemini CLI through its native Git extension channel. Gemini is the second platform besides Claude Code where forge runs fully gated: a turn cannot end on failing tests, a broken build, or unreviewed code — gemini re-runs the turn until the reason is addressed.
+
+- forge runs on Gemini CLI with the git-write guard, change tracking, and the full stop-gate (gemini's `AfterAgent` retry).
+- Installing is one `gemini extensions install` command plus a setup run that checks every promised capability against the live environment and reports anything it refuses.
+- Review waves run one lens after another (gemini subagents are single-threaded); that changes how long a wave takes, not what it guarantees.
+- Gemini's hooks need no opt-in flag, unlike codex; the setup instead checks that gemini's experimental subagents are enabled, since forge cannot run without them.
+
 ## 2.2.0 - 2026-07-19
 
 forge now installs on Codex CLI through its native plugin marketplace. Codex is the first platform besides Claude Code where forge runs fully gated: a session cannot end on failing tests, a broken build, or unreviewed code.

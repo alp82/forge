@@ -1,0 +1,17 @@
+{
+  "harness": "gemini",
+  "surveyed": "2026-07-17",
+  "spawn": { "isolated": true, "model-selectable": true, "parallel-fan-out": false },
+  "models": {
+    "mini": "gemini-2.5-flash",
+    "standard": "gemini-3-flash-preview",
+    "large": "gemini-3-pro-preview",
+    "ultra": "gemini-3-pro-preview"
+  },
+  "enforcement": {
+    "session-start-injection": { "level": "full", "mechanism": "BeforeAgent hook additionalContext injects the forge banner (fires every turn including the first)" },
+    "tool-guard":              { "level": "full", "mechanism": "BeforeTool(shell) hook, exit 2 denies" },
+    "change-tracking":         { "level": "full", "mechanism": "AfterTool(edit tools) hook arms session markers" },
+    "stop-gate":               { "level": "full", "mechanism": "AfterAgent hook, decision:\"block\" triggers an automatic retry turn" }
+  }
+}

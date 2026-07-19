@@ -8,7 +8,7 @@
 
 [![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)](https://claude.com/claude-code)
 [![Skills](https://shieldcn.dev/badge/Skills-first-D97757.svg?logo=anthropic&variant=outline&size=lg)](skills/forge/SKILL.md)
-[![Version](https://shieldcn.dev/badge/version-2.2.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
+[![Version](https://shieldcn.dev/badge/version-2.3.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
@@ -53,6 +53,16 @@ codex plugin marketplace add alp82/forge
 ```
 
 then install the `forge` plugin and run the `$setup-forge` skill inside a codex session. Setup enables hooks (with consent), generates the tier agents, and verifies every capability live. On codex, forge runs gated — the same stop-gate as Claude Code blocks a session ending on failing tests or unreviewed code. Details in the [codex adapter README](adapters/codex/README.md).
+
+### Install (gemini)
+
+In a terminal with [Gemini CLI](https://github.com/google-gemini/gemini-cli) installed:
+
+```
+gemini extensions install https://github.com/alp82/forge
+```
+
+then run the `setup-forge` skill inside a gemini session. Setup gates on the spawn floor (`experimental.enableAgents`), wires the six hooks, generates the tier agents, and verifies every capability live. On gemini, forge runs gated — the `AfterAgent` stop-gate blocks a turn ending on failing tests or unreviewed code, exactly like Claude Code. Review waves run sequentially (gemini subagents are single-threaded), which changes latency, not the guarantees. Details in the [gemini adapter README](adapters/gemini/README.md).
 
 > [!TIP]
 > Run the main session on a top-tier model at high effort. The orchestrator drives every routing decision, so a weaker main model degrades the whole pipeline.
