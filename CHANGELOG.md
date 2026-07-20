@@ -2,6 +2,10 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.1.1 - 2026-07-20
+
+- On current opencode, forge's git-write guard and start-of-session reminder now take effect; on recent releases the install finished but silently enforced nothing.
+
 ## 2.1.0 - 2026-07-18
 
 forge now installs under opencode. One paste inside an opencode session sets everything up globally, checks each promised capability against the live environment, and reports what it got.

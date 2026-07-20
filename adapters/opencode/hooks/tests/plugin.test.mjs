@@ -10,7 +10,11 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import ForgePlugin, { stampNag, FORGE_VERSION } from "../forge.js";
+import ForgePlugin from "../forge.js";
+
+// stampNag and FORGE_VERSION are not module exports (opencode's loader rejects
+// non-default exports); they ride as properties on the default export.
+const { stampNag, FORGE_VERSION } = ForgePlugin;
 
 function makeClient(promptCalls, sessionGet) {
   return {

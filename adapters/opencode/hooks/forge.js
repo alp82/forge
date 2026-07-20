@@ -9,6 +9,7 @@
 //   event               - stop-gate (degraded): session.idle -> reactive review
 //                         nudge via client.session.prompt; post-hoc, cannot block
 //                         the session from ending
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -17,7 +18,15 @@ import path from "node:path";
 // re-paste cannot pair agreeing stamps with a stale plugin. Mirror-guarded by
 // adapters/claude-code/hooks/tests/test_release_version.py against
 // .claude-plugin/plugin.json - bump them together.
-export const FORGE_VERSION = "2.1.0";
+//
+// Nothing in this file is a named export: opencode's plugin loader (>=1.18)
+// enumerates every named export of a plugin module and requires each to be a
+// plugin-factory function, so a lone non-function export like this one made the
+// whole file fail to load ("Plugin export is not a function"). The only export
+// is the default ForgePlugin; the pure helpers the node tests exercise ride as
+// properties on it (attached at the bottom of the file) - properties are not
+// module exports, so the loader never sees them.
+const FORGE_VERSION = "2.1.1";
 
 // ---------------------------------------------------------------------------
 // classifyGitCommand - faithful JS port of the reference guard
@@ -115,7 +124,7 @@ const RESERVED_WORD_RE = /^(?:if|then|elif|else|do|while|until|!|time|exec|copro
  * @param {string} command
  * @returns {{ blocked: boolean, reason?: string }}
  */
-export function classifyGitCommand(command) {
+function classifyGitCommand(command) {
   if (typeof command !== "string" || command.length === 0) return { blocked: false };
 
   const segments = command.split(/[|&;(){}`\n]/);
@@ -174,7 +183,7 @@ export function classifyGitCommand(command) {
  * @param {string | null | undefined} skillsStamp
  * @returns {string | null} one-line nag, or null when the stamps agree
  */
-export function stampNag(pluginVersion, skillsStamp) {
+function stampNag(pluginVersion, skillsStamp) {
   if (skillsStamp === pluginVersion) return null;
   return "Installed forge surfaces disagree (plugin " + pluginVersion + ", skills " +
     (skillsStamp ?? "unstamped") + ") - re-run the install paste.";
@@ -186,7 +195,7 @@ export function stampNag(pluginVersion, skillsStamp) {
  * @param {string | null} nag
  * @returns {string}
  */
-export function buildBanner(nag) {
+function buildBanner(nag) {
   let banner =
     "## forge\n\n" +
     '- Every code-modifying request enters via the forge skill - "small/mechanical/one-line" is not a bypass.\n' +
@@ -283,7 +292,23 @@ export default async function ForgePlugin({ client, directory }) {
       // through its spawn prompt and named files (contract paragraph 2), and
       // the entry-rule doctrine would misdirect it.
       if (await isChildSession(sessionID)) return;
-      output.parts.push({ type: "text", text: banner, synthetic: true });
+      // opencode >=1.18 validates the pushed part as a full TextPart: id,
+      // sessionID, and messageID are all required (older builds backfilled the
+      // omitted keys, so a bare {type,text} part silently worked on <=1.3 and is
+      // rejected as an "invalid user part" here). messageID is the user message
+      // this hook fires for; the part id is ours to mint.
+      //
+      // Not synthetic: on >=1.18 a `synthetic: true` part is stored but withheld
+      // from the model's prompt, so the banner injected but never reached the
+      // agent (session-start-injection silently absent). A plain text part is
+      // what the model actually sees - which is the whole point of the banner.
+      output.parts.push({
+        id: "prt_" + crypto.randomUUID().replace(/-/g, ""),
+        sessionID,
+        messageID: output?.message?.id ?? input?.messageID,
+        type: "text",
+        text: banner,
+      });
     },
 
     // tool-guard: throw aborts the tool call before it executes.
@@ -333,3 +358,11 @@ export default async function ForgePlugin({ client, directory }) {
     },
   };
 }
+
+// Test seam only: the node tests reach the pure helpers through the default
+// export so nothing here is a module-level named export (see FORGE_VERSION note
+// at the top for why the loader forbids those). Not part of the plugin runtime.
+ForgePlugin.FORGE_VERSION = FORGE_VERSION;
+ForgePlugin.classifyGitCommand = classifyGitCommand;
+ForgePlugin.stampNag = stampNag;
+ForgePlugin.buildBanner = buildBanner;

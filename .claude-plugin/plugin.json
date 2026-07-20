@@ -1,7 +1,7 @@
 {
   "name": "forge",
   "description": "Skill-first engineering pipeline for Claude Code: /forge runs a request from intent to ship, /crossfire fires the parallel review wave.",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "skills": ["./adapters/claude-code/skills/"],
   "hooks": "./adapters/claude-code/hooks/hooks.json",
   "author": {

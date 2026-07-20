@@ -11,7 +11,11 @@
 // mirrored exactly per challenge.md's TC-99 fix.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { classifyGitCommand } from "../forge.js";
+import ForgePlugin from "../forge.js";
+
+// classifyGitCommand is not a module export (opencode's loader rejects
+// non-default exports); it rides as a property on the default export.
+const { classifyGitCommand } = ForgePlugin;
 
 const BLOCK_REASON_PREFIX =
   "This git command rewrites or destroys history/state and is user-only.";
