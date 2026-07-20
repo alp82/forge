@@ -8,6 +8,7 @@ forge now installs on Codex CLI through its native plugin marketplace. Codex is 
 
 - forge runs on Codex CLI with the git-write guard, change tracking, and the full stop-gate. The enforcement hooks install into Codex's own hooks file (`$CODEX_HOME/hooks.json`), which the setup skill writes and trusts — codex's `hooks` feature is stable and on by default, so nothing opt-in is required.
 - Installing is one marketplace command plus a setup run that writes and trusts the hooks, then checks every promised capability against the live environment and reports anything the environment refuses.
+- With the third adapter shipped, the README and site now present forge as harness-agnostic rather than a Claude Code tool — naming all three harnesses and stating each one's enforcement tier plainly: Claude Code and codex gated, opencode guarded.
 
 ## 2.1.1 - 2026-07-20
 

@@ -12,7 +12,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>forge — a code-change workflow for Claude Code</title>
+<title>forge — a harness-agnostic code-change workflow</title>
 <meta name="description" content="Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚒️</text></svg>">
 <link rel="stylesheet" href="asciinema-player.css">
@@ -177,15 +177,16 @@
   <header>
     <div class="topline">
       <div class="badges">
-        <a class="badge" href="https://github.com/alp82/forge/blob/main/CHANGELOG.md">version <b>2.0.0</b></a>
-        <a class="badge" href="https://claude.com/claude-code">claude code plugin</a>
+        <a class="badge" href="https://github.com/alp82/forge/blob/main/CHANGELOG.md">version <b>2.2.0</b></a>
+        <a class="badge" href="https://claude.com/claude-code">claude code</a>
+        <a class="badge" href="https://github.com/alp82/forge/tree/main/adapters/codex">codex</a>
+        <a class="badge" href="https://github.com/alp82/forge/tree/main/adapters/opencode">opencode</a>
         <a class="badge" href="https://github.com/alp82/forge/blob/main/LICENSE">MIT</a>
-        <span class="badge">skills <b>3</b></span>
       </div>
       <a class="gh" href="https://github.com/alp82/forge">alp82/forge →</a>
     </div>
     <div class="title">forge</div>
-    <p class="tagline">A code-change workflow for Claude Code. Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.</p>
+    <p class="tagline">A harness-agnostic code-change workflow. Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it. One markdown core, thin per-harness adapters — Claude Code, codex, opencode.</p>
   </header>
 
   <h2 class="h2">Install</h2>
@@ -193,6 +194,7 @@
 /plugin install forge@alperortac
 /forge:setup-forge</pre>
   <p class="p">The setup runs once, plugin-prefixed; it installs the bare command names, so from then on it's <code>/setup-forge</code> everywhere. Plugin updates propagate on their own — no re-run needed. Upgrading from alp-river? Three steps in the <a href="https://github.com/alp82/forge/blob/main/CHANGELOG.md">2.0.0 changelog entry</a>.</p>
+  <p class="p">Also on <b>codex</b> (<code>codex plugin marketplace add alp82/forge</code> — runs <em>gated</em>, the same stop-gate as Claude Code; see the <a href="https://github.com/alp82/forge/blob/main/adapters/codex/README.md">codex adapter</a>) and <b>opencode</b> (paste the <a href="https://github.com/alp82/forge/blob/main/adapters/opencode/INSTALL.md">install brief</a> into a session — runs <em>guarded</em>: git-write guard and idle nudge, no stop-gate, since opencode can't block a session from ending; see the <a href="https://github.com/alp82/forge/blob/main/adapters/opencode/README.md">opencode adapter</a>).</p>
 
   <h2 class="h2">Use</h2>
   <p class="p">One verb. Describe the change you want in your own words.</p>
@@ -269,7 +271,7 @@
   <p class="p" style="margin-top: var(--s5);">With a worker CLI on PATH (codex, gemini, opencode), the challenge and the crossfire wave each get a different-model second opinion — read-only, failure visible, never blocking.</p>
 
   <h2 class="h2">It can't skip the review</h2>
-  <p class="p">Prompts get forgotten under compaction; hooks don't. Forge ships six of them. If code changed and the review never ran, the session refuses to end.</p>
+  <p class="p">Prompts get forgotten under compaction; hooks don't. On a <b>gated</b> harness (Claude Code, codex) forge ships the full enforcement layer — six hooks on Claude Code — and if code changed and the review never ran, the session refuses to end. Where the harness can't block a session from ending (opencode, <b>guarded</b>), the same hooks still guard writes and nudge the unreviewed diff. The guarantee degrades by tier — loudly, never in silence.</p>
 
   <h2 class="h2">It's just markdown</h2>
   <p class="p">No agent definitions, no config language, no signal vocabulary. Every stage is a markdown file you can read in one sitting and edit with your own opinions — start at <a href="https://github.com/alp82/forge/blob/main/skills/forge/SKILL.md"><code>skills/forge/SKILL.md</code></a>. The plugin is a delivery mechanism, nothing more.</p>
