@@ -295,3 +295,55 @@ is canonical because it is the only carrier that ships `hooks/`; skills.sh carri
 `skills/` only, so it installs prose-only by construction — the loud hookless self-check
 lives in forge skill prose (core, [#41](https://github.com/alp82/forge/issues/41)'s
 text), not in any adapter.
+
+## 12. Conformance — proving a port runs forge
+
+Normative source: spec § 10, #51.
+
+A port proves it actually runs forge with the checklist below, run **once, by hand, by the
+port author**. It is not a shipped or maintained tool: the runner is one person doing a
+one-time port, so the anti-drift argument that earns the pipeline its hooks (§ 9) does not
+apply. The check is deliberately narrow — it proves the two things install-time
+verification (§ 8) cannot:
+
+- **The § 2 spawn floor holds** on the real harness.
+- **The pipeline drives end-to-end** and leaves its artifacts.
+
+Enforcement-capability presence is *not* re-proven here — that is § 8's job, run at every
+install. Conformance is behavioral (the stages actually executed and chained through the
+run dir), never a golden-output diff: model and harness variance make exact output
+unstable, so the check asserts artifact *presence and non-emptiness*, not content.
+
+### Checklist
+
+1. **Isolation** (§ 2 pt 1). Spawn an agent and ask it a fact from the orchestrator's
+   conversation that is not in its prompt or named input files. *Pass:* it cannot answer.
+2. **Model resolution** (§ 2 pt 2, § 6). Confirm all four `models` tiers in
+   `capabilities.json` — `mini` / `standard` / `large` / `ultra` — resolve to a model the
+   harness accepts at spawn time. *Pass:* one spawn per tier, each starts.
+3. **Sequential discipline** (§ 2 pt 3). Only when the manifest declares
+   `parallel-fan-out: false`: confirm an independent pair runs into separate contexts with
+   the first agent's output never fed to the second. *Pass:* the second agent's prompt
+   carries no trace of the first's result.
+4. **End-to-end drive.** In a throwaway fixture repo, drive one **trivial** forge task
+   (single file, no new logic — e.g. add a one-line helper) through `/forge`. The trivial
+   short path runs TRIAGE → IMPLEMENTER → the review wave without the plan/challenge/test
+   gates, so it drives end-to-end with minimal human sitting. *Pass:* the run reaches its
+   terminal summary without the orchestrator stalling.
+5. **Artifacts present.** Inspect the run dir `.forge/<slug>/` at the summary — run
+   artifacts are process debris that die with the run, so read them before cleanup.
+   Confirm the files the driven path emits exist and are non-empty: `intent.md`,
+   `receipt.md`, and at least one `findings-<lens>.md` (`findings-correctness.md` always
+   rides the wave). *Pass:* every expected file exists with content — presence and
+   non-emptiness only, never a content diff.
+
+### Recording
+
+A passing run is a derivative snapshot, recorded as one line in the adapter `README.md` —
+`Conformance: passed <date> (<harness> <version>)` — the same derivative pattern § 10's
+tier line uses: the manifest and this checklist are the source, the README line a reading
+of them. The three first-adapter live validations
+([#53](https://github.com/alp82/forge/issues/53) opencode,
+[#55](https://github.com/alp82/forge/issues/55) codex,
+[#57](https://github.com/alp82/forge/issues/57) gemini) are this checklist's inaugural
+instances.

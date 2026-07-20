@@ -399,6 +399,23 @@ contract holds what a porter executes. Two deferred calls settled there:
    greps all registered locations and fails loudly on mismatch — no CI infrastructure
    needed.
 
+**The conformance check** ([#51](https://github.com/alp82/forge/issues/51)): a port
+proves it actually runs forge with a **by-hand checklist, not a shipped tool** — the
+runner is a port author doing a one-time port, so the anti-drift case that earns the
+pipeline its hooks does not apply to a check a person runs once. The checklist lives in
+the adapter contract ([`docs/spec/adapter-contract.md`](adapter-contract.md)) and proves
+the two things install-time verification (#37 pt 4) cannot: the **spawn floor** (#36)
+**holds** on the real harness (isolation, all four model tiers resolve, sequential
+discipline), and
+one canned forge task **drives end-to-end** leaving the run-dir artifacts. Conformance is
+behavioral, never a golden-output diff — presence and non-emptiness of artifacts, not
+their content. Enforcement-capability presence stays install-time verification's job; it
+is not re-proven here. The three per-adapter live validations
+([#53](https://github.com/alp82/forge/issues/53),
+[#55](https://github.com/alp82/forge/issues/55),
+[#57](https://github.com/alp82/forge/issues/57)) are this checklist's first instances; a
+passing run is recorded as a derivative snapshot line in the adapter README.
+
 ## 11. Successor map charter
 
 **Destination.** forge 2.0.0 is shipped and public: the skill-first shape built, the repo
