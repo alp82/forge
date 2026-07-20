@@ -2,6 +2,13 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.2.0 - 2026-07-20
+
+forge now installs on Codex CLI through its native plugin marketplace. Codex is the first platform besides Claude Code where forge runs fully gated: a session cannot end on failing tests, a broken build, or unreviewed code.
+
+- forge runs on Codex CLI with the git-write guard, change tracking, and the full stop-gate. The enforcement hooks install into Codex's own hooks file (`$CODEX_HOME/hooks.json`), which the setup skill writes and trusts — codex's `hooks` feature is stable and on by default, so nothing opt-in is required.
+- Installing is one marketplace command plus a setup run that writes and trusts the hooks, then checks every promised capability against the live environment and reports anything the environment refuses.
+
 ## 2.1.1 - 2026-07-20
 
 - On current opencode, forge's git-write guard and start-of-session reminder now take effect; on recent releases the install finished but silently enforced nothing.
