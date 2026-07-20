@@ -7,12 +7,16 @@
 [![Stars, Forks, Open Issues and License](https://shieldcn.dev/group/github/stars/alp82/forge+github/forks/alp82/forge+github/open-issues/alp82/forge+github/license/alp82/forge.svg?variant=secondary)](https://github.com/alp82/forge)
 
 [![Claude Code](https://shieldcn.dev/badge/Claude-Code-D97757.svg?logo=anthropic&variant=branded&size=lg)](https://claude.com/claude-code)
+[![codex](https://shieldcn.dev/badge/codex-gated-D97757.svg?variant=outline&size=lg)](adapters/codex/README.md)
+[![opencode](https://shieldcn.dev/badge/opencode-guarded-D97757.svg?variant=outline&size=lg)](adapters/opencode/README.md)
 [![Skills](https://shieldcn.dev/badge/Skills-first-D97757.svg?logo=anthropic&variant=outline&size=lg)](skills/forge/SKILL.md)
 [![Version](https://shieldcn.dev/badge/version-2.2.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
-A code-change workflow for Claude Code. Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.
+A harness-agnostic code-change workflow. Your request gets planned, the plan gets attacked, the code gets written with tests, and a panel of reviewers shoots at it before you ever see it.
+
+One markdown core, thin per-harness adapters. Runs on **Claude Code**, **codex**, and **opencode** — each declaring how far it can enforce the workflow, stated honestly.
 
 **Site:** [alp82.github.io/forge](https://alp82.github.io/forge/) — live demos: the full run, every stage, the crossfire wave
 
@@ -91,7 +95,7 @@ With a worker CLI on PATH (codex, gemini, opencode), the challenge and the cross
 
 ## It can't skip the review
 
-Prompts get forgotten under compaction; hooks don't. Forge ships six of them. If code changed and the review never ran, the session refuses to end.
+Prompts get forgotten under compaction; hooks don't. On a **gated** harness (Claude Code, codex) forge ships the full enforcement layer — six hooks on Claude Code — and if code changed and the review never ran, the session refuses to end. Where the harness can't block a session from ending (opencode, **guarded**), the same hooks still guard writes and nudge the unreviewed diff. The guarantee degrades by tier — loudly, never in silence — and each adapter's declared tier is stated in its install section and README.
 
 ## It's just markdown
 
