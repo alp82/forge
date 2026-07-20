@@ -26,7 +26,7 @@ import path from "node:path";
 // is the default ForgePlugin; the pure helpers the node tests exercise ride as
 // properties on it (attached at the bottom of the file) - properties are not
 // module exports, so the loader never sees them.
-const FORGE_VERSION = "2.2.0";
+const FORGE_VERSION = "2.2.1";
 
 // ---------------------------------------------------------------------------
 // classifyGitCommand - faithful JS port of the reference guard

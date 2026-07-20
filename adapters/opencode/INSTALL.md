@@ -35,14 +35,35 @@ it carries a `.forge-version` stamp, or it is content you can identify as forge'
 the clone — refresh it in place. If it exists and is NOT recognizably forge's, it
 belongs to the user: **ask before replacing, never overwrite silently**.
 
+**Resolve the config dir first — it is not the same target for every surface.**
+opencode discovers **plugins and agents** from `$OPENCODE_CONFIG_DIR` when that variable
+is set (as Orca sets it), falling back to `~/.config/opencode`. Resolve it once and use
+it for those two surfaces only:
+
+```
+CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
+```
+
+**Skills are the exception — never put them under `$CONFIG_DIR`.** opencode discovers
+skills from a *fixed* set of global paths (`~/.config/opencode/skills/` and
+`~/.claude/skills/` among them) that do **not** honor `OPENCODE_CONFIG_DIR`. So skill
+targets below (items 1, 2, 4) always spell `~/.config/opencode/skills/` literally; a
+skill copied into `$CONFIG_DIR/skills/` on a machine where `$OPENCODE_CONFIG_DIR` is set
+lands where opencode never reads it.
+
 1. **Skills.** Copy `skills/forge/` and `skills/crossfire/` from the clone to
    `~/.config/opencode/skills/forge/` and `~/.config/opencode/skills/crossfire/`
-   (each directory whole, including the stage briefs beside each SKILL.md).
+   (each directory whole, including the stage briefs beside each SKILL.md). opencode
+   also reads `~/.claude/skills/`, so if a Claude-side forge install is present there,
+   opencode loads one copy and logs a benign `duplicate skill name` warning for the
+   other — both are forge. This is expected; do **not** delete either copy to silence
+   it. Note it in the report (§ 6) so the user isn't surprised.
 2. **Setup skill.** Copy `adapters/opencode/skills/setup/` from the clone to
    `~/.config/opencode/skills/setup-forge/` — opencode requires the directory name to
    equal the skill's frontmatter `name`, which is `setup-forge`.
 3. **Plugin.** Copy `adapters/opencode/hooks/forge.js` to
-   `~/.config/opencode/plugins/forge.js`.
+   `$CONFIG_DIR/plugins/forge.js` (the resolved config dir — this surface *does* honor
+   `$OPENCODE_CONFIG_DIR`).
 4. **Version stamp.** Write `$VERSION` into
    `~/.config/opencode/skills/forge/.forge-version`. The plugin carries its own baked
    `FORGE_VERSION`; at startup it compares the two stamps and nags on drift — that nag
@@ -50,7 +71,8 @@ belongs to the user: **ask before replacing, never overwrite silently**.
 5. **Tier agents.** Read the `models` map from the clone's
    `adapters/opencode/capabilities.json` (the manifest is the single source; these
    agent files are derived artifacts). For each of the four tiers — `mini`,
-   `standard`, `large`, `ultra` — write `~/.config/opencode/agents/forge-<tier>.md`:
+   `standard`, `large`, `ultra` — write `$CONFIG_DIR/agents/forge-<tier>.md` (the
+   resolved config dir, same as the plugin):
 
    ```markdown
    ---
@@ -100,7 +122,9 @@ pass.
   one message for the parallel probe; if they visibly run serially, report the effective
   declaration as `parallel-fan-out: false` (a conforming, sequential-only install — not
   an error, but say it).
-- **(d) Model resolvability.** Confirm the four agent files from step 3.5 exist. Then
+- **(d) Model resolvability.** Confirm the four `$CONFIG_DIR/agents/forge-*.md` files from
+  step 3.5 exist (if `$OPENCODE_CONFIG_DIR` is set and they are missing, they were written
+  to the wrong dir — re-run step 3.5 against `$CONFIG_DIR`). Then
   task-spawn each tier agent once with a one-token prompt ("reply: ok"). A completed
   reply proves its `model` id resolves against this user's configured providers; a spawn
   error names the unresolvable id — the spawn itself is the probe, no eyeballing of
@@ -120,12 +144,13 @@ One line per surface — `copied` / `refreshed` / `kept (user's own — skipped)
 `verified` / `DOWNGRADED: <what, why>`:
 
 ```
-opencode <version> — forge $VERSION
+opencode <version> — forge $VERSION   (config dir: $CONFIG_DIR)
 skills/forge          <status>
 skills/crossfire      <status>
 skills/setup-forge    <status>
-plugins/forge.js      <status>
-agents/forge-*        <status, one line per substitution if any>
+plugins/forge.js      <status>   (under $CONFIG_DIR)
+agents/forge-*        <status, one line per substitution if any>   (under $CONFIG_DIR)
+~/.claude/skills shadow  <none | present — benign duplicate-name warning expected>
 session-start-injection  <verified | FAILED>
 tool-guard               <verified | FAILED>
 spawn floor              <verified | FAILED>

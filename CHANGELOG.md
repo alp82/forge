@@ -2,6 +2,11 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.2.1 - 2026-07-20
+
+- On machines with a custom opencode config directory, forge's plugin and agents now install where opencode reads them, so enforcement takes effect instead of silently doing nothing.
+- When forge is also installed for Claude Code on the same machine, the opencode install now flags the harmless duplicate-skill warning up front instead of leaving it unexplained.
+
 ## 2.2.0 - 2026-07-20
 
 forge now installs on Codex CLI through its native plugin marketplace. Codex is the first platform besides Claude Code where forge runs fully gated: a session cannot end on failing tests, a broken build, or unreviewed code.

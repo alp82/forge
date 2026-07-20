@@ -96,8 +96,18 @@ What [`INSTALL.md`](INSTALL.md) probes, and what loud failure looks like:
 - **`read-only` spawn markers map to brief discipline.** No native read-only agent kind
   is generated; per contract § 2 an ordinary isolated agent conforms.
 - **Claude-compat shadowing.** opencode also reads `~/.claude/skills/`; a forge install
-  for Claude Code on the same machine may surface the same skill names there. Benign at
-  equal versions; the drift nag covers staleness of this adapter's own copies.
+  for Claude Code on the same machine surfaces the same skill names there, so opencode
+  loads one copy and logs a benign `duplicate skill name` warning for the other — both
+  are forge. The install keeps its own `~/.config/opencode/skills/` copy unconditionally
+  (self-contained, its own drift stamp) rather than conditionally skipping to dodge the
+  warning; INSTALL.md § 6 reports the shadow so it isn't a surprise. Benign at equal
+  versions; the drift nag covers staleness of this adapter's own copies.
+- **Config dir is honored for the plugin and agents, not skills.** The install resolves
+  `$OPENCODE_CONFIG_DIR` (else `~/.config/opencode`) for the plugin and tier-agent
+  targets, because opencode discovers those from that dir. Skills are the exception:
+  opencode discovers them from a fixed set of global paths that ignore
+  `$OPENCODE_CONFIG_DIR`, so skill copies always land in `~/.config/opencode/skills/`
+  literally. INSTALL.md § 3 spells the split out.
 
 ## Survey source
 
