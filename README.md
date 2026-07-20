@@ -10,7 +10,7 @@
 [![codex](https://shieldcn.dev/badge/codex-gated-D97757.svg?variant=outline&size=lg)](adapters/codex/README.md)
 [![opencode](https://shieldcn.dev/badge/opencode-guarded-D97757.svg?variant=outline&size=lg)](adapters/opencode/README.md)
 [![Skills](https://shieldcn.dev/badge/Skills-first-D97757.svg?logo=anthropic&variant=outline&size=lg)](skills/forge/SKILL.md)
-[![Version](https://shieldcn.dev/badge/version-2.2.0-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
+[![Version](https://shieldcn.dev/badge/version-2.2.1-D97757.svg?variant=outline&size=lg)](CHANGELOG.md)
 
 <br>
 
