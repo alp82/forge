@@ -1,5 +1,6 @@
 {
   "harness": "opencode",
+  "vendor": "anthropic",
   "surveyed": "2026-07-17",
   "spawn": { "isolated": true, "model-selectable": true, "parallel-fan-out": true },
   "models": {

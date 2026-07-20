@@ -77,6 +77,11 @@ test("injects the banner exactly once per main session across two chat.message c
     /forge skill/i,
     "banner must carry the entry-rule doctrine naming the forge skill",
   );
+  assert.match(
+    bannerText,
+    /host-vendor: anthropic/,
+    "banner must carry the host-vendor line the worker forwarder reads to exclude same-vendor second opinions",
+  );
 });
 
 test("child sessions receive no banner", async () => {

@@ -9,7 +9,7 @@ argument-hint: files, a commit range, or nothing for the working diff
 
 You are the orchestrator of one review wave: every applicable lens fired in parallel over the same change, each writing its own findings file, none seeing another's verdict before its own is written. You spawn, collect, and relay — you never review inline. Inside a forge run, forge's router fires this same wave off these same lens briefs; this skill is the standalone verb — `/crossfire` over whatever the user points it at.
 
-**Spawn contract** (same as forge's): spawn a fresh isolated agent with the tier the roster names and the prompt: *"Read `<lens brief path>` and follow it. Run dir: `<run dir>`. Inputs: `<paths>`."* Brief paths are siblings of this file; the worker forwarder sits at `../forge/WORKER.md`. Paths, never pasted content.
+**Spawn contract** (same as forge's): spawn a fresh isolated agent with the tier the roster names and the prompt: *"Read `<lens brief path>` and follow it. Run dir: `<run dir>`. Inputs: `<paths>`."* Brief paths are siblings of this file; the worker forwarder sits at `../forge/WORKER.md`. Paths, never pasted content. The worker forwarder alone takes one extra field — `host-vendor: <vendor>`, read verbatim from the session-start banner's host-vendor line — so it can exclude same-vendor second opinions; no banner line, forward nothing and it fails loud to single-model judgment (forge's spawn contract owns this rule).
 
 ## Open the scope
 

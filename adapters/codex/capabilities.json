@@ -1,5 +1,6 @@
 {
   "harness": "codex",
+  "vendor": "openai",
   "surveyed": "2026-07-20",
   "spawn": { "isolated": true, "model-selectable": true, "parallel-fan-out": false },
   "models": {

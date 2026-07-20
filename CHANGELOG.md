@@ -2,6 +2,12 @@
 
 All notable changes to forge (previously alp-river). Versions match `.claude-plugin/plugin.json`.
 
+## 2.2.2 - 2026-07-21
+
+- forge's independent second opinion now always comes from a different AI model than the one running forge, so the check can no longer be one model agreeing with itself.
+- The second opinion can now come from Claude, alongside the existing Codex, Gemini, and opencode options.
+- A second-opinion tool that hangs is now cut off after three minutes and reported as failed, instead of stalling the run.
+
 ## 2.2.1 - 2026-07-20
 
 - On machines with a custom opencode config directory, forge's plugin and agents now install where opencode reads them, so enforcement takes effect instead of silently doing nothing.

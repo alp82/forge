@@ -147,6 +147,7 @@ Shape:
 ```json
 {
   "harness": "<string>",
+  "vendor": "<string>",
   "surveyed": "<ISO-8601 date string>",
   "spawn": {
     "isolated": true,
@@ -173,6 +174,14 @@ Rules:
 - `spawn.isolated` and `spawn.model-selectable` are booleans that MUST be `true` — they
   are the floor (§ 2); declaring them anyway keeps install-time verification a one-file
   read. `parallel-fan-out` declares the § 3 option.
+- `vendor` names the host harness's **model vendor** as a bare token (`anthropic`,
+  `openai`, `google`, …) — never a `provider/model` path. The neutral worker forwarder
+  (`skills/forge/WORKER.md`) reads it to exclude same-vendor second opinions: the
+  challenge/crossfire worker earns its keep only when another *model* judges, so a worker
+  sharing the host's vendor collapses into one model agreeing with itself. Required. The
+  adapter surfaces it to the dispatcher through the session-start banner (§ 4); where no
+  banner carries it, the worker degrades loudly to single-model judgment rather than
+  guessing — this manifest is the one home for the value, the banner only relays it.
 - `models` maps the four **role tiers** the briefs spawn with — `mini` / `standard` /
   `large` / `ultra`, a capability-ordinal register (each tier at least as capable as the
   one before) — to harness-native model identifiers; all four keys required; briefs say
@@ -190,6 +199,7 @@ Worked example — Claude Code's expected landing, a hypothesis until adapter ve
 ```json
 {
   "harness": "claude-code",
+  "vendor": "anthropic",
   "surveyed": "2026-07-18",
   "spawn": { "isolated": true, "model-selectable": true, "parallel-fan-out": true },
   "models": { "mini": "haiku", "standard": "sonnet", "large": "opus", "ultra": "fable" },

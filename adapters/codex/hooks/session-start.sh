@@ -53,10 +53,17 @@ if [ -n "$any_agent" ]; then
   done
 fi
 
+# Host identity line for the worker forwarder (skills/forge/WORKER.md): the
+# host-vendor token is defined once in adapters/codex/capabilities.json
+# (.vendor) and mirrored here by hand - a bare token that changes at most once
+# per harness lifetime. The forge/crossfire dispatcher reads this line to
+# forward host-vendor into the worker spawn, so same-vendor second opinions are
+# excluded.
 context="## forge
 
 - Every code-modifying request enters via the forge skill (\$forge) - \"small/mechanical/one-line\" is not a bypass.
-- The flow: ${plugin_root}/skills/forge/SKILL.md (stage briefs sit beside it); \$crossfire is the standalone review verb."
+- The flow: ${plugin_root}/skills/forge/SKILL.md (stage briefs sit beside it); \$crossfire is the standalone review verb.
+- Host harness: codex, host-vendor: openai - the worker forwarder excludes same-vendor second opinions."
 if [ -n "$sync_nag" ]; then
   context="${context}
 ${sync_nag}"

@@ -72,6 +72,10 @@ def test_emits_entry_rule_and_flow_pointer():
         assert "forge" in ctx, f"entry rule missing from context: {ctx!r}"
         assert "skills/forge/SKILL.md" in ctx, f"flow pointer missing: {ctx!r}"
         assert "crossfire" in ctx, f"review-verb pointer missing: {ctx!r}"
+        assert "host-vendor: openai" in ctx, (
+            f"host-vendor line missing - the worker forwarder reads it to "
+            f"exclude same-vendor second opinions: {ctx!r}"
+        )
         assert "setup-forge" not in ctx, (
             f"no nag may appear when no tier agent is installed: {ctx!r}"
         )

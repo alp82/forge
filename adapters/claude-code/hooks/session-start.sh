@@ -58,10 +58,17 @@ for skill_dir in "${CLAUDE_PLUGIN_ROOT}"/skills/*/ "${CLAUDE_PLUGIN_ROOT}"/adapt
   fi
 done
 
+# Host identity line for the worker forwarder (skills/forge/WORKER.md): the
+# host-vendor token is defined once in adapters/claude-code/capabilities.json
+# (.vendor) and mirrored here by hand - a bare token that changes at most once
+# per harness lifetime. The forge/crossfire dispatcher reads this line to
+# forward host-vendor into the worker spawn, so same-vendor second opinions are
+# excluded.
 context="## forge
 
 - Every code-modifying request enters via the forge skill (/forge) - \"small/mechanical/one-line\" is not a bypass.
-- The flow: ${CLAUDE_PLUGIN_ROOT}/skills/forge/SKILL.md (stage briefs sit beside it); /crossfire is the standalone review verb."
+- The flow: ${CLAUDE_PLUGIN_ROOT}/skills/forge/SKILL.md (stage briefs sit beside it); /crossfire is the standalone review verb.
+- Host harness: claude-code, host-vendor: anthropic - the worker forwarder excludes same-vendor second opinions."
 if [ -n "$sync_nag" ]; then
   context="${context}
 ${sync_nag}"

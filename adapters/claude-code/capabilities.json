@@ -1,5 +1,6 @@
 {
   "harness": "claude-code",
+  "vendor": "anthropic",
   "surveyed": "2026-07-18",
   "spawn": { "isolated": true, "model-selectable": true, "parallel-fan-out": true },
   "models": { "mini": "haiku", "standard": "sonnet", "large": "opus", "ultra": "fable" },

@@ -26,7 +26,16 @@ import path from "node:path";
 // is the default ForgePlugin; the pure helpers the node tests exercise ride as
 // properties on it (attached at the bottom of the file) - properties are not
 // module exports, so the loader never sees them.
-const FORGE_VERSION = "2.2.1";
+const FORGE_VERSION = "2.2.2";
+
+// Host model vendor, baked for the same reason FORGE_VERSION is: the installed
+// plugin runs with no capabilities.json beside it (the opencode install copies
+// only this file into plugins/), so the value can't be read at runtime. Its one
+// canonical home is adapters/opencode/capabilities.json (.vendor); kept in sync
+// here by hand - a bare token that changes at most once per harness lifetime.
+// The worker forwarder (skills/forge/WORKER.md) reads it off the banner to
+// exclude same-vendor second opinions.
+const HOST_VENDOR = "anthropic";
 
 // ---------------------------------------------------------------------------
 // classifyGitCommand - faithful JS port of the reference guard
@@ -200,7 +209,10 @@ function buildBanner(nag) {
     "## forge\n\n" +
     '- Every code-modifying request enters via the forge skill - "small/mechanical/one-line" is not a bypass.\n' +
     "- The flow: ~/.config/opencode/skills/forge/SKILL.md (crossfire is the standalone review verb).\n" +
-    "- Stage spawns use the forge-mini/forge-standard/forge-large/forge-ultra subagents.";
+    "- Stage spawns use the forge-mini/forge-standard/forge-large/forge-ultra subagents.\n" +
+    "- Host harness: opencode, host-vendor: " +
+    HOST_VENDOR +
+    " - the worker forwarder excludes same-vendor second opinions.";
   if (nag) banner += "\n- " + nag;
   return banner;
 }

@@ -26,7 +26,22 @@ function deriveTier(caps) {
 
 test("capabilities.json has the exact contract § 6 top-level key set", () => {
   const caps = loadCapabilities();
-  assert.deepEqual(Object.keys(caps).sort(), ["enforcement", "harness", "models", "spawn", "surveyed"]);
+  assert.deepEqual(
+    Object.keys(caps).sort(),
+    ["enforcement", "harness", "models", "spawn", "surveyed", "vendor"],
+  );
+});
+
+test("vendor is a non-empty bare model-vendor token, not a provider/model path", () => {
+  const caps = loadCapabilities();
+  assert.ok(
+    typeof caps.vendor === "string" && caps.vendor.length > 0,
+    "vendor must be a non-empty string (contract § 6: the host model vendor)",
+  );
+  assert.ok(
+    !caps.vendor.includes("/"),
+    `vendor must be a bare token, not a provider/model path, got ${JSON.stringify(caps.vendor)}`,
+  );
 });
 
 test("spawn object has the exact key set and the required floor booleans are true", () => {
