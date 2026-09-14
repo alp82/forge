@@ -1,0 +1,37 @@
+{
+  "name": "forge",
+  "version": "0.1.1",
+  "description": "OpenClaw plugin adapter for Forge staged workflow orchestration.",
+  "type": "module",
+  "exports": {
+    ".": "./openclaw-plugin/index.js",
+    "./workflow": "./openclaw-plugin/workflow.js"
+  },
+  "scripts": {
+    "test": "node --test openclaw-plugin/test/*.test.js",
+    "check": "node --check openclaw-plugin/index.js && node --check openclaw-plugin/workflow.js"
+  },
+  "openclaw": {
+    "extensions": [
+      "./openclaw-plugin/index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.4.15"
+    },
+    "release": {
+      "publishToClawHub": true
+    },
+    "bundleCompatibility": {
+      "codex": ".codex-plugin/plugin.json",
+      "skills": "skills"
+    }
+  },
+  "license": "MIT",
+  "keywords": [
+    "openclaw",
+    "codex",
+    "codex-plugin",
+    "workflow",
+    "forge"
+  ]
+}
